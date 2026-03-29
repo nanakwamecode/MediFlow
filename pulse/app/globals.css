@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* ─── Brand Colors ─── */
+  --color-bg: #f5f2ee;
+  --color-bg-2: #ede9e3;
+  --color-card: #ffffff;
+
+  --color-border: #e0d9d0;
+  --color-border-2: #ccc5ba;
+
+  --color-ink: #1a1612;
+  --color-ink-2: #4a4540;
+  --color-ink-3: #8a837a;
+  --color-ink-4: #b5afa8;
+
+  --color-accent: #c8392b;
+  --color-accent-hover: #a82e22;
+
+  --color-status-normal: #2a7d4f;
+  --color-status-normal-bg: #edf6f1;
+  --color-status-normal-border: #b8dfc8;
+
+  --color-status-elevated: #d4692a;
+  --color-status-elevated-bg: #fef4ee;
+
+  --color-status-high: #c8392b;
+  --color-status-high-bg: #fdf0ef;
+  --color-status-high-border: #f5c5c0;
+
+  --color-status-crisis: #7a1010;
+  --color-status-crisis-bg: rgba(200, 57, 43, 0.12);
+
+  --color-blue: #2a5c8a;
+  --color-blue-bg: #eef3f8;
+
+  /* ─── Fonts ─── */
+  --font-serif: var(--font-dm-serif);
+  --font-mono: var(--font-dm-mono);
+  --font-sans: var(--font-instrument-sans);
+
+  /* ─── Radius ─── */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+  /* ─── Shadows ─── */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.08);
+
+  /* ─── Sidebar ─── */
+  --sidebar-width: 224px;
+  --sidebar-collapsed: 52px;
+}
+
+/* ─── Base Styles ─── */
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 14px;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-4);
+}
+
+/* ─── Animations ─── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.22s ease;
+}
+
+.animate-blink {
+  animation: blink 2.5s infinite;
+}
