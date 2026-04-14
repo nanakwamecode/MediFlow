@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 interface Props {
   open: boolean;
   onClose: () => void;
-  patientId: string;
-  patientName: string;
+  patientId?: string;
+  patientName?: string;
 }
 
 interface MedEntry {
@@ -24,9 +24,13 @@ const EMPTY_MED: MedEntry = { medication: "", dosage: "", instructions: "" };
 export default function AddPrescriptionModal({ open, onClose, patientId, patientName }: Props) {
   const [meds, setMeds] = useState<MedEntry[]>([{ ...EMPTY_MED }]);
   const [prescribedBy, setPrescribedBy] = useState("");
+  const [selectedPatientId, setSelectedPatientId] = useState(patientId || "");
 
   const addPrescription = usePatientStore((s) => s.addPrescription);
+  const patients = usePatientStore((s) => s.patients);
   const { showToast } = useToast();
+
+  const isSelectablePatient = !patientId;
 
   const fieldClass = cn(
     "w-full rounded-lg border-[1.5px] border-border bg-bg px-3 py-2",
@@ -47,6 +51,10 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
   };
 
   const handleSave = () => {
+    if (isSelectablePatient && !selectedPatientId) {
+      showToast("Please select a patient", "⚠");
+      return;
+    }
     const validMeds = meds.filter(m => m.medication.trim());
     if (validMeds.length === 0) {
       showToast("Enter at least one medication", "⚠");
@@ -64,7 +72,7 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
     }
 
     validMeds.forEach(m => {
-      addPrescription(patientId, {
+      addPrescription(selectedPatientId, {
         timePrescribed: new Date().toISOString(),
         prescribedBy: prescribedBy.trim(),
         medication: m.medication.trim(),
@@ -81,7 +89,22 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={`Prescribe — ${patientName}`} maxWidth="max-w-2xl">
+    <Modal open={open} onClose={onClose} title={isSelectablePatient ? "Prescribe Medication" : `Prescribe — ${patientName}`} maxWidth="max-w-2xl">
+      {isSelectablePatient && (
+        <div className="mb-4">
+          <label className={labelClass}>Select Patient *</label>
+          <select 
+            value={selectedPatientId} 
+            onChange={(e) => setSelectedPatientId(e.target.value)} 
+            className={fieldClass}
+          >
+            <option value="">Select a patient...</option>
+            {patients.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="mb-4">
         <label className={labelClass}>Prescribed By *</label>
         <input type="text" value={prescribedBy} onChange={(e) => setPrescribedBy(e.target.value)} placeholder="e.g. Dr. Smith" className={fieldClass} />

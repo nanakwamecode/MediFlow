@@ -43,10 +43,10 @@ export default function Sidebar() {
             sidebarCollapsed && "pointer-events-none opacity-0"
           )}
         >
-          <h1 className="font-serif text-xl text-white italic leading-none">
+          <h1 className="font-serif text-[1.35rem] font-medium text-white tracking-wide leading-none">
             MediFlow
           </h1>
-          <p className="mt-0.5 font-mono text-[0.55rem] tracking-[0.2em] text-white/30 uppercase">
+          <p className="mt-0.5 font-mono text-[0.55rem] tracking-[0.2em] text-accent uppercase font-bold">
             Clinic System
           </p>
         </div>
@@ -93,8 +93,8 @@ export default function Sidebar() {
           onClick={() => setProfileOpen(true)}
           className={cn(
             "w-full rounded-md bg-transparent px-2.5 py-1.5 text-left font-mono text-[0.68rem]",
-            "cursor-pointer text-white/40 whitespace-nowrap transition-all",
-            "hover:bg-white/5 hover:text-white/85",
+            "cursor-pointer text-white/70 whitespace-nowrap transition-all",
+            "hover:bg-white/10 hover:text-white",
             sidebarCollapsed &&
               "pointer-events-auto flex justify-center py-2 text-base opacity-100"
           )}
@@ -108,8 +108,8 @@ export default function Sidebar() {
           onClick={handleLogout}
           className={cn(
             "w-full rounded-md bg-transparent px-2.5 py-1.5 text-left font-mono text-[0.68rem]",
-            "cursor-pointer text-white/30 whitespace-nowrap transition-all",
-            "hover:bg-white/5 hover:text-red-300",
+            "cursor-pointer text-white/60 whitespace-nowrap transition-all",
+            "hover:bg-white/10 hover:text-red-300",
             sidebarCollapsed && "pointer-events-none opacity-0"
           )}
         >

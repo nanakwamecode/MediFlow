@@ -21,10 +21,10 @@ export default function PatientDetailPage({ patientId }: Props) {
   const patient = usePatientStore((s) =>
     s.patients.find((p) => p.id === patientId)
   );
-  const vitals = usePatientStore((s) => s.vitals[patientId] || []);
-  const consults = usePatientStore((s) => s.consultations[patientId] || []);
-  const labs = usePatientStore((s) => s.labInvestigations[patientId] || []);
-  const meds = usePatientStore((s) => s.prescriptions[patientId] || []);
+  const vitals = usePatientStore((s) => s.vitals[patientId]) || [];
+  const consults = usePatientStore((s) => s.consultations[patientId]) || [];
+  const labs = usePatientStore((s) => s.labInvestigations[patientId]) || [];
+  const meds = usePatientStore((s) => s.prescriptions[patientId]) || [];
 
   const deleteVitals = usePatientStore((s) => s.deleteVitals);
   const dispensePrescription = usePatientStore((s) => s.dispensePrescription);

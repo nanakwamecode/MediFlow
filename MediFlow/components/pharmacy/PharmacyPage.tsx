@@ -48,6 +48,12 @@ export default function PharmacyPage() {
           <h1 className="font-serif text-3xl tracking-tight text-ink">Pharmacy & Dispensary</h1>
           <p className="text-xs text-ink-3">{pendingCount} pending · {dispensedCount} dispensed · {allRx.length} total</p>
         </div>
+        <button
+          onClick={() => setRxFor({ id: "", name: "" })}
+          className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-hover"
+        >
+          + Prescribe
+        </button>
       </div>
 
       {/* Search */}
@@ -113,7 +119,7 @@ export default function PharmacyPage() {
 // ─── Patient Pharmacy Detail ───
 function PatientPharmacyDetail({ patientId, onBack }: { patientId: string; onBack: () => void }) {
   const patient = usePatientStore((s) => s.patients.find((p) => p.id === patientId));
-  const meds = usePatientStore((s) => s.prescriptions[patientId] || []);
+  const meds = usePatientStore((s) => s.prescriptions[patientId]) || [];
   const dispensePrescription = usePatientStore((s) => s.dispensePrescription);
   const { showToast } = useToast();
   const [rxOpen, setRxOpen] = useState(false);

@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 interface Props {
   open: boolean;
   onClose: () => void;
-  patientId: string;
-  patientName: string;
+  patientId?: string;
+  patientName?: string;
 }
 
 const COMMON_TESTS = [
@@ -48,9 +48,13 @@ export default function RequestLabModal({ open, onClose, patientId, patientName 
   const [customTest, setCustomTest] = useState("");
   const [requestedBy, setRequestedBy] = useState("");
   const [notes, setNotes] = useState("");
+  const [selectedPatientId, setSelectedPatientId] = useState(patientId || "");
 
   const addLabInvestigation = usePatientStore((s) => s.addLabInvestigation);
+  const patients = usePatientStore((s) => s.patients);
   const { showToast } = useToast();
+
+  const isSelectablePatient = !patientId;
 
   const fieldClass = cn(
     "w-full rounded-lg border-[1.5px] border-border bg-bg px-3 py-2",
@@ -73,6 +77,10 @@ export default function RequestLabModal({ open, onClose, patientId, patientName 
   };
 
   const handleSave = () => {
+    if (isSelectablePatient && !selectedPatientId) {
+      showToast("Please select a patient", "⚠");
+      return;
+    }
     if (selectedTests.length === 0) {
       showToast("Please select at least one test", "⚠");
       return;
@@ -83,7 +91,7 @@ export default function RequestLabModal({ open, onClose, patientId, patientName 
     }
     // Create one lab investigation per selected test
     selectedTests.forEach(testName => {
-      addLabInvestigation(patientId, {
+      addLabInvestigation(selectedPatientId, {
         timeRequested: new Date().toISOString(),
         requestedBy: requestedBy.trim(),
         testName,
@@ -97,7 +105,22 @@ export default function RequestLabModal({ open, onClose, patientId, patientName 
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={`Request Labs — ${patientName}`} maxWidth="max-w-xl">
+    <Modal open={open} onClose={onClose} title={isSelectablePatient ? "Request Labs" : `Request Labs — ${patientName}`} maxWidth="max-w-xl">
+      {isSelectablePatient && (
+        <div className="mb-3">
+          <label className={labelClass}>Select Patient *</label>
+          <select 
+            value={selectedPatientId} 
+            onChange={(e) => setSelectedPatientId(e.target.value)} 
+            className={fieldClass}
+          >
+            <option value="">Select a patient...</option>
+            {patients.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="mb-3">
         <label className={labelClass}>Select Tests * <span className="text-accent">({selectedTests.length} selected)</span></label>
         

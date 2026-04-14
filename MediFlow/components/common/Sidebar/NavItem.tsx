@@ -23,8 +23,8 @@ export default function NavItem({
         "px-3 py-3 text-left text-[0.9rem] font-medium whitespace-nowrap",
         "cursor-pointer transition-all duration-150",
         active
-          ? "bg-accent/20 text-red-300"
-          : "bg-transparent text-white/45 hover:bg-white/7 hover:text-white/80"
+          ? "bg-accent text-white font-semibold shadow-md"
+          : "bg-transparent text-white/70 hover:bg-white/10 hover:text-white"
       )}
     >
       <span className="w-6 shrink-0 text-center text-[1.1rem]">{icon}</span>

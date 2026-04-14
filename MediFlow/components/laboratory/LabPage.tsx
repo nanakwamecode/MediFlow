@@ -53,6 +53,12 @@ export default function LabPage() {
           <h1 className="font-serif text-3xl tracking-tight text-ink">Laboratory</h1>
           <p className="text-xs text-ink-3">{pendingCount} pending · {completedCount} completed · {allLabs.length} total</p>
         </div>
+        <button
+          onClick={() => setReqFor({ id: "", name: "" })}
+          className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-hover"
+        >
+          + Request Lab
+        </button>
       </div>
 
       {/* Search */}
@@ -125,7 +131,7 @@ import EnterLabResultModal from "@/components/laboratory/EnterLabResultModal";
 
 function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: () => void }) {
   const patient = usePatientStore((s) => s.patients.find((p) => p.id === patientId));
-  const labs = usePatientStore((s) => s.labInvestigations[patientId] || []);
+  const labs = usePatientStore((s) => s.labInvestigations[patientId]) || [];
   const [resultFor, setResultFor] = useState<{ labId: number; testName: string } | null>(null);
   const [reqOpen, setReqOpen] = useState(false);
 

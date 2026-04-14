@@ -4,11 +4,13 @@ import { usePatientStore } from "@/store/patientStore";
 import { useUiStore } from "@/store/uiStore";
 import { getInitials } from "@/lib/constants";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
-import React from "react";
+import PatientModal from "@/components/patients/PatientModal";
+import React, { useState } from "react";
 
 export default function DashboardContent() {
   const { patients, consultations, labInvestigations, prescriptions } = usePatientStore();
   const { setActivePage, viewPatient } = useUiStore();
+  const [ptModalOpen, setPtModalOpen] = useState(false);
 
   const today = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
@@ -30,8 +32,13 @@ export default function DashboardContent() {
           icon="♥"
           title="Welcome to MediFlow"
           subtitle="Add your first patient to start using the clinic system."
-          actionLabel="Go to Patients →"
-          onAction={() => setActivePage("patients")}
+          actionLabel="+ Add New Patient"
+          onAction={() => setPtModalOpen(true)}
+        />
+        <PatientModal
+          open={ptModalOpen}
+          onClose={() => setPtModalOpen(false)}
+          editPatient={null}
         />
       </div>
     );
@@ -48,7 +55,7 @@ export default function DashboardContent() {
           <p className="text-xs text-ink-3">{today}</p>
         </div>
         <button
-          onClick={() => setActivePage("patients")}
+          onClick={() => setPtModalOpen(true)}
           className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-px hover:bg-accent-hover hover:shadow-md"
         >
           + New Patient
@@ -125,6 +132,11 @@ export default function DashboardContent() {
           );
         })}
       </div>
+      <PatientModal
+        open={ptModalOpen}
+        onClose={() => setPtModalOpen(false)}
+        editPatient={null}
+      />
     </div>
   );
 }
