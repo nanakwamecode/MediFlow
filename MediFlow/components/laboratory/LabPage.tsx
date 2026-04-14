@@ -1,7 +1,7 @@
 "use client";
 
 import { usePatientStore } from "@/store/patientStore";
-import { useUiStore } from "@/store/uiStore";
+
 import { useState } from "react";
 import { formatFullDate, getInitials } from "@/lib/constants";
 import RequestLabModal from "@/components/laboratory/RequestLabModal";
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 export default function LabPage() {
   const { patients, labInvestigations } = usePatientStore();
-  const { viewPatient } = useUiStore();
+
   const [reqFor, setReqFor] = useState<{ id: string; name: string } | null>(null);
   const [search, setSearch] = useState("");
   const [detailPatient, setDetailPatient] = useState<string | null>(null);
@@ -42,7 +42,6 @@ export default function LabPage() {
       <PatientLabDetail
         patientId={detailPatient}
         onBack={() => setDetailPatient(null)}
-        onRequestLab={(id, name) => setReqFor({ id, name })}
       />
     );
   }
@@ -124,7 +123,7 @@ export default function LabPage() {
 // ─── Patient Lab Detail Page ───
 import EnterLabResultModal from "@/components/laboratory/EnterLabResultModal";
 
-function PatientLabDetail({ patientId, onBack, onRequestLab }: { patientId: string; onBack: () => void; onRequestLab: (id: string, name: string) => void }) {
+function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: () => void }) {
   const patient = usePatientStore((s) => s.patients.find((p) => p.id === patientId));
   const labs = usePatientStore((s) => s.labInvestigations[patientId] || []);
   const [resultFor, setResultFor] = useState<{ labId: number; testName: string } | null>(null);

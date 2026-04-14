@@ -15,7 +15,6 @@ interface Props {
 export default function ProfileModal({ open, onClose }: Props) {
   const user = useAuthStore((s) => s.user);
   const error = useAuthStore((s) => s.error);
-  const clearError = useAuthStore((s) => s.clearError);
   const updateDisplayName = useAuthStore((s) => s.updateDisplayName);
   const { showToast } = useToast();
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePatientStore } from "@/store/patientStore";
-import { useUiStore } from "@/store/uiStore";
+
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { useState } from "react";
 import { formatFullDate, getInitials } from "@/lib/constants";
@@ -37,7 +37,6 @@ export default function PharmacyPage() {
       <PatientPharmacyDetail
         patientId={detailPatient}
         onBack={() => setDetailPatient(null)}
-        onAddRx={(id, name) => setRxFor({ id, name })}
       />
     );
   }
@@ -112,7 +111,7 @@ export default function PharmacyPage() {
 }
 
 // ─── Patient Pharmacy Detail ───
-function PatientPharmacyDetail({ patientId, onBack, onAddRx }: { patientId: string; onBack: () => void; onAddRx: (id: string, name: string) => void }) {
+function PatientPharmacyDetail({ patientId, onBack }: { patientId: string; onBack: () => void }) {
   const patient = usePatientStore((s) => s.patients.find((p) => p.id === patientId));
   const meds = usePatientStore((s) => s.prescriptions[patientId] || []);
   const dispensePrescription = usePatientStore((s) => s.dispensePrescription);

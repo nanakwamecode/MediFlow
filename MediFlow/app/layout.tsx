@@ -23,9 +23,9 @@ const instrumentSans = Instrument_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Pulse — BP Tracker",
+  title: "MediFlow — Clinic Management System",
   description:
-    "Track and visualise blood pressure readings for your patients.",
+    "A comprehensive clinic management system for managing patients, vitals, consultations, laboratory investigations, and pharmacy prescriptions.",
 };
 
 export default function RootLayout({

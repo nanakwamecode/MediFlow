@@ -138,9 +138,13 @@ export const usePatientStore = create<ClinicState>((set, get) => ({
 
   deletePatient: (id) =>
     set((s) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [id]: _v, ...restVitals } = s.vitals;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [id]: _c, ...restConsults } = s.consultations;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [id]: _l, ...restLabs } = s.labInvestigations;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [id]: _p, ...restPrescripts } = s.prescriptions;
       return {
         patients: s.patients.filter((p) => p.id !== id),
