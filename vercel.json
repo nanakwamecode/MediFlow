@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "cd MediFlow && npm install && npm run build",
+  "outputDirectory": "MediFlow/.next",
+  "installCommand": "cd MediFlow && npm install"
+}
