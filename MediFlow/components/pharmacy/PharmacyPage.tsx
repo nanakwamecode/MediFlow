@@ -62,7 +62,7 @@ export default function PharmacyPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔍  Search by patient name or medication…"
+          placeholder="Search by patient name or medication…"
           className={cn(
             "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
             "font-mono text-sm text-ink outline-none transition-colors",
@@ -72,7 +72,7 @@ export default function PharmacyPage() {
       </div>
 
       {patientRx.length === 0 ? (
-        <EmptyState icon="💊" title="No prescriptions" subtitle="Add a prescription using the buttons above." />
+        <EmptyState icon="pill" title="No prescriptions" subtitle="Add a prescription using the buttons above." />
       ) : (
         <div className="space-y-3">
           {patientRx.map(({ patient: p, meds }) => {
@@ -93,7 +93,7 @@ export default function PharmacyPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {pending > 0 && <span className="text-[0.65rem] px-2 py-1 rounded-full font-mono uppercase bg-status-crisis-bg text-status-crisis">{pending} to dispense</span>}
-                    <span className="text-ink-4 text-lg">→</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                   </div>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -132,7 +132,7 @@ function PatientPharmacyDetail({ patientId, onBack }: { patientId: string; onBac
   return (
     <div className="animate-fade-in p-7 pb-20">
       <div className="mb-5 flex items-center justify-between">
-        <button onClick={onBack} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-2 hover:bg-bg-2">← Back to Pharmacy</button>
+        <button onClick={onBack} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-2 hover:bg-bg-2 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to Pharmacy</button>
         <button onClick={() => setRxOpen(true)} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover">+ Prescribe</button>
       </div>
 

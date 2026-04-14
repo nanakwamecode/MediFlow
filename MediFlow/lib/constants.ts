@@ -57,13 +57,13 @@ export function nowLocalISO(): string {
 }
 
 export const NAV_ITEMS = [
-  { key: "dashboard", label: "Dashboard", icon: "◈" },
-  { key: "patients", label: "Patients", icon: "♟" },
-  { key: "vitals", label: "Vitals", icon: "♥" },
-  { key: "consultations", label: "Consults", icon: "✎" },
-  { key: "labs", label: "Laboratory", icon: "⚗" },
-  { key: "pharmacy", label: "Pharmacy", icon: "💊" },
-  { key: "records", label: "Records", icon: "📋" },
+  { key: "dashboard", label: "Dashboard", icon: "layout-dashboard" },
+  { key: "patients", label: "Patients", icon: "users" },
+  { key: "vitals", label: "Vitals", icon: "activity" },
+  { key: "consultations", label: "Consults", icon: "stethoscope" },
+  { key: "labs", label: "Laboratory", icon: "flask" },
+  { key: "pharmacy", label: "Pharmacy", icon: "pill" },
+  { key: "records", label: "Records", icon: "clipboard" },
 ] as const;
 
 export type NavKey = (typeof NAV_ITEMS)[number]["key"];

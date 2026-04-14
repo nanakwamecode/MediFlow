@@ -67,7 +67,7 @@ export default function LabPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔍  Search by patient name or test name…"
+          placeholder="Search by patient name or test name…"
           className={cn(
             "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
             "font-mono text-sm text-ink outline-none transition-colors",
@@ -77,7 +77,7 @@ export default function LabPage() {
       </div>
 
       {patientLabs.length === 0 ? (
-        <EmptyState icon="⚗" title="No lab requests" subtitle="Request a lab investigation using the buttons above." />
+        <EmptyState icon="flask" title="No lab requests" subtitle="Request a lab investigation using the buttons above." />
       ) : (
         <div className="space-y-3">
           {patientLabs.map(({ patient: p, labs }) => {
@@ -102,7 +102,7 @@ export default function LabPage() {
                     {pending > 0 && (
                       <span className="text-[0.65rem] px-2 py-1 rounded-full font-mono uppercase bg-status-elevated-bg text-status-elevated">{pending} pending</span>
                     )}
-                    <span className="text-ink-4 text-lg">→</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                   </div>
                 </div>
                 {/* Preview last 3 tests */}
@@ -128,12 +128,14 @@ export default function LabPage() {
 
 // ─── Patient Lab Detail Page ───
 import EnterLabResultModal from "@/components/laboratory/EnterLabResultModal";
+import ViewLabResultModal from "@/components/laboratory/ViewLabResultModal";
 
 function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: () => void }) {
   const patient = usePatientStore((s) => s.patients.find((p) => p.id === patientId));
   const labs = usePatientStore((s) => s.labInvestigations[patientId]) || [];
   const [resultFor, setResultFor] = useState<{ labId: number; testName: string } | null>(null);
   const [reqOpen, setReqOpen] = useState(false);
+  const [viewingResult, setViewingResult] = useState<typeof labs[0] | null>(null);
 
   if (!patient) return null;
 
@@ -143,7 +145,7 @@ function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: ()
   return (
     <div className="animate-fade-in p-7 pb-20">
       <div className="mb-5 flex items-center justify-between">
-        <button onClick={onBack} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-2 hover:bg-bg-2">← Back to Lab</button>
+        <button onClick={onBack} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-2 hover:bg-bg-2 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to Lab</button>
         <button onClick={() => setReqOpen(true)} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover">+ Request Lab</button>
       </div>
 
@@ -161,12 +163,12 @@ function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: ()
           <div className="mb-2 font-mono text-[0.56rem] tracking-[0.2em] text-status-elevated uppercase">Pending ({pending.length})</div>
           <div className="mb-5 space-y-2">
             {pending.map((l) => (
-              <div key={l.id} className="flex items-center justify-between rounded-lg border border-status-elevated/20 bg-status-elevated-bg p-3">
+              <div key={l.id} className="flex items-center justify-between rounded-lg border border-accent/20 bg-accent/5 p-3">
                 <div>
                   <div className="text-sm font-semibold text-ink">{l.testName}</div>
                   <div className="font-mono text-[0.6rem] text-ink-3">Requested: {formatFullDate(l.timeRequested)} · By {l.requestedBy}</div>
                 </div>
-                <button onClick={() => setResultFor({ labId: l.id, testName: l.testName })} className="cursor-pointer rounded-lg bg-status-normal px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90">Enter Result</button>
+                <button onClick={() => setResultFor({ labId: l.id, testName: l.testName })} className="cursor-pointer rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover shadow-sm">Enter Result</button>
               </div>
             ))}
           </div>
@@ -186,10 +188,13 @@ function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: ()
                 </div>
                 <div className="font-mono text-[0.6rem] text-ink-3 mb-2">Requested: {formatFullDate(l.timeRequested)} · By {l.requestedBy}</div>
                 {l.result && (
-                  <div className="text-xs bg-blue-bg text-blue p-2.5 rounded border border-blue/10">
-                    <span className="font-mono text-[0.5rem] uppercase tracking-wider text-blue/60 block mb-0.5">Result</span>
-                    {l.result}
-                  </div>
+                  <button 
+                    onClick={() => setViewingResult(l)} 
+                    className="mt-2 w-full opacity-90 cursor-pointer rounded border border-blue/20 bg-blue-bg/40 p-2 text-left transition-colors hover:bg-blue-bg hover:border-blue/30"
+                  >
+                    <span className="font-mono text-[0.55rem] uppercase tracking-wider text-blue/70 block mb-0.5">Click to view Result</span>
+                    <span className="text-xs text-blue font-medium line-clamp-1">{l.result.split('\n')[0]}...</span>
+                  </button>
                 )}
               </div>
             ))}
@@ -205,6 +210,7 @@ function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: ()
 
       {resultFor && <EnterLabResultModal open={!!resultFor} onClose={() => setResultFor(null)} patientId={patientId} labId={resultFor.labId} testName={resultFor.testName} />}
       {reqOpen && <RequestLabModal open={reqOpen} onClose={() => setReqOpen(false)} patientId={patientId} patientName={patient.name} />}
+      {viewingResult && <ViewLabResultModal open={!!viewingResult} onClose={() => setViewingResult(null)} testName={viewingResult.testName} result={viewingResult.result || ""} timeCompleted={viewingResult.timeCompleted} requestedBy={viewingResult.requestedBy} />}
     </div>
   );
 }

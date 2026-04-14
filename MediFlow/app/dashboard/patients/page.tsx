@@ -68,7 +68,7 @@ export default function PatientsPage() {
       </div>
 
       {/* List */}
-      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         {filtered.length === 0 ? (
           <EmptyState
             icon={q ? "🔍" : "♟"}
@@ -86,36 +86,36 @@ export default function PatientsPage() {
               <div
                 key={p.id}
                 onClick={() => viewPatient(p.id)}
-                className="flex cursor-pointer items-center gap-2.5 border-b border-border px-3.5 py-2 transition-colors last:border-b-0 hover:bg-bg group"
+                className="flex cursor-pointer items-center gap-4 border-b border-border/50 px-5 py-3 transition-all last:border-b-0 hover:bg-bg/50 group hover:pl-6"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-bg-2 font-serif text-sm text-ink-2">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-bg-2 to-border font-serif text-[0.8rem] text-ink-2 shadow-sm ring-1 ring-border/50 group-hover:from-accent/10 group-hover:to-accent/5 group-hover:text-accent transition-all">
                   {getInitials(p.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-ink group-hover:text-accent">
+                  <div className="truncate text-[0.95rem] font-semibold text-ink transition-colors group-hover:text-accent">
                     {p.name}
                   </div>
-                  <div className="mt-px truncate font-mono text-[0.62rem] text-ink-3">
+                  <div className="mt-0.5 truncate font-mono text-[0.68rem] text-ink-3">
                     {meta || "—"}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2 font-mono text-[0.62rem] text-ink-4">
-                  <span>{rd.length} vitals log{rd.length !== 1 ? "s" : ""}</span>
+                  <span className="rounded-full bg-card px-2 py-0.5 border border-border">{rd.length} log{rd.length !== 1 ? "s" : ""}</span>
                 </div>
                 <div
-                  className="flex shrink-0 items-center gap-0 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="flex shrink-0 items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => setLogFor(p)}
-                    className="cursor-pointer rounded px-1.5 py-1 font-mono text-[0.7rem] font-semibold text-status-normal transition-colors hover:bg-status-normal-bg"
+                    className="cursor-pointer rounded-lg px-2.5 py-1.5 font-mono text-[0.7rem] font-semibold text-status-normal transition-colors hover:bg-status-normal-bg"
                   >
                     + Log Vitals
                   </button>
                   <span className="text-[0.65rem] text-border-2">·</span>
                   <button
                     onClick={() => { setEditPt(p); setPtModalOpen(true); }}
-                    className="cursor-pointer rounded px-1.5 py-1 font-mono text-[0.7rem] font-semibold text-blue transition-colors hover:bg-blue-bg"
+                    className="cursor-pointer rounded-lg px-2.5 py-1.5 font-mono text-[0.7rem] font-semibold text-blue transition-colors hover:bg-blue-bg"
                   >
                     Edit
                   </button>
@@ -127,7 +127,7 @@ export default function PatientsPage() {
                         showToast("Patient deleted", "✕");
                       }
                     }}
-                    className="cursor-pointer rounded px-1.5 py-1 font-mono text-[0.7rem] font-semibold text-status-high transition-colors hover:bg-status-high-bg"
+                    className="cursor-pointer rounded-lg px-2.5 py-1.5 font-mono text-[0.7rem] font-semibold text-status-high transition-colors hover:bg-status-high-bg"
                   >
                     Delete
                   </button>

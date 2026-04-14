@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { NavIcon } from "./NavIcon";
 
 interface Props {
   icon: string;
@@ -27,7 +28,12 @@ export default function NavItem({
           : "bg-transparent text-white/70 hover:bg-white/10 hover:text-white"
       )}
     >
-      <span className="w-6 shrink-0 text-center text-[1.1rem]">{icon}</span>
+      <span className={cn(
+        "flex shrink-0 items-center justify-center transition-transform",
+        active ? "scale-110" : ""
+      )}>
+        <NavIcon name={icon} className="h-6 w-6" />
+      </span>
       <span
         className={cn(
           "overflow-hidden transition-opacity duration-150",

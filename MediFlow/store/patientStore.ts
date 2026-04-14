@@ -162,7 +162,7 @@ export const usePatientStore = create<ClinicState>((set, get) => ({
       vitals: {
         ...s.vitals,
         [patientId]: [
-          { ...v, id: Date.now() },
+          { ...v, id: Date.now() + Math.floor(Math.random() * 100000) },
           ...(s.vitals[patientId] || []),
         ],
       },
@@ -183,7 +183,7 @@ export const usePatientStore = create<ClinicState>((set, get) => ({
       consultations: {
         ...s.consultations,
         [patientId]: [
-          { ...c, id: Date.now() },
+          { ...c, id: Date.now() + Math.floor(Math.random() * 100000) },
           ...(s.consultations[patientId] || []),
         ],
       },
@@ -204,7 +204,7 @@ export const usePatientStore = create<ClinicState>((set, get) => ({
       labInvestigations: {
         ...s.labInvestigations,
         [patientId]: [
-          { ...l, id: Date.now() },
+          { ...l, id: Date.now() + Math.floor(Math.random() * 100000) },
           ...(s.labInvestigations[patientId] || []),
         ],
       },
@@ -225,7 +225,7 @@ export const usePatientStore = create<ClinicState>((set, get) => ({
       prescriptions: {
         ...s.prescriptions,
         [patientId]: [
-          { ...p, id: Date.now() },
+          { ...p, id: Date.now() + Math.floor(Math.random() * 100000) },
           ...(s.prescriptions[patientId] || []),
         ],
       },

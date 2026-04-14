@@ -56,7 +56,7 @@ export default function Sidebar() {
           title="Toggle sidebar"
           aria-label="Toggle sidebar"
         >
-          ☰
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
       </div>
 
@@ -75,42 +75,38 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="shrink-0 overflow-hidden border-t border-white/8 p-3 px-2">
-        <div className="flex items-center gap-2 overflow-hidden px-2.5 py-1.5">
-          <div className="h-1.5 w-1.5 shrink-0 animate-blink rounded-full bg-green-400" />
-          <span
-            className={cn(
-              "flex-1 overflow-hidden font-mono text-[0.65rem] text-white/35 whitespace-nowrap transition-opacity",
-              sidebarCollapsed && "opacity-0"
-            )}
-          >
-            {user?.displayName ?? "—"} · {patientCount} pt
-            {patientCount !== 1 ? "s" : ""}
-          </span>
-        </div>
+      <div className={cn("shrink-0 overflow-hidden border-t border-white/8 transition-all", sidebarCollapsed ? "p-2" : "p-3 px-3")}>
         <button
-          type="button"
           onClick={() => setProfileOpen(true)}
           className={cn(
-            "w-full rounded-md bg-transparent px-2.5 py-1.5 text-left font-mono text-[0.68rem]",
-            "cursor-pointer text-white/70 whitespace-nowrap transition-all",
-            "hover:bg-white/10 hover:text-white",
-            sidebarCollapsed &&
-              "pointer-events-auto flex justify-center py-2 text-base opacity-100"
+            "flex w-full cursor-pointer items-center gap-3 overflow-hidden rounded-xl border border-white/5 bg-white/5 text-left transition-all hover:bg-white/10 hover:border-white/10",
+            sidebarCollapsed ? "justify-center p-0 h-[36px] w-[36px]" : "p-2 mb-1.5"
           )}
-          title="Profile"
-          aria-label="Open profile settings"
+          title="View Profile"
         >
-          {sidebarCollapsed ? "⚙" : "Profile"}
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/20 font-serif text-[0.8rem] font-bold text-accent shadow-inner">
+            {user?.displayName ? user.displayName.replace('Dr. ', '').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() : "DR"}
+          </div>
+          {!sidebarCollapsed && (
+            <div className="flex-1 overflow-hidden">
+              <div className="truncate text-[0.8rem] font-semibold text-white/90 tracking-wide">
+                {user?.displayName ?? "Doctor"}
+              </div>
+              <div className="flex items-center gap-1.5 text-[0.6rem] font-mono text-white/40">
+                <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-status-normal shadow-[0_0_5px_rgba(74,222,128,0.5)] animate-pulse" />
+                Active · {patientCount} pt{patientCount !== 1 ? "s" : ""}
+              </div>
+            </div>
+          )}
         </button>
         <button
           type="button"
           onClick={handleLogout}
           className={cn(
-            "w-full rounded-md bg-transparent px-2.5 py-1.5 text-left font-mono text-[0.68rem]",
-            "cursor-pointer text-white/60 whitespace-nowrap transition-all",
-            "hover:bg-white/10 hover:text-red-300",
-            sidebarCollapsed && "pointer-events-none opacity-0"
+            "w-full rounded-md bg-transparent text-center font-mono text-[0.65rem] tracking-[0.1em] uppercase",
+            "cursor-pointer text-white/30 transition-all",
+            "hover:bg-status-crisis/15 hover:text-status-crisis",
+            sidebarCollapsed ? "hidden" : "py-1.5 mt-0.5"
           )}
         >
           Sign Out

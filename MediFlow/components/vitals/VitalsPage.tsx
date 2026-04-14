@@ -42,7 +42,7 @@ export default function VitalsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔍  Search by patient name…"
+          placeholder="Search by patient name…"
           className={cn(
             "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
             "font-mono text-sm text-ink outline-none transition-colors",
@@ -52,7 +52,7 @@ export default function VitalsPage() {
       </div>
 
       {allVitals.length === 0 ? (
-        <EmptyState icon="♥" title="No vitals recorded" subtitle="Log vitals for a patient using the buttons above." />
+        <EmptyState icon="heart" title="No vitals recorded" subtitle="Log vitals for a patient using the buttons above." />
       ) : (
         <div className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
           <table className="w-full border-collapse">

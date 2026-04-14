@@ -29,7 +29,7 @@ export default function DashboardContent() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <EmptyState
-          icon="♥"
+          icon="heart"
           title="Welcome to MediFlow"
           subtitle="Add your first patient to start using the clinic system."
           actionLabel="+ Add New Patient"
@@ -74,11 +74,27 @@ export default function DashboardContent() {
       <div className="mb-2 font-mono text-[0.56rem] tracking-[0.2em] text-ink-3 uppercase">
         Quick Access
       </div>
-      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <ShortcutCard title="Vitals & Triage" icon="♥" onClick={() => setActivePage("vitals")} />
-        <ShortcutCard title="Consultations" icon="✎" onClick={() => setActivePage("consultations")} />
-        <ShortcutCard title="Laboratory" icon="⚗" onClick={() => setActivePage("labs")} />
-        <ShortcutCard title="Pharmacy" icon="💊" onClick={() => setActivePage("pharmacy")} />
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4 mt-3">
+        <ShortcutCard 
+          title="Vitals & Triage" 
+          onClick={() => setActivePage("vitals")} 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-[1.2rem] h-[1.2rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>} 
+        />
+        <ShortcutCard 
+          title="Consultations" 
+          onClick={() => setActivePage("consultations")} 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-[1.2rem] h-[1.2rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>} 
+        />
+        <ShortcutCard 
+          title="Laboratory" 
+          onClick={() => setActivePage("labs")} 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-[1.2rem] h-[1.2rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>} 
+        />
+        <ShortcutCard 
+          title="Pharmacy" 
+          onClick={() => setActivePage("pharmacy")} 
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-[1.2rem] h-[1.2rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>} 
+        />
       </div>
 
       {/* Patient List Shortcut */}
@@ -153,16 +169,16 @@ function KpiCard({ label, value, unit }: { label: string; value: string | number
   );
 }
 
-function ShortcutCard({ title, icon, onClick }: { title: string; icon: string; onClick: () => void }) {
+function ShortcutCard({ title, icon, onClick }: { title: string; icon: React.ReactNode; onClick: () => void }) {
   return (
     <div 
       onClick={onClick}
-      className="group cursor-pointer rounded-lg border border-border bg-card p-4 shadow-card hover:bg-bg-2 transition-colors flex items-center gap-3"
+      className="group cursor-pointer rounded-xl border border-border bg-card p-4 shadow-card hover:bg-bg-2 hover:border-accent/20 hover:shadow-lg transition-all flex items-center gap-3.5 hover:-translate-y-0.5"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-xl text-accent">
+      <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent transition-all duration-300 group-hover:bg-accent group-hover:text-white shadow-inner">
         {icon}
       </div>
-      <div className="font-semibold text-ink text-sm group-hover:text-accent transition-colors">
+      <div className="font-semibold text-ink text-[0.82rem] group-hover:text-accent transition-colors leading-tight">
         {title}
       </div>
     </div>

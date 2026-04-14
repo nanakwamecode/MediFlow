@@ -58,10 +58,10 @@ export default function Modal({
           <h2 className="font-serif text-xl text-ink">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded p-1 text-ink-3 transition-colors hover:text-ink"
+            className="cursor-pointer rounded-lg p-1.5 text-ink-3 transition-colors hover:bg-bg-2 hover:text-ink"
             aria-label="Close"
           >
-            ✕
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
         {children}
