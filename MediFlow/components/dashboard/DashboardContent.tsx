@@ -173,13 +173,21 @@ function ShortcutCard({ title, icon, onClick }: { title: string; icon: React.Rea
   return (
     <div 
       onClick={onClick}
-      className="group cursor-pointer rounded-xl border border-border bg-card p-4 shadow-card hover:bg-bg-2 hover:border-accent/20 hover:shadow-lg transition-all flex items-center gap-3.5 hover:-translate-y-0.5"
+      className="group relative overflow-hidden cursor-pointer rounded-xl border border-border bg-card p-4 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-accent/10 hover:border-accent/40 flex items-center gap-3.5"
     >
-      <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent transition-all duration-300 group-hover:bg-accent group-hover:text-white shadow-inner">
-        {icon}
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/0 via-accent/0 to-accent/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="relative z-10 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:bg-accent group-hover:text-white group-hover:scale-110 group-hover:-rotate-6 shadow-inner">
+        <div className="transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110">
+          {icon}
+        </div>
       </div>
-      <div className="font-semibold text-ink text-[0.82rem] group-hover:text-accent transition-colors leading-tight">
+      <div className="relative z-10 font-semibold text-ink text-[0.82rem] transition-all duration-500 group-hover:text-accent group-hover:translate-x-1 leading-tight">
         {title}
+      </div>
+      <div className="absolute right-4 opacity-0 -translate-x-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:opacity-100 group-hover:translate-x-0 text-accent">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
       </div>
     </div>
   );
