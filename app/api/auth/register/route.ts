@@ -6,6 +6,7 @@ import {
   readJsonBody,
   validateRegisterBody,
 } from "@/lib/auth-api-helpers";
+import { verifyOtp } from "@/lib/otp";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
@@ -22,17 +23,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validated.error }, { status: 400 });
     }
 
-    const { username, password, displayName } = validated;
+    const { username, password, displayName, phone, otpCode } = validated;
 
-    const existing = await db
+    // Verify the OTP code
+    const otpValid = await verifyOtp(phone, otpCode, "register");
+    if (!otpValid) {
+      return NextResponse.json(
+        { error: "Invalid or expired OTP code. Please request a new one." },
+        { status: 401 }
+      );
+    }
+
+    // Check if username already taken
+    const existingUser = await db
       .select({ id: users.id })
       .from(users)
       .where(eq(users.username, username))
       .limit(1);
 
-    if (existing.length > 0) {
+    if (existingUser.length > 0) {
       return NextResponse.json(
         { error: "Username already taken." },
+        { status: 409 }
+      );
+    }
+
+    // Check if phone already registered
+    const existingPhone = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.phone, phone))
+      .limit(1);
+
+    if (existingPhone.length > 0) {
+      return NextResponse.json(
+        { error: "This phone number is already registered." },
         { status: 409 }
       );
     }
@@ -47,6 +72,7 @@ export async function POST(req: NextRequest) {
           username,
           passwordHash,
           displayName,
+          phone,
         })
         .returning({
           id: users.id,
@@ -56,7 +82,7 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       if (isUniqueViolation(e)) {
         return NextResponse.json(
-          { error: "Username already taken." },
+          { error: "Username or phone already taken." },
           { status: 409 }
         );
       }
