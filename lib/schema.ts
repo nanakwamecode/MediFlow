@@ -30,7 +30,7 @@ export const users = pgTable("users", {
   username: varchar("username", { length: 100 }).notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   displayName: varchar("display_name", { length: 200 }).notNull(),
-  phone: varchar("phone", { length: 30 }).notNull().unique(),
+  phone: varchar("phone", { length: 30 }).unique(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
