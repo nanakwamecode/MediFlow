@@ -15,11 +15,13 @@ interface AuthState {
   /** Hydrate session from cookie on app load */
   checkSession: () => Promise<void>;
 
-  /** Register a new account */
+  /** Register a new account (now requires phone + OTP) */
   register: (data: {
     username: string;
     password: string;
     displayName?: string;
+    phone: string;
+    otpCode: string;
   }) => Promise<boolean>;
 
   /** Log in with credentials */
