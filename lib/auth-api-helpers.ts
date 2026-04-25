@@ -63,6 +63,8 @@ export function validateRegisterBody(data: unknown):
       username: string;
       password: string;
       displayName: string;
+      phone: string;
+      otpCode: string;
     }
   | { ok: false; error: string } {
   if (data === null || typeof data !== "object") {
@@ -71,6 +73,8 @@ export function validateRegisterBody(data: unknown):
   const o = data as Record<string, unknown>;
   const username = trimOrEmpty(o.username);
   const password = typeof o.password === "string" ? o.password : "";
+  const phone = trimOrEmpty(o.phone);
+  const otpCode = trimOrEmpty(o.otpCode);
   const rawDisplay = o.displayName;
   const displayTrim =
     typeof rawDisplay === "string" && rawDisplay.trim()
@@ -79,6 +83,12 @@ export function validateRegisterBody(data: unknown):
 
   if (!username || !password) {
     return { ok: false, error: "Username and password are required." };
+  }
+  if (!phone) {
+    return { ok: false, error: "Phone number is required." };
+  }
+  if (!otpCode || otpCode.length !== 6) {
+    return { ok: false, error: "A valid 6-digit OTP code is required." };
   }
   if (username.length > USERNAME_MAX) {
     return {
@@ -104,7 +114,7 @@ export function validateRegisterBody(data: unknown):
       error: `Display name must be at most ${DISPLAY_NAME_MAX} characters.`,
     };
   }
-  return { ok: true, username, password, displayName: displayTrim };
+  return { ok: true, username, password, displayName: displayTrim, phone, otpCode };
 }
 
 export function validatePatchMeBody(data: unknown):
@@ -135,4 +145,55 @@ export function isUniqueViolation(err: unknown): boolean {
     "code" in err &&
     (err as { code?: string }).code === "23505"
   );
+}
+
+export function validateSendOtpBody(data: unknown):
+  | { ok: true; phone: string; type: "register" | "reset" }
+  | { ok: false; error: string } {
+  if (data === null || typeof data !== "object") {
+    return { ok: false, error: "Request body must be a JSON object." };
+  }
+  const o = data as Record<string, unknown>;
+  const phone = trimOrEmpty(o.phone);
+  const type = trimOrEmpty(o.type);
+
+  if (!phone) {
+    return { ok: false, error: "Phone number is required." };
+  }
+  if (type !== "register" && type !== "reset") {
+    return { ok: false, error: "Type must be 'register' or 'reset'." };
+  }
+  return { ok: true, phone, type };
+}
+
+export function validateResetPasswordBody(data: unknown):
+  | { ok: true; phone: string; code: string; newPassword: string }
+  | { ok: false; error: string } {
+  if (data === null || typeof data !== "object") {
+    return { ok: false, error: "Request body must be a JSON object." };
+  }
+  const o = data as Record<string, unknown>;
+  const phone = trimOrEmpty(o.phone);
+  const code = trimOrEmpty(o.code);
+  const newPassword = typeof o.newPassword === "string" ? o.newPassword : "";
+
+  if (!phone) {
+    return { ok: false, error: "Phone number is required." };
+  }
+  if (!code || code.length !== 6) {
+    return { ok: false, error: "A valid 6-digit OTP code is required." };
+  }
+  if (newPassword.length < PASSWORD_MIN) {
+    return {
+      ok: false,
+      error: `New password must be at least ${PASSWORD_MIN} characters.`,
+    };
+  }
+  if (newPassword.length > PASSWORD_MAX) {
+    return {
+      ok: false,
+      error: `New password must be at most ${PASSWORD_MAX} characters.`,
+    };
+  }
+  return { ok: true, phone, code, newPassword };
 }

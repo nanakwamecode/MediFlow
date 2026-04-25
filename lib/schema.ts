@@ -30,6 +30,25 @@ export const users = pgTable("users", {
   username: varchar("username", { length: 100 }).notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   displayName: varchar("display_name", { length: 200 }).notNull(),
+  phone: varchar("phone", { length: 30 }).notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+/* ─── OTP Codes ─── */
+export const otpCodeTypeEnum = pgEnum("otp_code_type", [
+  "register",
+  "reset",
+]);
+
+export const otpCodes = pgTable("otp_codes", {
+  id: serial("id").primaryKey(),
+  phone: varchar("phone", { length: 30 }).notNull(),
+  code: varchar("code", { length: 6 }).notNull(),
+  type: otpCodeTypeEnum("type").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  used: integer("used").default(0).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
