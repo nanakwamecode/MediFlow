@@ -37,8 +37,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${dmSerif.variable} ${dmMono.variable} ${instrumentSans.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full">
+      <body className="min-h-full" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>
