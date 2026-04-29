@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
 
@@ -113,15 +112,6 @@ export default function LoginForm() {
         </div>
       </div>
 
-      {/* Forgot password */}
-      <div className="flex justify-end">
-        <Link
-          href="/forgot-password"
-          className="text-xs font-semibold text-accent no-underline transition-all hover:text-accent-hover hover:underline"
-        >
-          Forgot password?
-        </Link>
-      </div>
 
       {/* Submit */}
       <button
