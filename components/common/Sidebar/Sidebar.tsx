@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
 import type { NavKey } from "@/lib/constants";
@@ -13,11 +13,11 @@ import NavItem from "./NavItem";
 
 export default function Sidebar() {
   const [profileOpen, setProfileOpen] = useState(false);
-  const { sidebarCollapsed, toggleSidebar, activePage, setActivePage } =
-    useUiStore();
+  const { sidebarCollapsed, toggleSidebar } = useUiStore();
   const { user, logout } = useAuthStore();
   const patientCount = usePatientStore((s) => s.patients.length);
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     if (confirm("Sign out?")) {
@@ -62,16 +62,21 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-0.5 overflow-hidden p-3 px-2">
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.map((item) => {
+          const currentTab = pathname.split('/').filter(Boolean)[1] || "dashboard";
+          return (
           <NavItem
             key={item.key}
             icon={item.icon}
             label={item.label}
-            active={activePage === item.key}
+            active={currentTab === item.key || (item.key === 'patients' && useUiStore.getState().viewingPatientId !== null)}
             collapsed={sidebarCollapsed}
-            onClick={() => setActivePage(item.key as NavKey)}
+            onClick={() => {
+              useUiStore.getState().clearViewingPatient();
+              router.push(item.key === "dashboard" ? "/dashboard" : `/dashboard/${item.key}`);
+            }}
           />
-        ))}
+        )})}
       </nav>
 
       {/* Footer */}
