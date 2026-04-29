@@ -46,7 +46,7 @@ export default function LoginPage() {
         </div>
 
         {/* Center hero content */}
-        <div className="relative z-10 px-12 pb-8">
+        <div className="relative z-10 px-12 pb-12">
           <h1 className="mb-6 font-serif text-[3.2rem] leading-[1.1] tracking-tight text-white/95">
             Clinical
             <br />
@@ -58,12 +58,10 @@ export default function LoginPage() {
             Streamline patient care with a unified platform for vitals, consultations, labs, and prescriptions.
           </p>
         </div>
-
-
       </div>
 
-      {/* Right — Login Form Panel */}
-      <div className="relative flex w-full flex-col items-center justify-center px-6 py-12 lg:w-[45%]">
+      {/* Right — Login Form Panel (scrollable) */}
+      <div className="relative flex w-full flex-col lg:w-[45%]">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#f8f5f1] to-[#f0ece6]" />
 
@@ -71,57 +69,60 @@ export default function LoginPage() {
         <div className="absolute right-0 top-0 h-32 w-32 bg-gradient-to-bl from-accent/5 to-transparent" />
         <div className="absolute bottom-0 left-0 h-32 w-32 bg-gradient-to-tr from-accent/3 to-transparent" />
 
-        {/* Mobile branding (only shown on mobile) */}
-        <div className="relative z-10 mb-10 lg:hidden text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-ink shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-          </div>
-          <h1 className="font-serif text-3xl text-ink italic">MediFlow</h1>
-          <p className="mt-1 font-mono text-[0.55rem] tracking-[0.22em] text-ink-3 uppercase">
-            Clinic Management System
-          </p>
-        </div>
-
-        {/* Form card */}
-        <div className="relative z-10 w-full max-w-[400px]">
-          {/* Welcome heading */}
-          <div className="mb-8">
-            <h2 className="font-serif text-[1.8rem] tracking-tight text-ink leading-tight">
-              Welcome back
-            </h2>
-            <p className="mt-2 text-sm text-ink-3 leading-relaxed">
-              Sign in to continue managing your clinic
+        {/* Scrollable content — centered vertically */}
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-12">
+          {/* Mobile branding (only shown on mobile) */}
+          <div className="mb-10 lg:hidden text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-ink shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+            </div>
+            <h1 className="font-serif text-3xl text-ink italic">MediFlow</h1>
+            <p className="mt-1 font-mono text-[0.55rem] tracking-[0.22em] text-ink-3 uppercase">
+              Clinic Management System
             </p>
           </div>
 
-          <LoginForm />
+          {/* Form card */}
+          <div className="w-full max-w-[400px]">
+            {/* Welcome heading */}
+            <div className="mb-8">
+              <h2 className="font-serif text-[1.8rem] tracking-tight text-ink leading-tight">
+                Welcome back
+              </h2>
+              <p className="mt-2 text-sm text-ink-3 leading-relaxed">
+                Sign in to continue managing your clinic
+              </p>
+            </div>
 
-          {/* Divider */}
-          <div className="mt-8 flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="font-mono text-[0.55rem] tracking-[0.15em] text-ink-4 uppercase">
-              New to MediFlow?
-            </span>
-            <div className="h-px flex-1 bg-border" />
+            <LoginForm />
+
+            {/* Divider */}
+            <div className="mt-10 flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="font-mono text-[0.55rem] tracking-[0.15em] text-ink-4 uppercase">
+                New to MediFlow?
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            {/* Register link */}
+            <Link
+              href="/register"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] border-border bg-white/60 px-4 py-3 text-sm font-semibold text-ink-2 no-underline transition-all hover:-translate-y-px hover:border-accent/30 hover:text-accent hover:shadow-md active:translate-y-0"
+            >
+              Create an Account
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+
+            {/* Footer */}
+            <p className="mt-6 text-center font-mono text-[0.55rem] tracking-wider text-ink-4">
+              Protected by enterprise-grade security
+            </p>
           </div>
-
-          {/* Register link */}
-          <Link
-            href="/register"
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] border-border bg-white/60 px-4 py-3 text-sm font-semibold text-ink-2 no-underline transition-all hover:-translate-y-px hover:border-accent/30 hover:text-accent hover:shadow-md active:translate-y-0"
-          >
-            Create an Account
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-
-          {/* Footer */}
-          <p className="mt-8 text-center font-mono text-[0.55rem] tracking-wider text-ink-4">
-            Protected by enterprise-grade security
-          </p>
         </div>
       </div>
     </div>
