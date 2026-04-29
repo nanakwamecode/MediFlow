@@ -24,13 +24,14 @@ export async function POST(req: NextRequest) {
 
     const { username, password, displayName } = validated;
 
-    const existing = await db
+    // Check if username already taken
+    const existingUser = await db
       .select({ id: users.id })
       .from(users)
       .where(eq(users.username, username))
       .limit(1);
 
-    if (existing.length > 0) {
+    if (existingUser.length > 0) {
       return NextResponse.json(
         { error: "Username already taken." },
         { status: 409 }

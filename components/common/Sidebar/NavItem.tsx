@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { NavIcon } from "./NavIcon";
 
@@ -6,7 +7,8 @@ interface Props {
   label: string;
   active: boolean;
   collapsed: boolean;
-  onClick: () => void;
+  href: string;
+  onClick?: () => void;
 }
 
 export default function NavItem({
@@ -14,15 +16,17 @@ export default function NavItem({
   label,
   active,
   collapsed,
+  href,
   onClick,
 }: Props) {
   return (
-    <button
+    <Link
+      href={href}
       onClick={onClick}
       className={cn(
         "flex w-full items-center gap-3 overflow-hidden rounded-lg border-none",
         "px-3 py-3 text-left text-[0.9rem] font-medium whitespace-nowrap",
-        "cursor-pointer transition-all duration-150",
+        "cursor-pointer transition-all duration-150 no-underline",
         active
           ? "bg-accent text-white font-semibold shadow-md"
           : "bg-transparent text-white/70 hover:bg-white/10 hover:text-white"
@@ -42,6 +46,6 @@ export default function NavItem({
       >
         {label}
       </span>
-    </button>
+    </Link>
   );
 }

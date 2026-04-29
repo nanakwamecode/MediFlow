@@ -15,6 +15,13 @@ export default function RegisterForm() {
   const { register, error: apiError, clearError } = useAuthStore();
   const router = useRouter();
 
+  const fieldClass = cn(
+    "w-full rounded-lg border-[1.5px] border-border bg-bg-2 px-4 py-3",
+    "font-mono text-sm text-ink outline-none",
+    "transition-all focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.1)]",
+    "disabled:opacity-50"
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError("");
@@ -47,13 +54,6 @@ export default function RegisterForm() {
   };
 
   const error = localError || apiError;
-
-  const fieldClass = cn(
-    "w-full rounded-lg border-[1.5px] border-border bg-bg-2 px-4 py-3",
-    "font-mono text-sm text-ink outline-none",
-    "transition-all focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.1)]",
-    "disabled:opacity-50"
-  );
 
   return (
     <form onSubmit={handleSubmit}>

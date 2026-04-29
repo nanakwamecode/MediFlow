@@ -136,3 +136,54 @@ export function isUniqueViolation(err: unknown): boolean {
     (err as { code?: string }).code === "23505"
   );
 }
+
+export function validateSendOtpBody(data: unknown):
+  | { ok: true; phone: string; type: "register" | "reset" }
+  | { ok: false; error: string } {
+  if (data === null || typeof data !== "object") {
+    return { ok: false, error: "Request body must be a JSON object." };
+  }
+  const o = data as Record<string, unknown>;
+  const phone = trimOrEmpty(o.phone);
+  const type = trimOrEmpty(o.type);
+
+  if (!phone) {
+    return { ok: false, error: "Phone number is required." };
+  }
+  if (type !== "register" && type !== "reset") {
+    return { ok: false, error: "Type must be 'register' or 'reset'." };
+  }
+  return { ok: true, phone, type };
+}
+
+export function validateResetPasswordBody(data: unknown):
+  | { ok: true; phone: string; code: string; newPassword: string }
+  | { ok: false; error: string } {
+  if (data === null || typeof data !== "object") {
+    return { ok: false, error: "Request body must be a JSON object." };
+  }
+  const o = data as Record<string, unknown>;
+  const phone = trimOrEmpty(o.phone);
+  const code = trimOrEmpty(o.code);
+  const newPassword = typeof o.newPassword === "string" ? o.newPassword : "";
+
+  if (!phone) {
+    return { ok: false, error: "Phone number is required." };
+  }
+  if (!code || code.length !== 6) {
+    return { ok: false, error: "A valid 6-digit OTP code is required." };
+  }
+  if (newPassword.length < PASSWORD_MIN) {
+    return {
+      ok: false,
+      error: `New password must be at least ${PASSWORD_MIN} characters.`,
+    };
+  }
+  if (newPassword.length > PASSWORD_MAX) {
+    return {
+      ok: false,
+      error: `New password must be at most ${PASSWORD_MAX} characters.`,
+    };
+  }
+  return { ok: true, phone, code, newPassword };
+}

@@ -15,7 +15,6 @@ interface AuthState {
   /** Hydrate session from cookie on app load */
   checkSession: () => Promise<void>;
 
-  /** Register a new account */
   register: (data: {
     username: string;
     password: string;

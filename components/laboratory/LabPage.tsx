@@ -129,6 +129,7 @@ export default function LabPage() {
 // ─── Patient Lab Detail Page ───
 import EnterLabResultModal from "@/components/laboratory/EnterLabResultModal";
 import ViewLabResultModal from "@/components/laboratory/ViewLabResultModal";
+import { exportLabResultsPdf } from "@/components/laboratory/LabResultPrintView";
 
 function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: () => void }) {
   const patient = usePatientStore((s) => s.patients.find((p) => p.id === patientId));
@@ -142,11 +143,39 @@ function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: ()
   const pending = labs.filter((l) => l.status === "pending");
   const completed = labs.filter((l) => l.status === "completed");
 
+  const handleExportAll = () => {
+    exportLabResultsPdf({
+      patientName: patient.name,
+      patientAge: patient.age,
+      patientGender: patient.gender,
+      patientOpdNumber: patient.opdNumber,
+      labs: labs.map((l) => ({
+        testName: l.testName,
+        result: l.result || "",
+        timeRequested: l.timeRequested,
+        timeCompleted: l.timeCompleted,
+        requestedBy: l.requestedBy,
+        status: l.status,
+      })),
+    });
+  };
+
   return (
     <div className="animate-fade-in p-7 pb-20">
       <div className="mb-5 flex items-center justify-between">
         <button onClick={onBack} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-2 hover:bg-bg-2 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to Lab</button>
-        <button onClick={() => setReqOpen(true)} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover">+ Request Lab</button>
+        <div className="flex items-center gap-2">
+          {completed.length > 0 && (
+            <button
+              onClick={handleExportAll}
+              className="cursor-pointer rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-ink-2 transition-all hover:bg-bg-2 hover:text-accent flex items-center gap-1.5"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              Export All PDF
+            </button>
+          )}
+          <button onClick={() => setReqOpen(true)} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover">+ Request Lab</button>
+        </div>
       </div>
 
       <div className="mb-6 flex items-center gap-3">
@@ -210,7 +239,21 @@ function PatientLabDetail({ patientId, onBack }: { patientId: string; onBack: ()
 
       {resultFor && <EnterLabResultModal open={!!resultFor} onClose={() => setResultFor(null)} patientId={patientId} labId={resultFor.labId} testName={resultFor.testName} />}
       {reqOpen && <RequestLabModal open={reqOpen} onClose={() => setReqOpen(false)} patientId={patientId} patientName={patient.name} />}
-      {viewingResult && <ViewLabResultModal open={!!viewingResult} onClose={() => setViewingResult(null)} testName={viewingResult.testName} result={viewingResult.result || ""} timeCompleted={viewingResult.timeCompleted} requestedBy={viewingResult.requestedBy} />}
+      {viewingResult && (
+        <ViewLabResultModal
+          open={!!viewingResult}
+          onClose={() => setViewingResult(null)}
+          testName={viewingResult.testName}
+          result={viewingResult.result || ""}
+          timeCompleted={viewingResult.timeCompleted}
+          timeRequested={viewingResult.timeRequested}
+          requestedBy={viewingResult.requestedBy}
+          patientName={patient.name}
+          patientAge={patient.age}
+          patientGender={patient.gender}
+          patientOpdNumber={patient.opdNumber}
+        />
+      )}
     </div>
   );
 }

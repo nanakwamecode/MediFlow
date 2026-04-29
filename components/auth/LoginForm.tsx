@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
 
@@ -59,7 +60,7 @@ export default function LoginForm() {
         />
       </div>
 
-      <div className="mb-4">
+      <div className="mb-2">
         <label className="mb-1.5 block font-mono text-[0.6rem] tracking-[0.18em] text-ink-3 uppercase">
           Password
         </label>
@@ -77,6 +78,15 @@ export default function LoginForm() {
             "disabled:opacity-50"
           )}
         />
+      </div>
+
+      <div className="mb-4 text-right">
+        <Link
+          href="/forgot-password"
+          className="text-xs font-semibold text-accent hover:text-accent-hover hover:underline transition-colors"
+        >
+          Forgot password?
+        </Link>
       </div>
 
       <button

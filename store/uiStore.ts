@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { NavKey } from "@/lib/constants";
 
 interface UiState {
@@ -11,15 +12,26 @@ interface UiState {
   clearViewingPatient: () => void;
 }
 
-export const useUiStore = create<UiState>((set) => ({
-  sidebarCollapsed: false,
-  activePage: "dashboard",
-  viewingPatientId: null,
-  toggleSidebar: () =>
-    set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
-  setActivePage: (page) =>
-    set({ activePage: page, viewingPatientId: null }),
-  viewPatient: (id) =>
-    set({ viewingPatientId: id, activePage: "patients" }),
-  clearViewingPatient: () => set({ viewingPatientId: null }),
-}));
+export const useUiStore = create<UiState>()(
+  persist(
+    (set) => ({
+      sidebarCollapsed: false,
+      activePage: "dashboard",
+      viewingPatientId: null,
+      toggleSidebar: () =>
+        set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+      setActivePage: (page) =>
+        set({ activePage: page, viewingPatientId: null }),
+      viewPatient: (id) =>
+        set({ viewingPatientId: id, activePage: "patients" }),
+      clearViewingPatient: () => set({ viewingPatientId: null }),
+    }),
+    {
+      name: "ui-storage",
+      partialize: (state) => ({ 
+        sidebarCollapsed: state.sidebarCollapsed,
+        activePage: state.activePage
+      }),
+    }
+  )
+);
