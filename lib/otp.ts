@@ -11,17 +11,43 @@ export function generateOtpCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-/** Send OTP via SMS — simulated for now (logs to console) */
+/** Send OTP via SMS */
 export async function sendSms(
   phone: string,
   message: string
 ): Promise<boolean> {
-  // ──────────────────────────────────────────
-  // SIMULATED SMS — swap this function body
-  // with a real provider (Twilio, etc.) later
-  // ──────────────────────────────────────────
-  console.log(`\n📱 [SMS → ${phone}] ${message}\n`);
-  return true;
+  const apiKey = process.env.ARKESEL_API_KEY;
+
+  if (!apiKey) {
+    console.log(`\n📱 [SMS SIMULATED → ${phone}] ${message}\n`);
+    console.log("⚠️ Set ARKESEL_API_KEY in .env.local to send real SMS.");
+    return true;
+  }
+
+  try {
+    const res = await fetch("https://sms.arkesel.com/api/v2/sms/send", {
+      method: "POST",
+      headers: {
+        "api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: "MediFlow",
+        message: message,
+        recipients: [phone],
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("Arkesel API Error:", await res.text());
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Failed to send SMS via Arkesel:", error);
+    return false;
+  }
 }
 
 /** Check rate limit: max OTPs in a time window */
