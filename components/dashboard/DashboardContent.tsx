@@ -1,18 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { usePatientStore } from "@/store/patientStore";
 import { useUiStore } from "@/store/uiStore";
 import { getInitials } from "@/lib/constants";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
 import PatientModal from "@/components/patients/PatientModal";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function DashboardContent() {
   const { patients, consultations, labInvestigations, prescriptions } = usePatientStore();
   const { viewPatient } = useUiStore();
   const [ptModalOpen, setPtModalOpen] = useState(false);
-  const router = useRouter();
 
   const today = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
@@ -79,22 +78,22 @@ export default function DashboardContent() {
       <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4 mt-3">
         <ShortcutCard 
           title="Vitals & Triage" 
-          onClick={() => router.push("/dashboard/vitals")} 
+          href="/dashboard/vitals" 
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-[1.2rem] h-[1.2rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>} 
         />
         <ShortcutCard 
           title="Consultations" 
-          onClick={() => router.push("/dashboard/consultations")} 
+          href="/dashboard/consultations" 
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-[1.2rem] h-[1.2rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>} 
         />
         <ShortcutCard 
           title="Laboratory" 
-          onClick={() => router.push("/dashboard/labs")} 
+          href="/dashboard/labs" 
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-[1.2rem] h-[1.2rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>} 
         />
         <ShortcutCard 
           title="Pharmacy" 
-          onClick={() => router.push("/dashboard/pharmacy")} 
+          href="/dashboard/pharmacy" 
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-[1.2rem] h-[1.2rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>} 
         />
       </div>
@@ -102,9 +101,9 @@ export default function DashboardContent() {
       {/* Patient List Shortcut */}
       <div className="mb-2 mt-8 flex items-center justify-between font-mono text-[0.56rem] tracking-[0.2em] text-ink-3 uppercase">
         <span>Recent Patients</span>
-        <button onClick={() => router.push("/dashboard/patients")} className="text-accent underline-offset-4 hover:underline">
+        <Link href="/dashboard/patients" className="text-accent underline-offset-4 hover:underline no-underline">
           View All
-        </button>
+        </Link>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {patients.slice(0, 3).map((p) => {
@@ -113,10 +112,11 @@ export default function DashboardContent() {
           const meta = [p.age ? `Age ${p.age}` : "", p.gender, p.town].filter(Boolean).join(" · ");
 
           return (
-            <div
+            <Link
               key={p.id}
-              onClick={() => { viewPatient(p.id); router.push("/dashboard/patients"); }}
-              className="group cursor-pointer rounded-lg border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              href="/dashboard/patients"
+              onClick={() => viewPatient(p.id)}
+              className="group cursor-pointer rounded-lg border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lg no-underline"
             >
               <div className="mb-3 flex items-center gap-2.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 font-serif text-sm text-accent">
@@ -146,7 +146,7 @@ export default function DashboardContent() {
                   No consultations yet
                 </div>
               )}
-            </div>
+            </Link>
           );
         })}
       </div>
@@ -171,11 +171,11 @@ function KpiCard({ label, value, unit }: { label: string; value: string | number
   );
 }
 
-function ShortcutCard({ title, icon, onClick }: { title: string; icon: React.ReactNode; onClick: () => void }) {
+function ShortcutCard({ title, icon, href }: { title: string; icon: React.ReactNode; href: string }) {
   return (
-    <div 
-      onClick={onClick}
-      className="group relative overflow-hidden cursor-pointer rounded-xl border border-border bg-card p-4 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-accent/10 hover:border-accent/40 flex items-center gap-3.5"
+    <Link 
+      href={href}
+      className="group relative overflow-hidden cursor-pointer rounded-xl border border-border bg-card p-4 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-accent/10 hover:border-accent/40 flex items-center gap-3.5 no-underline"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-accent/0 via-accent/0 to-accent/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       <div className="relative z-10 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:bg-accent group-hover:text-white group-hover:scale-110 group-hover:-rotate-6 shadow-inner">
@@ -191,6 +191,6 @@ function ShortcutCard({ title, icon, onClick }: { title: string; icon: React.Rea
           <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
       </div>
-    </div>
+    </Link>
   );
 }
