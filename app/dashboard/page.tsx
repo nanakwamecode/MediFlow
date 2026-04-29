@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { useUiStore } from "@/store/uiStore";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import PatientDetailPage from "@/components/patients/PatientDetailPage";
@@ -13,6 +15,15 @@ import RecordsPage from "@/components/records/RecordsPage";
 export default function DashboardPage() {
   const activePage = useUiStore((s) => s.activePage);
   const viewingPatientId = useUiStore((s) => s.viewingPatientId);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null; // Prevents hydration mismatch while loading persisted state
+  }
 
   // If viewing a specific patient, show their detail page
   if (viewingPatientId) {

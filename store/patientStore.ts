@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { Patient, Vitals, Consultation, LabInvestigation, Prescription } from "@/types";
 import { genId } from "@/lib/constants";
 
@@ -106,13 +107,15 @@ const MOCK_PRESCRIPTIONS: Record<string, Prescription[]> = {
   ]
 };
 
-export const usePatientStore = create<ClinicState>((set, get) => ({
-  patients: MOCK_PATIENTS,
-  activePatientId: "demo1",
-  vitals: MOCK_VITALS,
-  consultations: MOCK_CONSULTATIONS,
-  labInvestigations: MOCK_LABS,
-  prescriptions: MOCK_PRESCRIPTIONS,
+export const usePatientStore = create<ClinicState>()(
+  persist(
+    (set, get) => ({
+      patients: MOCK_PATIENTS,
+      activePatientId: "demo1",
+      vitals: MOCK_VITALS,
+      consultations: MOCK_CONSULTATIONS,
+      labInvestigations: MOCK_LABS,
+      prescriptions: MOCK_PRESCRIPTIONS,
 
   setActivePatient: (id) => set({ activePatientId: id }),
 
@@ -253,4 +256,9 @@ export const usePatientStore = create<ClinicState>((set, get) => ({
     if (!activePatientId) return [];
     return vitals[activePatientId] || [];
   },
-}));
+}),
+{
+  name: "patient-storage",
+}
+)
+);
