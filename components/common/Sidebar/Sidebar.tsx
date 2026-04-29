@@ -63,17 +63,18 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-0.5 overflow-hidden p-3 px-2">
         {NAV_ITEMS.map((item) => {
-          const currentTab = pathname.split('/').filter(Boolean)[1] || "dashboard";
+          const segments = pathname.split('/').filter(Boolean);
+          const currentTab = segments.length > 1 ? segments[1] : "dashboard";
           return (
           <NavItem
             key={item.key}
             icon={item.icon}
             label={item.label}
-            active={currentTab === item.key || (item.key === 'patients' && useUiStore.getState().viewingPatientId !== null)}
+            active={currentTab === item.key}
             collapsed={sidebarCollapsed}
+            href={item.key === "dashboard" ? "/dashboard" : `/dashboard/${item.key}`}
             onClick={() => {
               useUiStore.getState().clearViewingPatient();
-              router.push(item.key === "dashboard" ? "/dashboard" : `/dashboard/${item.key}`);
             }}
           />
         )})}
