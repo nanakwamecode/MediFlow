@@ -63,8 +63,6 @@ export function validateRegisterBody(data: unknown):
       username: string;
       password: string;
       displayName: string;
-      phone: string;
-      otpCode: string;
     }
   | { ok: false; error: string } {
   if (data === null || typeof data !== "object") {
@@ -73,8 +71,6 @@ export function validateRegisterBody(data: unknown):
   const o = data as Record<string, unknown>;
   const username = trimOrEmpty(o.username);
   const password = typeof o.password === "string" ? o.password : "";
-  const phone = trimOrEmpty(o.phone);
-  const otpCode = trimOrEmpty(o.otpCode);
   const rawDisplay = o.displayName;
   const displayTrim =
     typeof rawDisplay === "string" && rawDisplay.trim()
@@ -83,12 +79,6 @@ export function validateRegisterBody(data: unknown):
 
   if (!username || !password) {
     return { ok: false, error: "Username and password are required." };
-  }
-  if (!phone) {
-    return { ok: false, error: "Phone number is required." };
-  }
-  if (!otpCode || otpCode.length !== 6) {
-    return { ok: false, error: "A valid 6-digit OTP code is required." };
   }
   if (username.length > USERNAME_MAX) {
     return {
@@ -114,7 +104,7 @@ export function validateRegisterBody(data: unknown):
       error: `Display name must be at most ${DISPLAY_NAME_MAX} characters.`,
     };
   }
-  return { ok: true, username, password, displayName: displayTrim, phone, otpCode };
+  return { ok: true, username, password, displayName: displayTrim };
 }
 
 export function validatePatchMeBody(data: unknown):

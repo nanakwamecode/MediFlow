@@ -25,18 +25,15 @@ export async function sendSms(
   }
 
   try {
-    const res = await fetch("https://sms.arkesel.com/api/v2/sms/send", {
-      method: "POST",
-      headers: {
-        "api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sender: "MediFlow",
-        message: message,
-        recipients: [phone],
-      }),
+    const params = new URLSearchParams({
+      action: "send-sms",
+      api_key: apiKey,
+      to: phone,
+      from: "MediFlow",
+      sms: message,
     });
+
+    const res = await fetch(`https://sms.arkesel.com/sms/api?${params.toString()}`);
 
     if (!res.ok) {
       console.error("Arkesel API Error:", await res.text());
