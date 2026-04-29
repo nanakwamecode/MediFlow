@@ -104,7 +104,7 @@ export default function RecordsPage() {
       </div>
 
       {/* Period Filter */}
-      <div className="mb-5 flex gap-1">
+      <div className="mb-5 flex gap-1 overflow-x-auto pb-1 scrollbar-none">
         {(["daily", "weekly", "monthly"] as const).map(p => (
           <button
             key={p}
