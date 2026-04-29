@@ -96,7 +96,7 @@ export default function PatientDetailPage({ patientId }: Props) {
 
       {/* ─── Vitals Tab ─── */}
       {activeTab === "vitals" && (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
           <table className="w-full border-collapse">
             <thead>
               <tr>

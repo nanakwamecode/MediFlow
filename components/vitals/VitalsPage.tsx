@@ -54,7 +54,7 @@ export default function VitalsPage() {
       {allVitals.length === 0 ? (
         <EmptyState icon="heart" title="No vitals recorded" subtitle="Log vitals for a patient using the buttons above." />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
+        <div className="overflow-x-auto rounded-lg border border-border bg-card shadow-card">
           <table className="w-full border-collapse">
             <thead>
               <tr>
