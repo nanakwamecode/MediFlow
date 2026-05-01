@@ -32,25 +32,25 @@ export default function LoginPage() {
 
         {/* Top branding */}
         <div className="relative z-10 p-12">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 backdrop-blur-sm ring-1 ring-accent/20">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/15 backdrop-blur-sm ring-1 ring-accent/20">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
               </svg>
             </div>
             <div>
-              <h2 className="font-serif text-xl text-white/90 tracking-wide">MediFlow</h2>
-              <p className="font-mono text-[0.5rem] tracking-[0.25em] text-accent/80 uppercase">Clinic System</p>
+              <h2 className="font-serif text-4xl text-white/90 tracking-wide">MediFlow</h2>
+              <p className="font-mono text-[0.65rem] tracking-[0.3em] text-accent/80 uppercase">Clinic System</p>
             </div>
           </div>
         </div>
 
         {/* Center hero content */}
-        <div className="relative z-10 px-12 pb-12">
+        <div className="relative z-10 px-12 pb-12 animate-slide-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
           <h1 className="mb-6 font-serif text-[3.2rem] leading-[1.1] tracking-tight text-white/95">
             Clinical
             <br />
-            <span className="italic text-accent">Intelligence,</span>
+            <span className="italic text-accent inline-block animate-float">Intelligence,</span>
             <br />
             Simplified.
           </h1>
@@ -70,16 +70,16 @@ export default function LoginPage() {
         <div className="absolute bottom-0 left-0 h-32 w-32 bg-gradient-to-tr from-accent/3 to-transparent" />
 
         {/* Scrollable content — centered vertically */}
-        <div className="relative z-10 flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-12">
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-12 animate-slide-left" style={{ animationDelay: '0.2s', opacity: 0 }}>
           {/* Mobile branding (only shown on mobile) */}
           <div className="mb-10 lg:hidden text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-ink shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-ink shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
               </svg>
             </div>
-            <h1 className="font-serif text-3xl text-ink italic">MediFlow</h1>
-            <p className="mt-1 font-mono text-[0.55rem] tracking-[0.22em] text-ink-3 uppercase">
+            <h1 className="font-serif text-4xl text-ink italic">MediFlow</h1>
+            <p className="mt-1 font-mono text-[0.65rem] tracking-[0.22em] text-ink-3 uppercase">
               Clinic Management System
             </p>
           </div>
