@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Mono, Instrument_Sans } from "next/font/google";
-import { Providers } from "@/app/providers";
-import { ToastProvider } from "@/components/common/Toast/ToastProvider";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const dmSerif = DM_Serif_Display({
@@ -41,9 +40,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full" suppressHydrationWarning>
-        <Providers>
-          <ToastProvider>{children}</ToastProvider>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

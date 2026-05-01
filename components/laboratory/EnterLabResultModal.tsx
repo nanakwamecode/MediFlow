@@ -2,7 +2,7 @@
 
 import { useState, Fragment, useEffect } from "react";
 import Modal from "@/components/common/Modal/Modal";
-import { useEnterLabResult } from "@/hooks/mutations/usePatientMutations";
+import { usePatientStore } from "@/store/patientStore";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
 
@@ -86,7 +86,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
   const [typhoidFields, setTyphoidFields] = useState({ igm: "NEGATIVE", igg: "NEGATIVE" });
   const [hbEstimate, setHbEstimate] = useState({ result: "", flag: "Normal", unit: "g/dL", ref: "12.0-16.0" });
   
-  const { mutateAsync: updateLabResult, isPending } = useEnterLabResult();
+  const updateLabResult = usePatientStore((s) => s.updateLabResult);
   const { showToast } = useToast();
 
   const isUrineProfile = testName.toLowerCase().includes("urinalysis");
@@ -177,7 +177,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     let finalResult = result.trim();
     
     if (isHepProfile) {
@@ -237,14 +237,11 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
       showToast("Please enter a result", "⚠");
       return;
     }
-    try {
-      await updateLabResult({ patientId, labId, result: finalResult });
-      showToast("Result saved", "✓");
-      onClose();
-      setResult("");
-    } catch (e) {
-      showToast("An error occurred", "⚠");
-    }
+    
+    updateLabResult(patientId, labId, finalResult);
+    showToast("Result saved", "✓");
+    onClose();
+    setResult("");
   };
 
   return (
@@ -465,10 +462,8 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
         )}
       </div>
       <div className="mt-5 flex justify-end gap-2">
-        <button onClick={onClose} disabled={isPending} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2 disabled:opacity-50">Cancel</button>
-        <button onClick={handleSave} disabled={isPending} className="cursor-pointer rounded-lg bg-status-normal px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-50">
-          {isPending ? "Saving..." : "Save Result"}
-        </button>
+        <button onClick={onClose} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2">Cancel</button>
+        <button onClick={handleSave} className="cursor-pointer rounded-lg bg-status-normal px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90">Save Result</button>
       </div>
     </Modal>
   );

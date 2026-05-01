@@ -1,6 +1,6 @@
 "use client";
 
-import { usePatients, useAllVitals } from "@/hooks/queries/usePatients";
+import { usePatientStore } from "@/store/patientStore";
 import { useUiStore } from "@/store/uiStore";
 import { useState } from "react";
 import { formatFullDate, getInitials, classify } from "@/lib/constants";
@@ -10,8 +10,7 @@ import EmptyState from "@/components/common/EmptyState/EmptyState";
 import { cn } from "@/lib/utils";
 
 export default function VitalsPage() {
-  const { data: patients = [], isLoading: loadingPatients } = usePatients();
-  const { data: allVitals = [], isLoading: loadingVitals } = useAllVitals();
+  const { patients, vitals } = usePatientStore();
   const { viewPatient } = useUiStore();
   const [logFor, setLogFor] = useState<{ id: string; name: string } | null>(null);
   const [genericLogOpen, setGenericLogOpen] = useState(false);
@@ -19,13 +18,13 @@ export default function VitalsPage() {
 
   const q = search.toLowerCase();
 
-  const filteredVitals = allVitals
+  // Flatten all vitals across patients, attach patient info
+  const allVitals = patients
+    .flatMap((p) =>
+      (vitals[p.id] || []).map((v) => ({ ...v, ptId: p.id, ptName: p.name, ptOpd: p.opdNumber }))
+    )
     .filter((v) => !q || v.ptName.toLowerCase().includes(q) || (v.ptOpd || "").toLowerCase().includes(q) || (v.notes || "").toLowerCase().includes(q))
     .sort((a, b) => b.id - a.id);
-
-  if (loadingPatients || loadingVitals) {
-    return <div className="p-8 text-center text-ink-3">Loading vitals...</div>;
-  }
 
   return (
     <div className="animate-fade-in p-7 pb-20">
@@ -33,7 +32,7 @@ export default function VitalsPage() {
         <div>
           <h1 className="font-serif text-3xl tracking-tight text-ink">Vitals & Triage</h1>
           <p className="text-xs text-ink-3">
-            {filteredVitals.length} vitals record{filteredVitals.length !== 1 ? "s" : ""} across {patients.length} patient{patients.length !== 1 ? "s" : ""}
+            {allVitals.length} vitals record{allVitals.length !== 1 ? "s" : ""} across {patients.length} patient{patients.length !== 1 ? "s" : ""}
           </p>
         </div>
         <button
@@ -59,7 +58,7 @@ export default function VitalsPage() {
         />
       </div>
 
-      {filteredVitals.length === 0 ? (
+      {allVitals.length === 0 ? (
         <EmptyState icon="heart" title="No vitals recorded" subtitle="Log vitals for a patient using the buttons above." />
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border bg-card shadow-card">
@@ -72,7 +71,7 @@ export default function VitalsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredVitals.map((v) => {
+              {allVitals.map((v) => {
                 const bpCat = v.sys && v.dia ? classify(v.sys, v.dia) : null;
                 return (
                   <tr

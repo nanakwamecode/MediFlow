@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
-import { usePatients } from "@/hooks/queries/usePatients";
-import { useAddVitals } from "@/hooks/mutations/usePatientMutations";
+import { usePatientStore } from "@/store/patientStore";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
 import { nowLocalISO } from "@/lib/constants";
@@ -16,8 +15,7 @@ interface Props {
 }
 
 export default function LogVitalsModal({ open, onClose, patientId, patientName }: Props) {
-  const { data: patients = [] } = usePatients();
-  const { mutateAsync: addVitals, isPending } = useAddVitals();
+  const { patients, addVitals } = usePatientStore();
   const [selectedPatientId, setSelectedPatientId] = useState(patientId || "");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -41,7 +39,7 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
 
   const { showToast } = useToast();
 
-  const handleSave = async () => {
+  const handleSave = () => {
     const sysN = parseInt(sys);
     const diaN = parseInt(dia);
     const pulseN = parseInt(pulse);
@@ -62,30 +60,23 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
       return;
     }
 
-    try {
-      await addVitals({
-        patientId: targetPatientId,
-        data: {
-          sys: isNaN(sysN) ? undefined : sysN,
-          dia: isNaN(diaN) ? undefined : diaN,
-          pulse: isNaN(pulseN) ? undefined : pulseN,
-          temperature: isNaN(tempN) ? undefined : tempN,
-          weight: isNaN(weightN) ? undefined : weightN,
-          height: isNaN(heightN) ? undefined : heightN,
-          bmi: isNaN(bmiN) ? undefined : bmiN,
-          respiratoryRate: isNaN(rrN) ? undefined : rrN,
-          time: time ? new Date(time).toISOString() : new Date().toISOString(),
-          notes,
-        }
-      });
+    addVitals(targetPatientId, {
+      sys: isNaN(sysN) ? undefined : sysN,
+      dia: isNaN(diaN) ? undefined : diaN,
+      pulse: isNaN(pulseN) ? undefined : pulseN,
+      temperature: isNaN(tempN) ? undefined : tempN,
+      weight: isNaN(weightN) ? undefined : weightN,
+      height: isNaN(heightN) ? undefined : heightN,
+      bmi: isNaN(bmiN) ? undefined : bmiN,
+      respiratoryRate: isNaN(rrN) ? undefined : rrN,
+      time: time ? new Date(time).toISOString() : new Date().toISOString(),
+      notes,
+    });
 
-      showToast("Vitals logged", "✓");
-      onClose();
-      // Reset
-      setSys(""); setDia(""); setPulse(""); setTemp(""); setWeight(""); setHeight(""); setRr(""); setNotes(""); setTime(nowLocalISO()); setSelectedPatientId(patientId || "");
-    } catch (e) {
-      showToast("An error occurred", "⚠");
-    }
+    showToast("Vitals logged", "✓");
+    onClose();
+    // Reset
+    setSys(""); setDia(""); setPulse(""); setTemp(""); setWeight(""); setHeight(""); setRr(""); setNotes(""); setTime(nowLocalISO()); setSelectedPatientId(patientId || "");
   };
 
   const fieldClass = cn(
@@ -171,10 +162,8 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
       </div>
 
       <div className="mt-5 flex justify-end gap-2">
-        <button onClick={onClose} disabled={isPending} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2 disabled:opacity-50">Cancel</button>
-        <button onClick={handleSave} disabled={isPending} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-50">
-          {isPending ? "Logging..." : "Log Vitals"}
-        </button>
+        <button onClick={onClose} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2">Cancel</button>
+        <button onClick={handleSave} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover">Log Vitals</button>
       </div>
     </Modal>
   );

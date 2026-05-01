@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
-import { useCreatePatient, useUpdatePatient, useAddVitals } from "@/hooks/mutations/usePatientMutations";
+import { usePatientStore } from "@/store/patientStore";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
 import { nowLocalISO } from "@/lib/constants";
@@ -32,12 +32,8 @@ export default function PatientModal({ open, onClose, editPatient }: Props) {
   const [rdTime, setRdTime] = useState(nowLocalISO());
   const [rdNotes, setRdNotes] = useState("");
 
-  const { mutateAsync: createPatient, isPending: isCreating } = useCreatePatient();
-  const { mutateAsync: updatePatient, isPending: isUpdating } = useUpdatePatient();
-  const { mutateAsync: addVitals, isPending: isAddingVitals } = useAddVitals();
+  const { addPatient, updatePatient, addVitals } = usePatientStore();
   const { showToast } = useToast();
-
-  const isPending = isCreating || isUpdating || isAddingVitals;
 
   const fieldClass = cn(
     "w-full rounded-lg border-[1.5px] border-border bg-bg px-3 py-2",
@@ -62,51 +58,36 @@ export default function PatientModal({ open, onClose, editPatient }: Props) {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!name.trim()) {
       showToast("Please enter a patient name", "⚠");
       return;
     }
-    try {
-      if (isEdit && editPatient) {
-        await updatePatient({ 
-          id: editPatient.id, 
-          data: { name: name.trim(), opdNumber: opdNumber.trim() || undefined, age, phone, town, gender, dob, notes } 
+    if (isEdit && editPatient) {
+      updatePatient(editPatient.id, { name: name.trim(), opdNumber: opdNumber.trim() || undefined, age, phone, town, gender, dob, notes });
+      showToast("Patient updated", "✓");
+    } else {
+      const id = addPatient({ name: name.trim(), opdNumber: opdNumber.trim() || undefined, age, phone, town, gender, dob, notes });
+      const sysN = parseInt(sys);
+      const diaN = parseInt(dia);
+      const pulseN = parseInt(pulse);
+      const tempN = parseFloat(temp);
+      const weightN = parseFloat(weight);
+      
+      if (!isNaN(sysN) || !isNaN(diaN) || !isNaN(pulseN) || !isNaN(tempN) || !isNaN(weightN)) {
+        addVitals(id, {
+          sys: isNaN(sysN) ? undefined : sysN, 
+          dia: isNaN(diaN) ? undefined : diaN,
+          pulse: isNaN(pulseN) ? undefined : pulseN,
+          temperature: isNaN(tempN) ? undefined : tempN,
+          weight: isNaN(weightN) ? undefined : weightN,
+          time: rdTime ? new Date(rdTime).toISOString() : new Date().toISOString(),
+          notes: rdNotes,
         });
-        showToast("Patient updated", "✓");
-      } else {
-        const newPatient = await createPatient({ 
-          name: name.trim(), 
-          opdNumber: opdNumber.trim() || undefined, 
-          age, phone, town, gender, dob, notes 
-        });
-        
-        const sysN = parseInt(sys);
-        const diaN = parseInt(dia);
-        const pulseN = parseInt(pulse);
-        const tempN = parseFloat(temp);
-        const weightN = parseFloat(weight);
-        
-        if (!isNaN(sysN) || !isNaN(diaN) || !isNaN(pulseN) || !isNaN(tempN) || !isNaN(weightN)) {
-          await addVitals({
-            patientId: newPatient.id, 
-            data: {
-              sys: isNaN(sysN) ? undefined : sysN, 
-              dia: isNaN(diaN) ? undefined : diaN,
-              pulse: isNaN(pulseN) ? undefined : pulseN,
-              temperature: isNaN(tempN) ? undefined : tempN,
-              weight: isNaN(weightN) ? undefined : weightN,
-              time: rdTime ? new Date(rdTime).toISOString() : new Date().toISOString(),
-              notes: rdNotes,
-            }
-          });
-        }
-        showToast("Patient added", "✓");
       }
-      onClose();
-    } catch (e) {
-      showToast("An error occurred", "⚠");
+      showToast("Patient added", "✓");
     }
+    onClose();
   };
 
   return (
@@ -155,10 +136,8 @@ export default function PatientModal({ open, onClose, editPatient }: Props) {
       )}
 
       <div className="mt-5 flex justify-end gap-2">
-        <button onClick={onClose} disabled={isPending} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2 disabled:opacity-50">Cancel</button>
-        <button onClick={handleSave} disabled={isPending} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-50">
-          {isPending ? "Saving..." : "Save Patient"}
-        </button>
+        <button onClick={onClose} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2">Cancel</button>
+        <button onClick={handleSave} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover">Save Patient</button>
       </div>
     </Modal>
   );

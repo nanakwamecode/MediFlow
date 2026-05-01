@@ -83,8 +83,6 @@ export const vitals = pgTable("vitals", {
   temperature: real("temperature"),
   respiratoryRate: integer("respiratory_rate"),
   weight: real("weight"),
-  height: real("height"),
-  bmi: real("bmi"),
   notes: text("notes"),
 });
 

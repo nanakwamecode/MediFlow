@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
-import { usePatients } from "@/hooks/queries/usePatients";
-import { useCreateLab } from "@/hooks/mutations/usePatientMutations";
+import { usePatientStore } from "@/store/patientStore";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
 import { getInitials } from "@/lib/constants";
@@ -53,8 +52,8 @@ export default function RequestLabModal({ open, onClose, patientId, patientName 
   const [notes, setNotes] = useState("");
   const [selectedPatientId, setSelectedPatientId] = useState(patientId || "");
 
-  const { data: patients = [] } = usePatients();
-  const { mutateAsync: addLabInvestigation, isPending } = useCreateLab();
+  const addLabInvestigation = usePatientStore((s) => s.addLabInvestigation);
+  const patients = usePatientStore((s) => s.patients);
   const { showToast } = useToast();
 
   const isSelectablePatient = !patientId;
@@ -79,7 +78,7 @@ export default function RequestLabModal({ open, onClose, patientId, patientName 
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (isSelectablePatient && !selectedPatientId) {
       showToast("Please select a patient", "⚠");
       return;
@@ -92,28 +91,19 @@ export default function RequestLabModal({ open, onClose, patientId, patientName 
       showToast("Please enter requesting doctor", "⚠");
       return;
     }
-    
-    try {
-      // Create one lab investigation per selected test using Promise.all
-      await Promise.all(selectedTests.map(testName => 
-        addLabInvestigation({
-          patientId: selectedPatientId,
-          data: {
-            timeRequested: new Date().toISOString(),
-            requestedBy: requestedBy.trim(),
-            testName,
-            status: "pending",
-            notes: notes.trim() || undefined,
-          }
-        })
-      ));
-
-      showToast(`${selectedTests.length} test${selectedTests.length > 1 ? "s" : ""} requested`, "✓");
-      onClose();
-      setSelectedTests([]); setRequestedBy(""); setNotes(""); setCustomTest("");
-    } catch (e) {
-      showToast("An error occurred", "⚠");
-    }
+    // Create one lab investigation per selected test
+    selectedTests.forEach(testName => {
+      addLabInvestigation(selectedPatientId, {
+        timeRequested: new Date().toISOString(),
+        requestedBy: requestedBy.trim(),
+        testName,
+        status: "pending",
+        notes: notes.trim() || undefined,
+      });
+    });
+    showToast(`${selectedTests.length} test${selectedTests.length > 1 ? "s" : ""} requested`, "✓");
+    onClose();
+    setSelectedTests([]); setRequestedBy(""); setNotes(""); setCustomTest("");
   };
 
   return (
@@ -249,10 +239,8 @@ export default function RequestLabModal({ open, onClose, patientId, patientName 
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Reason for investigation…" rows={2} className={cn(fieldClass, "resize-none")} />
       </div>
       <div className="mt-5 flex justify-end gap-2">
-        <button onClick={onClose} disabled={isPending} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2 disabled:opacity-50">Cancel</button>
-        <button onClick={handleSave} disabled={isPending} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-50">
-          {isPending ? "Requesting..." : `Request ${selectedTests.length > 0 ? `${selectedTests.length} Test${selectedTests.length > 1 ? "s" : ""}` : "Investigation"}`}
-        </button>
+        <button onClick={onClose} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2">Cancel</button>
+        <button onClick={handleSave} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover">Request {selectedTests.length > 0 ? `${selectedTests.length} Test${selectedTests.length > 1 ? "s" : ""}` : "Investigation"}</button>
       </div>
     </Modal>
   );

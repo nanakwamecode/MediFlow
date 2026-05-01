@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
-import { useCreateConsultation } from "@/hooks/mutations/usePatientMutations";
+import { usePatientStore } from "@/store/patientStore";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
 import { nowLocalISO } from "@/lib/constants";
@@ -21,7 +21,7 @@ export default function AddConsultationModal({ open, onClose, patientId, patient
   const [notes, setNotes] = useState("");
   const [time, setTime] = useState(nowLocalISO());
 
-  const { mutateAsync: addConsultation, isPending } = useCreateConsultation();
+  const addConsultation = usePatientStore((s) => s.addConsultation);
   const { showToast } = useToast();
 
   const fieldClass = cn(
@@ -31,28 +31,21 @@ export default function AddConsultationModal({ open, onClose, patientId, patient
   );
   const labelClass = "mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase";
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!doctorId.trim()) {
       showToast("Please enter doctor name", "⚠");
       return;
     }
-    try {
-      await addConsultation({
-        patientId,
-        data: {
-          time: time ? new Date(time).toISOString() : new Date().toISOString(),
-          doctorId: doctorId.trim(),
-          symptoms: symptoms.trim(),
-          diagnosis: diagnosis.trim(),
-          notes: notes.trim(),
-        }
-      });
-      showToast("Consultation saved", "✓");
-      onClose();
-      setDoctorId(""); setSymptoms(""); setDiagnosis(""); setNotes(""); setTime(nowLocalISO());
-    } catch (e) {
-      showToast("An error occurred", "⚠");
-    }
+    addConsultation(patientId, {
+      time: time ? new Date(time).toISOString() : new Date().toISOString(),
+      doctorId: doctorId.trim(),
+      symptoms: symptoms.trim(),
+      diagnosis: diagnosis.trim(),
+      notes: notes.trim(),
+    });
+    showToast("Consultation saved", "✓");
+    onClose();
+    setDoctorId(""); setSymptoms(""); setDiagnosis(""); setNotes(""); setTime(nowLocalISO());
   };
 
   return (
@@ -74,10 +67,8 @@ export default function AddConsultationModal({ open, onClose, patientId, patient
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Treatment plan, follow-up instructions…" rows={3} className={cn(fieldClass, "resize-none")} />
       </div>
       <div className="mt-5 flex justify-end gap-2">
-        <button onClick={onClose} disabled={isPending} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2 disabled:opacity-50">Cancel</button>
-        <button onClick={handleSave} disabled={isPending} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-50">
-          {isPending ? "Saving..." : "Save Consultation"}
-        </button>
+        <button onClick={onClose} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2">Cancel</button>
+        <button onClick={handleSave} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover">Save Consultation</button>
       </div>
     </Modal>
   );
