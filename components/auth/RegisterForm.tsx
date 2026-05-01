@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,11 @@ export default function RegisterForm() {
   const [submitting, setSubmitting] = useState(false);
   const { register, error: apiError, clearError } = useAuthStore();
   const router = useRouter();
+
+  // Clear any existing auth errors when the register form mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
