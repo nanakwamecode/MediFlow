@@ -23,7 +23,7 @@ export default function VitalsPage() {
       (vitals[p.id] || []).map((v) => ({ ...v, ptId: p.id, ptName: p.name, ptOpd: p.opdNumber }))
     )
     .filter((v) => !q || v.ptName.toLowerCase().includes(q) || (v.ptOpd || "").toLowerCase().includes(q) || (v.notes || "").toLowerCase().includes(q))
-    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+    .sort((a, b) => b.id - a.id);
 
   return (
     <div className="animate-fade-in p-7 pb-20">
