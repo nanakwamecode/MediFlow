@@ -28,6 +28,7 @@ export default function LabPage() {
       if (!q) return true;
       return (
         g.patient.name.toLowerCase().includes(q) ||
+        (g.patient.opdNumber || "").toLowerCase().includes(q) ||
         g.labs.some((l) => l.testName.toLowerCase().includes(q))
       );
     });
@@ -67,7 +68,7 @@ export default function LabPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by patient name or test name…"
+          placeholder="Search by patient name, OPD number, or test…"
           className={cn(
             "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
             "font-mono text-sm text-ink outline-none transition-colors",

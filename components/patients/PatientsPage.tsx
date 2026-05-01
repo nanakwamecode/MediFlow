@@ -25,6 +25,7 @@ export default function PatientsPage() {
     ? patients.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
+          (p.opdNumber || "").toLowerCase().includes(q) ||
           (p.phone ?? "").toLowerCase().includes(q) ||
           (p.town ?? "").toLowerCase().includes(q)
       )
@@ -53,7 +54,7 @@ export default function PatientsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔍  Search by name, phone, town…"
+          placeholder="Search by patient name, OPD number, phone, or location…"
           className={cn(
             "flex-1 rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
             "font-mono text-sm text-ink outline-none transition-colors",

@@ -11,6 +11,7 @@ import RequestLabModal from "@/components/laboratory/RequestLabModal";
 import AddPrescriptionModal from "@/components/pharmacy/AddPrescriptionModal";
 import EnterLabResultModal from "@/components/laboratory/EnterLabResultModal";
 import ViewLabResultModal from "@/components/laboratory/ViewLabResultModal";
+import PatientModal from "@/components/patients/PatientModal";
 import { formatFullDate } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ export default function PatientDetailPage({ patientId }: Props) {
   const [consultOpen, setConsultOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
   const [rxOpen, setRxOpen] = useState(false);
+  const [editPatientOpen, setEditPatientOpen] = useState(false);
   const [resultFor, setResultFor] = useState<{ labId: number; testName: string } | null>(null);
   const [viewingResult, setViewingResult] = useState<typeof labs[0] | null>(null);
   const [activeTab, setActiveTab] = useState<"vitals" | "consults" | "labs" | "meds">("vitals");
@@ -74,7 +76,7 @@ export default function PatientDetailPage({ patientId }: Props) {
         </div>
       </div>
 
-      <PatientDetailHeader patient={patient} />
+      <PatientDetailHeader patient={patient} onEdit={() => setEditPatientOpen(true)} />
 
       {/* Tabs */}
       <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -85,7 +87,7 @@ export default function PatientDetailPage({ patientId }: Props) {
             className={cn(
               "relative cursor-pointer rounded-full px-5 py-2.5 text-[0.7rem] font-semibold uppercase tracking-wider transition-all",
               activeTab === tab 
-                ? "bg-ink text-white shadow-md ring-1 ring-ink/10" 
+                ? "bg-accent text-white shadow-md ring-1 ring-accent/10" 
                 : "bg-white text-ink-3 hover:bg-bg-2 hover:text-ink ring-1 ring-border shadow-sm"
             )}
           >
@@ -252,6 +254,7 @@ export default function PatientDetailPage({ patientId }: Props) {
       <AddConsultationModal open={consultOpen} onClose={() => setConsultOpen(false)} patientId={patientId} patientName={patient.name} />
       <RequestLabModal open={labOpen} onClose={() => setLabOpen(false)} patientId={patientId} patientName={patient.name} />
       <AddPrescriptionModal open={rxOpen} onClose={() => setRxOpen(false)} patientId={patientId} patientName={patient.name} />
+      {editPatientOpen && <PatientModal open={editPatientOpen} onClose={() => setEditPatientOpen(false)} editPatient={patient} />}
       {resultFor && <EnterLabResultModal open={!!resultFor} onClose={() => setResultFor(null)} patientId={patientId} labId={resultFor.labId} testName={resultFor.testName} />}
       {viewingResult && <ViewLabResultModal open={!!viewingResult} onClose={() => setViewingResult(null)} testName={viewingResult.testName} result={viewingResult.result || ""} timeCompleted={viewingResult.timeCompleted} requestedBy={viewingResult.requestedBy} />}
     </div>

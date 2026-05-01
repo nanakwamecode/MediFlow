@@ -19,9 +19,9 @@ export default function ConsultationsPage() {
 
   const allConsults = patients
     .flatMap((p) =>
-      (consultations[p.id] || []).map((c) => ({ ...c, ptId: p.id, ptName: p.name }))
+      (consultations[p.id] || []).map((c) => ({ ...c, ptId: p.id, ptName: p.name, ptOpd: p.opdNumber }))
     )
-    .filter((c) => !q || c.ptName.toLowerCase().includes(q) || (c.diagnosis || "").toLowerCase().includes(q) || (c.symptoms || "").toLowerCase().includes(q) || c.doctorId.toLowerCase().includes(q))
+    .filter((c) => !q || c.ptName.toLowerCase().includes(q) || (c.ptOpd || "").toLowerCase().includes(q) || (c.diagnosis || "").toLowerCase().includes(q) || (c.symptoms || "").toLowerCase().includes(q) || c.doctorId.toLowerCase().includes(q))
     .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
   if (detailView) {
@@ -52,7 +52,7 @@ export default function ConsultationsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by patient, doctor, diagnosis, or symptoms…"
+          placeholder="Search by patient name, OPD number, doctor, diagnosis…"
           className={cn(
             "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
             "font-mono text-sm text-ink outline-none transition-colors",
@@ -117,7 +117,7 @@ function PatientPickerModal({ onSelect, onClose }: { onSelect: (id: string, name
   const patients = usePatientStore((s) => s.patients);
   const [search, setSearch] = useState("");
   const q = search.toLowerCase();
-  const filtered = patients.filter(p => !q || p.name.toLowerCase().includes(q));
+  const filtered = patients.filter(p => !q || p.name.toLowerCase().includes(q) || (p.opdNumber || "").toLowerCase().includes(q));
 
   return (
     <Modal open={true} onClose={onClose} title="Select Patient" maxWidth="max-w-md">
@@ -125,7 +125,7 @@ function PatientPickerModal({ onSelect, onClose }: { onSelect: (id: string, name
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search patients…"
+        placeholder="Search patients by name or OPD number…"
         className="w-full rounded-lg border-[1.5px] border-border bg-bg px-3 py-2 font-mono text-sm text-ink outline-none mb-3 focus:border-accent"
       />
       <div className="max-h-[300px] overflow-y-auto space-y-1">

@@ -5,6 +5,7 @@ import React from "react";
 
 interface Props {
   patient: Patient;
+  onEdit: () => void;
 }
 
 const ICONS: Record<string, React.ReactNode> = {
@@ -16,7 +17,7 @@ const ICONS: Record<string, React.ReactNode> = {
   DOB: <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
 };
 
-export default function PatientDetailHeader({ patient }: Props) {
+export default function PatientDetailHeader({ patient, onEdit }: Props) {
   const fields = [
     patient.opdNumber && { label: "OPD", value: patient.opdNumber },
     patient.age && { label: "Age", value: `${patient.age} yrs` },
@@ -61,6 +62,13 @@ export default function PatientDetailHeader({ patient }: Props) {
                 </div>
               ))}
             </div>
+            <button
+              onClick={onEdit}
+              className="mt-5 cursor-pointer rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium text-white shadow-sm backdrop-blur-md transition-colors hover:bg-white/20 hover:border-white/30 flex items-center gap-1.5"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              Edit Details
+            </button>
           </div>
         </div>
 

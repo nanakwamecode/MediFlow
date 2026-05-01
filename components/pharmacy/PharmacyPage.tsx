@@ -24,6 +24,7 @@ export default function PharmacyPage() {
       if (!q) return true;
       return (
         g.patient.name.toLowerCase().includes(q) ||
+        (g.patient.opdNumber || "").toLowerCase().includes(q) ||
         g.meds.some((m) => m.medication.toLowerCase().includes(q))
       );
     });
@@ -62,7 +63,7 @@ export default function PharmacyPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by patient name or medication…"
+          placeholder="Search by patient name, OPD number, or medication…"
           className={cn(
             "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
             "font-mono text-sm text-ink outline-none transition-colors",
