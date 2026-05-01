@@ -28,25 +28,25 @@ export default function RecordsPage() {
   patients.forEach(p => {
     (vitals[p.id] || []).forEach(v => {
       if (new Date(v.time) >= cutoff) {
-        if (!q || p.name.toLowerCase().includes(q))
+        if (!q || p.name.toLowerCase().includes(q) || (p.opdNumber || "").toLowerCase().includes(q))
           events.push({ type: "Vitals", time: v.time, ptId: p.id, ptName: p.name, detail: `BP: ${v.sys ?? "-"}/${v.dia ?? "-"} · Pulse: ${v.pulse ?? "-"}`, detail2: v.notes });
       }
     });
     (consultations[p.id] || []).forEach(c => {
       if (new Date(c.time) >= cutoff) {
-        if (!q || p.name.toLowerCase().includes(q) || (c.diagnosis || "").toLowerCase().includes(q))
+        if (!q || p.name.toLowerCase().includes(q) || (p.opdNumber || "").toLowerCase().includes(q) || (c.diagnosis || "").toLowerCase().includes(q))
           events.push({ type: "Consultation", time: c.time, ptId: p.id, ptName: p.name, detail: c.diagnosis || "No diagnosis", detail2: `${c.doctorId} — ${c.symptoms || ""}` });
       }
     });
     (labInvestigations[p.id] || []).forEach(l => {
       if (new Date(l.timeRequested) >= cutoff) {
-        if (!q || p.name.toLowerCase().includes(q) || l.testName.toLowerCase().includes(q))
+        if (!q || p.name.toLowerCase().includes(q) || (p.opdNumber || "").toLowerCase().includes(q) || l.testName.toLowerCase().includes(q))
           events.push({ type: "Lab", time: l.timeRequested, ptId: p.id, ptName: p.name, detail: l.testName, detail2: `${l.status} · By ${l.requestedBy}` });
       }
     });
     (prescriptions[p.id] || []).forEach(m => {
       if (new Date(m.timePrescribed) >= cutoff) {
-        if (!q || p.name.toLowerCase().includes(q) || m.medication.toLowerCase().includes(q))
+        if (!q || p.name.toLowerCase().includes(q) || (p.opdNumber || "").toLowerCase().includes(q) || m.medication.toLowerCase().includes(q))
           events.push({ type: "Prescription", time: m.timePrescribed, ptId: p.id, ptName: p.name, detail: `${m.medication} ${m.dosage}`, detail2: `${m.status} · By ${m.prescribedBy}` });
       }
     });
@@ -101,7 +101,7 @@ export default function RecordsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search records…"
+          placeholder="Search records by patient name, OPD number, test, or diagnosis…"
           className={cn(
             "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
             "font-mono text-sm text-ink outline-none transition-colors",
