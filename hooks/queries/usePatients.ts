@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getPatients, getPatient, getVitals } from "@/services/patients.service";
+import { getPatients, getPatient, getVitals, getAllVitals } from "@/services/patients.service";
 
 export function usePatients() {
   return useQuery({
@@ -21,5 +21,12 @@ export function useVitals(patientId: string) {
     queryKey: ["patients", patientId, "vitals"],
     queryFn: () => getVitals(patientId),
     enabled: !!patientId,
+  });
+}
+
+export function useAllVitals() {
+  return useQuery({
+    queryKey: ["vitals"],
+    queryFn: getAllVitals,
   });
 }

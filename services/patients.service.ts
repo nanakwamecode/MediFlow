@@ -48,6 +48,13 @@ export async function getVitals(patientId: string): Promise<Vitals[]> {
   return json.data;
 }
 
+export async function getAllVitals(): Promise<(Vitals & { ptName: string; ptOpd: string | null })[]> {
+  const res = await fetch("/api/vitals");
+  if (!res.ok) throw new Error("Failed to fetch all vitals");
+  const json = await res.json();
+  return json.data;
+}
+
 export async function createVitals({ patientId, data }: { patientId: string; data: Omit<Vitals, "id" | "time"> & { time?: string } }): Promise<Vitals> {
   const res = await fetch(`/api/patients/${patientId}/vitals`, {
     method: "POST",
