@@ -20,6 +20,8 @@ export interface Vitals {
   temperature?: number;
   respiratoryRate?: number;
   weight?: number;
+  height?: number;
+  bmi?: number;
   notes?: string;
 }
 

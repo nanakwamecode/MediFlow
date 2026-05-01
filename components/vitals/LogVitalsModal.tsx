@@ -20,9 +20,12 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
   const [pulse, setPulse] = useState("");
   const [temperature, setTemp] = useState("");
   const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
   const [respiratoryRate, setRr] = useState("");
   const [time, setTime] = useState(nowLocalISO());
   const [notes, setNotes] = useState("");
+
+  const bmi = weight && height ? (parseFloat(weight) / ((parseFloat(height) / 100) ** 2)).toFixed(1) : "";
 
   const addVitals = usePatientStore((s) => s.addVitals);
   const { showToast } = useToast();
@@ -33,9 +36,11 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
     const pulseN = parseInt(pulse);
     const tempN = parseFloat(temperature);
     const weightN = parseFloat(weight);
+    const heightN = parseFloat(height);
+    const bmiN = parseFloat(bmi);
     const rrN = parseInt(respiratoryRate);
 
-    if (isNaN(sysN) && isNaN(diaN) && isNaN(pulseN) && isNaN(tempN) && isNaN(weightN) && isNaN(rrN)) {
+    if (isNaN(sysN) && isNaN(diaN) && isNaN(pulseN) && isNaN(tempN) && isNaN(weightN) && isNaN(heightN) && isNaN(rrN)) {
       showToast("Please enter at least one vital sign", "⚠");
       return;
     }
@@ -46,6 +51,8 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
       pulse: isNaN(pulseN) ? undefined : pulseN,
       temperature: isNaN(tempN) ? undefined : tempN,
       weight: isNaN(weightN) ? undefined : weightN,
+      height: isNaN(heightN) ? undefined : heightN,
+      bmi: isNaN(bmiN) ? undefined : bmiN,
       respiratoryRate: isNaN(rrN) ? undefined : rrN,
       time: time ? new Date(time).toISOString() : new Date().toISOString(),
       notes,
@@ -54,7 +61,7 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
     showToast("Vitals logged", "✓");
     onClose();
     // Reset
-    setSys(""); setDia(""); setPulse(""); setTemp(""); setWeight(""); setRr(""); setNotes(""); setTime(nowLocalISO());
+    setSys(""); setDia(""); setPulse(""); setTemp(""); setWeight(""); setHeight(""); setRr(""); setNotes(""); setTime(nowLocalISO());
   };
 
   const fieldClass = cn(
@@ -71,10 +78,14 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
         <div><label className={labelClass}>Diastolic</label><input type="number" value={dia} onChange={(e) => setDia(e.target.value)} placeholder="80" className={fieldClass} /></div>
         <div><label className={labelClass}>Pulse</label><input type="number" value={pulse} onChange={(e) => setPulse(e.target.value)} placeholder="72" className={fieldClass} /></div>
       </div>
-      <div className="mb-4 grid grid-cols-3 gap-3">
+      <div className="mb-4 grid grid-cols-2 gap-3">
         <div><label className={labelClass}>Temp (°C)</label><input type="number" step="0.1" value={temperature} onChange={(e) => setTemp(e.target.value)} placeholder="36.5" className={fieldClass} /></div>
-        <div><label className={labelClass}>Weight (kg)</label><input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="70" className={fieldClass} /></div>
         <div><label className={labelClass}>Resp Rate</label><input type="number" value={respiratoryRate} onChange={(e) => setRr(e.target.value)} placeholder="16" className={fieldClass} /></div>
+      </div>
+      <div className="mb-4 grid grid-cols-3 gap-3">
+        <div><label className={labelClass}>Weight (kg)</label><input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="70" className={fieldClass} /></div>
+        <div><label className={labelClass}>Height (cm)</label><input type="number" step="0.1" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="175" className={fieldClass} /></div>
+        <div><label className={labelClass}>BMI</label><input type="text" value={bmi} readOnly placeholder="Auto" className={cn(fieldClass, "bg-bg-2 cursor-not-allowed")} /></div>
       </div>
       <div className="mb-4 grid grid-cols-[1fr_2fr] gap-3">
         <div><label className={labelClass}>Date & Time</label><input type="datetime-local" value={time} onChange={(e) => setTime(e.target.value)} className={fieldClass} /></div>

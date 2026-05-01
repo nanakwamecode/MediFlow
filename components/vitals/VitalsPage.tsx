@@ -58,7 +58,7 @@ export default function VitalsPage() {
           <table className="w-full border-collapse">
             <thead>
               <tr>
-                {["Patient", "Date", "BP", "Pulse", "Temp", "Wt", "RR", "BP Status", "Notes"].map((h) => (
+                {["Patient", "Date", "BP", "Pulse", "Temp", "Wt", "Ht", "BMI", "RR", "BP Status", "Notes"].map((h) => (
                   <th key={h} className="bg-bg-2 px-3 py-2 text-left font-mono text-[0.54rem] tracking-[0.18em] text-ink-3 uppercase">{h}</th>
                 ))}
               </tr>
@@ -83,6 +83,8 @@ export default function VitalsPage() {
                     <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.pulse ?? "-"}</td>
                     <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.temperature ? `${v.temperature}°C` : "-"}</td>
                     <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.weight ? `${v.weight}kg` : "-"}</td>
+                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.height ? `${v.height}cm` : "-"}</td>
+                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.bmi ?? "-"}</td>
                     <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.respiratoryRate ?? "-"}</td>
                     <td className="px-3 py-2">{bpCat ? <StatusPill label={bpCat.label} size="sm" /> : <span className="text-ink-4 text-xs">-</span>}</td>
                     <td className="px-3 py-2 text-[0.65rem] text-ink-3 max-w-[120px] truncate">{v.notes || "-"}</td>
