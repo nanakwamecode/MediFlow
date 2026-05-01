@@ -3,9 +3,9 @@ import { db } from "@/lib/db";
 import { vitals } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
 
-export async function DELETE(req: Request, { params }: { params: { id: string, vitalId: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string, vitalId: string }> }) {
   try {
-    const { id: patientId, vitalId } = params;
+    const { id: patientId, vitalId } = await params;
     await db.delete(vitals).where(and(
       eq(vitals.id, parseInt(vitalId)),
       eq(vitals.patientId, patientId)

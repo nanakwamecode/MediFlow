@@ -3,9 +3,9 @@ import { db } from "@/lib/db";
 import { consultations } from "@/lib/schema";
 import { eq, desc } from "drizzle-orm";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id: patientId } = params;
+    const { id: patientId } = await params;
     const patientConsults = await db.query.consultations.findMany({
       where: eq(consultations.patientId, patientId),
       orderBy: [desc(consultations.time)],
@@ -17,9 +17,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id: patientId } = params;
+    const { id: patientId } = await params;
     const body = await req.json();
 
     const [newConsult] = await db.insert(consultations).values({

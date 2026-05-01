@@ -3,9 +3,9 @@ import { db } from "@/lib/db";
 import { labInvestigations } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
 
-export async function PUT(req: Request, { params }: { params: { id: string, labId: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string, labId: string }> }) {
   try {
-    const { id: patientId, labId } = params;
+    const { id: patientId, labId } = await params;
     const body = await req.json();
 
     const [updatedLab] = await db.update(labInvestigations).set({

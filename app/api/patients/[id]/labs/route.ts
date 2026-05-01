@@ -3,9 +3,9 @@ import { db } from "@/lib/db";
 import { labInvestigations } from "@/lib/schema";
 import { eq, desc } from "drizzle-orm";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id: patientId } = params;
+    const { id: patientId } = await params;
     const patientLabs = await db.query.labInvestigations.findMany({
       where: eq(labInvestigations.patientId, patientId),
       orderBy: [desc(labInvestigations.timeRequested)],
@@ -17,9 +17,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id: patientId } = params;
+    const { id: patientId } = await params;
     const body = await req.json();
 
     const [newLab] = await db.insert(labInvestigations).values({

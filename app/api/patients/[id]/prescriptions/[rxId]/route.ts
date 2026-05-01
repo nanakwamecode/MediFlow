@@ -3,9 +3,9 @@ import { db } from "@/lib/db";
 import { prescriptions } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
 
-export async function PUT(req: Request, { params }: { params: { id: string, rxId: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string, rxId: string }> }) {
   try {
-    const { id: patientId, rxId } = params;
+    const { id: patientId, rxId } = await params;
 
     const [updatedRx] = await db.update(prescriptions).set({
       status: "dispensed",
