@@ -87,7 +87,7 @@ export default function PatientDetailPage({ patientId }: Props) {
             className={cn(
               "relative cursor-pointer rounded-full px-5 py-2.5 text-[0.7rem] font-semibold uppercase tracking-wider transition-all",
               activeTab === tab 
-                ? "bg-ink text-white shadow-md ring-1 ring-ink/10" 
+                ? "bg-accent text-white shadow-md ring-1 ring-accent/10" 
                 : "bg-white text-ink-3 hover:bg-bg-2 hover:text-ink ring-1 ring-border shadow-sm"
             )}
           >
