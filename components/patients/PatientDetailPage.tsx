@@ -2,6 +2,8 @@
 
 import { usePatientStore } from "@/store/patientStore";
 import { useUiStore } from "@/store/uiStore";
+import { usePatient, useVitals, useConsultations, useLabs, usePrescriptions } from "@/hooks/queries/usePatients";
+import { useDeleteVitals, useDispensePrescription } from "@/hooks/mutations/usePatientMutations";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { useState } from "react";
 import PatientDetailHeader from "./PatientDetailHeader";
@@ -20,16 +22,14 @@ interface Props {
 }
 
 export default function PatientDetailPage({ patientId }: Props) {
-  const patient = usePatientStore((s) =>
-    s.patients.find((p) => p.id === patientId)
-  );
-  const vitals = usePatientStore((s) => s.vitals[patientId]) || [];
-  const consults = usePatientStore((s) => s.consultations[patientId]) || [];
-  const labs = usePatientStore((s) => s.labInvestigations[patientId]) || [];
-  const meds = usePatientStore((s) => s.prescriptions[patientId]) || [];
+  const { data: patient, isLoading: loadingPatient } = usePatient(patientId);
+  const { data: vitals = [], isLoading: loadingVitals } = useVitals(patientId);
+  const { mutate: deleteVitals } = useDeleteVitals();
 
-  const deleteVitals = usePatientStore((s) => s.deleteVitals);
-  const dispensePrescription = usePatientStore((s) => s.dispensePrescription);
+  const { data: consults = [], isLoading: loadingConsults } = useConsultations(patientId);
+  const { data: labs = [], isLoading: loadingLabs } = useLabs(patientId);
+  const { data: meds = [], isLoading: loadingMeds } = usePrescriptions(patientId);
+  const { mutateAsync: dispensePrescription, isPending: dispensing } = useDispensePrescription();
   const clearViewingPatient = useUiStore((s) => s.clearViewingPatient);
 
   const [logOpen, setLogOpen] = useState(false);
@@ -41,6 +41,10 @@ export default function PatientDetailPage({ patientId }: Props) {
   const [viewingResult, setViewingResult] = useState<typeof labs[0] | null>(null);
   const [activeTab, setActiveTab] = useState<"vitals" | "consults" | "labs" | "meds">("vitals");
   const { showToast } = useToast();
+
+  if (loadingPatient || loadingVitals || loadingConsults || loadingLabs || loadingMeds) {
+    return <div className="p-8 text-center text-ink-3">Loading patient details...</div>;
+  }
 
   if (!patient) {
     return (
@@ -121,7 +125,7 @@ export default function PatientDetailPage({ patientId }: Props) {
                   <td className="px-4 py-3 font-mono text-[0.75rem]">{v.respiratoryRate ?? "-"}</td>
                   <td className="px-4 py-3 text-[0.7rem] text-ink-3">{v.notes || "-"}</td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => { if(confirm("Delete vitals?")) { deleteVitals(patientId, v.id); showToast("Deleted", "—") } }} className="cursor-pointer rounded bg-status-high-bg px-2 py-1 text-[0.65rem] font-medium text-status-high transition-colors hover:bg-status-high hover:text-white">Delete</button>
+                    <button onClick={() => { if(confirm("Delete vitals?")) { deleteVitals({ patientId, vitalId: v.id }); showToast("Deleted", "—") } }} className="cursor-pointer rounded bg-status-high-bg px-2 py-1 text-[0.65rem] font-medium text-status-high transition-colors hover:bg-status-high hover:text-white">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -235,15 +239,20 @@ export default function PatientDetailPage({ patientId }: Props) {
               </div>
               {m.status === "pending" && (
                 <button
-                  onClick={() => {
+                  disabled={dispensing}
+                  onClick={async () => {
                     if (confirm(`Dispense ${m.medication} ${m.dosage}?`)) {
-                      dispensePrescription(patientId, m.id);
-                      showToast("Dispensed", "✓");
+                      try {
+                        await dispensePrescription({ patientId, rxId: m.id });
+                        showToast("Dispensed", "✓");
+                      } catch (e) {
+                        showToast("An error occurred", "⚠");
+                      }
                     }
                   }}
-                  className="mt-2 cursor-pointer rounded-xl bg-status-normal/10 px-3 py-2 text-[0.75rem] font-semibold text-status-normal ring-1 ring-status-normal/20 transition-all hover:bg-status-normal hover:text-white"
+                  className="mt-2 cursor-pointer rounded-xl bg-status-normal/10 px-3 py-2 text-[0.75rem] font-semibold text-status-normal ring-1 ring-status-normal/20 transition-all hover:bg-status-normal hover:text-white disabled:opacity-50"
                 >
-                  Mark as Dispensed
+                  {dispensing ? "Dispensing..." : "Mark as Dispensed"}
                 </button>
               )}
             </div>

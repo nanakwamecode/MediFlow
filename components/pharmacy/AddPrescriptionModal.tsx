@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
-import { usePatientStore } from "@/store/patientStore";
+import { usePatients } from "@/hooks/queries/usePatients";
+import { useCreatePrescription } from "@/hooks/mutations/usePatientMutations";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
 
@@ -27,8 +28,8 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
   const [prescribedBy, setPrescribedBy] = useState("");
   const [selectedPatientId, setSelectedPatientId] = useState(patientId || "");
 
-  const addPrescription = usePatientStore((s) => s.addPrescription);
-  const patients = usePatientStore((s) => s.patients);
+  const { data: patients = [] } = usePatients();
+  const { mutateAsync: addPrescription, isPending } = useCreatePrescription();
   const { showToast } = useToast();
 
   const isSelectablePatient = !patientId;
@@ -51,7 +52,7 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
     setMeds(prev => prev.filter(m => m.id !== id));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (isSelectablePatient && !selectedPatientId) {
       showToast("Please select a patient", "⚠");
       return;
@@ -72,21 +73,28 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
       return;
     }
 
-    validMeds.forEach(m => {
-      addPrescription(selectedPatientId, {
-        timePrescribed: new Date().toISOString(),
-        prescribedBy: prescribedBy.trim(),
-        medication: m.medication.trim(),
-        dosage: m.dosage.trim(),
-        instructions: m.instructions.trim(),
-        status: "pending",
-      });
-    });
+    try {
+      await Promise.all(validMeds.map(m => 
+        addPrescription({
+          patientId: selectedPatientId,
+          data: {
+            timePrescribed: new Date().toISOString(),
+            prescribedBy: prescribedBy.trim(),
+            medication: m.medication.trim(),
+            dosage: m.dosage.trim(),
+            instructions: m.instructions.trim(),
+            status: "pending",
+          }
+        })
+      ));
 
-    showToast(`${validMeds.length} medication${validMeds.length > 1 ? "s" : ""} prescribed`, "✓");
-    onClose();
-    setMeds([createEmptyMed()]);
-    setPrescribedBy("");
+      showToast(`${validMeds.length} medication${validMeds.length > 1 ? "s" : ""} prescribed`, "✓");
+      onClose();
+      setMeds([createEmptyMed()]);
+      setPrescribedBy("");
+    } catch (e) {
+      showToast("An error occurred", "⚠");
+    }
   };
 
   return (
@@ -146,9 +154,9 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
       </div>
 
       <div className="mt-5 flex justify-end gap-2">
-        <button onClick={onClose} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2">Cancel</button>
-        <button onClick={handleSave} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover">
-          Prescribe {meds.filter(m => m.medication.trim()).length > 0 ? `${meds.filter(m => m.medication.trim()).length} Med${meds.filter(m => m.medication.trim()).length > 1 ? "s" : ""}` : ""}
+        <button onClick={onClose} disabled={isPending} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-bg-2 disabled:opacity-50">Cancel</button>
+        <button onClick={handleSave} disabled={isPending} className="cursor-pointer rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-50">
+          {isPending ? "Prescribing..." : `Prescribe ${meds.filter(m => m.medication.trim()).length > 0 ? `${meds.filter(m => m.medication.trim()).length} Med${meds.filter(m => m.medication.trim()).length > 1 ? "s" : ""}` : ""}`}
         </button>
       </div>
     </Modal>

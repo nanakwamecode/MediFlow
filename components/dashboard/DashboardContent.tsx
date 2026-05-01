@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePatientStore } from "@/store/patientStore";
+import { usePatients, useAllConsultations, useAllLabs, useAllPrescriptions } from "@/hooks/queries/usePatients";
 import { useUiStore } from "@/store/uiStore";
 import { getInitials } from "@/lib/constants";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
@@ -9,7 +9,10 @@ import PatientModal from "@/components/patients/PatientModal";
 import React, { useState } from "react";
 
 export default function DashboardContent() {
-  const { patients, consultations, labInvestigations, prescriptions } = usePatientStore();
+  const { data: patients = [] } = usePatients();
+  const { data: consultations = [] } = useAllConsultations();
+  const { data: labInvestigations = [] } = useAllLabs();
+  const { data: prescriptions = [] } = useAllPrescriptions();
   const { viewPatient } = useUiStore();
   const [ptModalOpen, setPtModalOpen] = useState(false);
 
@@ -22,9 +25,9 @@ export default function DashboardContent() {
 
   // Calculate metrics
   const totalPatients = patients.length;
-  const recentConsultations = Object.values(consultations).flat().sort((a,b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-  const pendingLabs = Object.values(labInvestigations).flat().filter(l => l.status === 'pending');
-  const pendingPrescriptions = Object.values(prescriptions).flat().filter(p => p.status === 'pending');
+  const recentConsultations = consultations.sort((a,b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+  const pendingLabs = labInvestigations.filter(l => l.status === 'pending');
+  const pendingPrescriptions = prescriptions.filter(p => p.status === 'pending');
 
   if (patients.length === 0) {
     return (
@@ -107,7 +110,7 @@ export default function DashboardContent() {
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {patients.slice(0, 3).map((p) => {
-          const ptConsults = consultations[p.id] || [];
+          const ptConsults = consultations.filter(c => c.patientId === p.id);
           const lastConsult = ptConsults[0];
           const meta = [p.age ? `Age ${p.age}` : "", p.gender, p.town].filter(Boolean).join(" · ");
 
