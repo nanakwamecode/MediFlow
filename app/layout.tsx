@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Mono, Instrument_Sans } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { Providers } from "@/app/providers";
-import { ToastProvider } from "@/components/ui/toast";
+import { ToastProvider } from "@/components/common/Toast/ToastProvider";
 import "./globals.css";
 
 const dmSerif = DM_Serif_Display({
