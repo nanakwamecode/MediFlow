@@ -13,6 +13,7 @@ export default function VitalsPage() {
   const { patients, vitals } = usePatientStore();
   const { viewPatient } = useUiStore();
   const [logFor, setLogFor] = useState<{ id: string; name: string } | null>(null);
+  const [genericLogOpen, setGenericLogOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   const q = search.toLowerCase();
@@ -34,6 +35,12 @@ export default function VitalsPage() {
             {allVitals.length} vitals record{allVitals.length !== 1 ? "s" : ""} across {patients.length} patient{patients.length !== 1 ? "s" : ""}
           </p>
         </div>
+        <button
+          onClick={() => setGenericLogOpen(true)}
+          className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-px hover:bg-accent-hover hover:shadow-md"
+        >
+          + Log Vitals
+        </button>
       </div>
 
       {/* Search */}
@@ -98,6 +105,9 @@ export default function VitalsPage() {
 
       {logFor && (
         <LogVitalsModal open={!!logFor} onClose={() => setLogFor(null)} patientId={logFor.id} patientName={logFor.name} />
+      )}
+      {genericLogOpen && (
+        <LogVitalsModal open={genericLogOpen} onClose={() => setGenericLogOpen(false)} />
       )}
     </div>
   );
