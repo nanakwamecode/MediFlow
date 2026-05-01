@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Mono, Instrument_Sans } from "next/font/google";
-import { AuthProvider } from "@/components/auth/AuthProvider";
 import { Providers } from "@/app/providers";
 import { ToastProvider } from "@/components/common/Toast/ToastProvider";
 import "./globals.css";
@@ -43,9 +42,7 @@ export default function RootLayout({
     >
       <body className="min-h-full" suppressHydrationWarning>
         <Providers>
-          <AuthProvider>
-            <ToastProvider>{children}</ToastProvider>
-          </AuthProvider>
+          <ToastProvider>{children}</ToastProvider>
         </Providers>
       </body>
     </html>

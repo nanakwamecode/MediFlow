@@ -145,3 +145,24 @@ export async function dispensePrescription({ patientId, rxId }: { patientId: str
   const json = await res.json();
   return json.data;
 }
+
+export async function getAllConsultations(): Promise<any[]> {
+  const res = await fetch("/api/consultations");
+  if (!res.ok) throw new Error("Failed to fetch all consultations");
+  const json = await res.json();
+  return json.data;
+}
+
+export async function getAllLabs(): Promise<any[]> {
+  const res = await fetch("/api/labs");
+  if (!res.ok) throw new Error("Failed to fetch all labs");
+  const json = await res.json();
+  return json.data;
+}
+
+export async function getAllPrescriptions(): Promise<any[]> {
+  const res = await fetch("/api/prescriptions");
+  if (!res.ok) throw new Error("Failed to fetch all prescriptions");
+  const json = await res.json();
+  return json.data;
+}

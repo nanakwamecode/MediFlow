@@ -177,7 +177,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     let finalResult = result.trim();
     
     if (isHepProfile) {
