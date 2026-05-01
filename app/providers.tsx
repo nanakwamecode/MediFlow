@@ -1,23 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
-import { useAuthStore } from "@/store/authStore";
-import { ToastProvider } from "@/components/common/Toast/ToastProvider";
-
-function AuthHydrator({ children }: { children: React.ReactNode }) {
-  const checkSession = useAuthStore((s) => s.checkSession);
-
-  useEffect(() => {
-    checkSession();
-  }, [checkSession]);
-
-  return <>{children}</>;
-}
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return (
-    <ToastProvider>
-      <AuthHydrator>{children}</AuthHydrator>
-    </ToastProvider>
-  );
+  const [client] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+      },
+    },
+  }));
+  
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
