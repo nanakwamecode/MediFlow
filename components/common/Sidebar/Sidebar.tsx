@@ -39,16 +39,23 @@ export default function Sidebar() {
       <div className="flex h-[62px] shrink-0 items-center justify-between border-b border-white/8">
         <div
           className={cn(
-            "flex flex-col overflow-hidden pl-[18px] whitespace-nowrap transition-opacity duration-150",
+            "flex items-center gap-2.5 overflow-hidden pl-4 whitespace-nowrap transition-opacity duration-150",
             sidebarCollapsed && "pointer-events-none opacity-0"
           )}
         >
-          <h1 className="font-serif text-[1.35rem] font-medium text-white tracking-wide leading-none">
-            MediFlow
-          </h1>
-          <p className="mt-0.5 font-mono text-[0.55rem] tracking-[0.2em] text-accent uppercase font-bold">
-            Clinic System
-          </p>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/15 ring-1 ring-accent/20">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </div>
+          <div className="flex flex-col">
+            <h1 className="font-serif text-[1.45rem] font-medium text-white tracking-wide leading-none mt-0.5">
+              MediFlow
+            </h1>
+            <p className="mt-0.5 font-mono text-[0.58rem] tracking-[0.22em] text-accent uppercase font-bold">
+              Clinic System
+            </p>
+          </div>
         </div>
         <button
           onClick={toggleSidebar}

@@ -102,7 +102,7 @@ export default function PatientDetailPage({ patientId }: Props) {
           <table className="w-full border-collapse">
             <thead>
               <tr>
-                {["Date", "BP", "Pulse", "Temp", "Wt", "RR", "Notes", ""].map((h) => (
+                {["Date", "BP", "Pulse", "Temp", "Wt", "Ht", "BMI", "RR", "Notes", ""].map((h) => (
                   <th key={h} className="bg-bg-2/50 px-4 py-3 text-left font-mono text-[0.6rem] font-medium tracking-[0.15em] text-ink-3 uppercase">{h}</th>
                 ))}
               </tr>
@@ -116,6 +116,8 @@ export default function PatientDetailPage({ patientId }: Props) {
                   <td className="px-4 py-3 font-mono text-[0.75rem]">{v.pulse ?? "-"}</td>
                   <td className="px-4 py-3 font-mono text-[0.75rem]">{v.temperature ? `${v.temperature}°C` : "-"}</td>
                   <td className="px-4 py-3 font-mono text-[0.75rem]">{v.weight ? `${v.weight}kg` : "-"}</td>
+                  <td className="px-4 py-3 font-mono text-[0.75rem]">{v.height ? `${v.height}cm` : "-"}</td>
+                  <td className="px-4 py-3 font-mono text-[0.75rem]">{v.bmi ?? "-"}</td>
                   <td className="px-4 py-3 font-mono text-[0.75rem]">{v.respiratoryRate ?? "-"}</td>
                   <td className="px-4 py-3 text-[0.7rem] text-ink-3">{v.notes || "-"}</td>
                   <td className="px-4 py-3 text-right">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,11 @@ export default function LoginForm() {
   const [submitting, setSubmitting] = useState(false);
   const { login, error, clearError } = useAuthStore();
   const router = useRouter();
+
+  // Clear any existing auth errors when the login form mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

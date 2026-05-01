@@ -13,6 +13,7 @@ export default function VitalsPage() {
   const { patients, vitals } = usePatientStore();
   const { viewPatient } = useUiStore();
   const [logFor, setLogFor] = useState<{ id: string; name: string } | null>(null);
+  const [genericLogOpen, setGenericLogOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   const q = search.toLowerCase();
@@ -23,7 +24,7 @@ export default function VitalsPage() {
       (vitals[p.id] || []).map((v) => ({ ...v, ptId: p.id, ptName: p.name, ptOpd: p.opdNumber }))
     )
     .filter((v) => !q || v.ptName.toLowerCase().includes(q) || (v.ptOpd || "").toLowerCase().includes(q) || (v.notes || "").toLowerCase().includes(q))
-    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+    .sort((a, b) => b.id - a.id);
 
   return (
     <div className="animate-fade-in p-7 pb-20">
@@ -34,6 +35,12 @@ export default function VitalsPage() {
             {allVitals.length} vitals record{allVitals.length !== 1 ? "s" : ""} across {patients.length} patient{patients.length !== 1 ? "s" : ""}
           </p>
         </div>
+        <button
+          onClick={() => setGenericLogOpen(true)}
+          className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-px hover:bg-accent-hover hover:shadow-md"
+        >
+          + Log Vitals
+        </button>
       </div>
 
       {/* Search */}
@@ -58,7 +65,7 @@ export default function VitalsPage() {
           <table className="w-full border-collapse">
             <thead>
               <tr>
-                {["Patient", "Date", "BP", "Pulse", "Temp", "Wt", "RR", "BP Status", "Notes"].map((h) => (
+                {["Patient", "Date", "BP", "Pulse", "Temp", "Wt", "Ht", "BMI", "RR", "BP Status", "Notes"].map((h) => (
                   <th key={h} className="bg-bg-2 px-3 py-2 text-left font-mono text-[0.54rem] tracking-[0.18em] text-ink-3 uppercase">{h}</th>
                 ))}
               </tr>
@@ -83,6 +90,8 @@ export default function VitalsPage() {
                     <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.pulse ?? "-"}</td>
                     <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.temperature ? `${v.temperature}°C` : "-"}</td>
                     <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.weight ? `${v.weight}kg` : "-"}</td>
+                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.height ? `${v.height}cm` : "-"}</td>
+                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.bmi ?? "-"}</td>
                     <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.respiratoryRate ?? "-"}</td>
                     <td className="px-3 py-2">{bpCat ? <StatusPill label={bpCat.label} size="sm" /> : <span className="text-ink-4 text-xs">-</span>}</td>
                     <td className="px-3 py-2 text-[0.65rem] text-ink-3 max-w-[120px] truncate">{v.notes || "-"}</td>
@@ -96,6 +105,9 @@ export default function VitalsPage() {
 
       {logFor && (
         <LogVitalsModal open={!!logFor} onClose={() => setLogFor(null)} patientId={logFor.id} patientName={logFor.name} />
+      )}
+      {genericLogOpen && (
+        <LogVitalsModal open={genericLogOpen} onClose={() => setGenericLogOpen(false)} />
       )}
     </div>
   );
