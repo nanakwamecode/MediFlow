@@ -41,6 +41,23 @@ export default function PatientModal({ open, onClose, editPatient }: Props) {
     "transition-all focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.1)]"
   );
 
+  const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setDob(val);
+    if (val) {
+      const birthDate = new Date(val);
+      const today = new Date();
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+      if (calculatedAge >= 0) {
+        setAge(calculatedAge.toString());
+      }
+    }
+  };
+
   const handleSave = () => {
     if (!name.trim()) {
       showToast("Please enter a patient name", "⚠");
@@ -95,7 +112,7 @@ export default function PatientModal({ open, onClose, editPatient }: Props) {
             <option>Male</option><option>Female</option><option>Other</option><option>Prefer not to say</option>
           </select>
         </div>
-        <div><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">Date of Birth</label><input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className={fieldClass} /></div>
+        <div><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">Date of Birth</label><input type="date" value={dob} onChange={handleDobChange} className={fieldClass} /></div>
       </div>
       <div className="mb-1"><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">Medical Notes</label><input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. Diabetic, on Amlodipine 5mg" className={fieldClass} /></div>
 
