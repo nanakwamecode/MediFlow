@@ -3,9 +3,9 @@ import { db } from "@/lib/db";
 import { patients } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const patient = await db.query.patients.findFirst({
       where: eq(patients.id, id),
     });
@@ -20,9 +20,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     const [updatedPatient] = await db.update(patients).set({
@@ -44,9 +44,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     await db.delete(patients).where(eq(patients.id, id));
     return NextResponse.json({ success: true });
   } catch (error: any) {
