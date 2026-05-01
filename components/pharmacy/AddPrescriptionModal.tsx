@@ -14,15 +14,16 @@ interface Props {
 }
 
 interface MedEntry {
+  id: string;
   medication: string;
   dosage: string;
   instructions: string;
 }
 
-const EMPTY_MED: MedEntry = { medication: "", dosage: "", instructions: "" };
+const createEmptyMed = (): MedEntry => ({ id: Math.random().toString(36).substring(2, 11), medication: "", dosage: "", instructions: "" });
 
 export default function AddPrescriptionModal({ open, onClose, patientId, patientName }: Props) {
-  const [meds, setMeds] = useState<MedEntry[]>([{ ...EMPTY_MED }]);
+  const [meds, setMeds] = useState<MedEntry[]>([createEmptyMed()]);
   const [prescribedBy, setPrescribedBy] = useState("");
   const [selectedPatientId, setSelectedPatientId] = useState(patientId || "");
 
@@ -39,15 +40,15 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
   );
   const labelClass = "mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase";
 
-  const updateMed = (idx: number, field: keyof MedEntry, value: string) => {
-    setMeds(prev => prev.map((m, i) => i === idx ? { ...m, [field]: value } : m));
+  const updateMed = (id: string, field: keyof MedEntry, value: string) => {
+    setMeds(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));
   };
 
-  const addRow = () => setMeds(prev => [...prev, { ...EMPTY_MED }]);
+  const addRow = () => setMeds(prev => [createEmptyMed(), ...prev]);
 
-  const removeRow = (idx: number) => {
+  const removeRow = (id: string) => {
     if (meds.length <= 1) return;
-    setMeds(prev => prev.filter((_, i) => i !== idx));
+    setMeds(prev => prev.filter(m => m.id !== id));
   };
 
   const handleSave = () => {
@@ -84,7 +85,7 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
 
     showToast(`${validMeds.length} medication${validMeds.length > 1 ? "s" : ""} prescribed`, "✓");
     onClose();
-    setMeds([{ ...EMPTY_MED }]);
+    setMeds([createEmptyMed()]);
     setPrescribedBy("");
   };
 
@@ -119,26 +120,26 @@ export default function AddPrescriptionModal({ open, onClose, patientId, patient
 
       <div className="max-h-[350px] overflow-y-auto space-y-3 pr-1">
         {meds.map((m, idx) => (
-          <div key={idx} className="rounded-lg border border-border bg-bg-2/50 p-3">
+          <div key={m.id} className="rounded-lg border border-border bg-bg-2/50 p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[0.5rem] text-ink-4 uppercase tracking-wider">Med #{idx + 1}</span>
+              <span className="font-mono text-[0.5rem] text-ink-4 uppercase tracking-wider">Med #{meds.length - idx}</span>
               {meds.length > 1 && (
-                <button type="button" onClick={() => removeRow(idx)} className="cursor-pointer text-[0.6rem] text-status-high hover:underline">Remove</button>
+                <button type="button" onClick={() => removeRow(m.id)} className="cursor-pointer text-[0.6rem] text-status-high hover:underline">Remove</button>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2 mb-2">
               <div>
                 <label className={labelClass}>Medication *</label>
-                <input type="text" value={m.medication} onChange={(e) => updateMed(idx, "medication", e.target.value)} placeholder="e.g. Paracetamol" className={fieldClass} />
+                <input type="text" value={m.medication} onChange={(e) => updateMed(m.id, "medication", e.target.value)} placeholder="e.g. Paracetamol" className={fieldClass} />
               </div>
               <div>
                 <label className={labelClass}>Dosage *</label>
-                <input type="text" value={m.dosage} onChange={(e) => updateMed(idx, "dosage", e.target.value)} placeholder="e.g. 500mg TDS" className={fieldClass} />
+                <input type="text" value={m.dosage} onChange={(e) => updateMed(m.id, "dosage", e.target.value)} placeholder="e.g. 500mg TDS" className={fieldClass} />
               </div>
             </div>
             <div>
               <label className={labelClass}>Instructions</label>
-              <input type="text" value={m.instructions} onChange={(e) => updateMed(idx, "instructions", e.target.value)} placeholder="e.g. Twice daily after meals for 5 days" className={fieldClass} />
+              <input type="text" value={m.instructions} onChange={(e) => updateMed(m.id, "instructions", e.target.value)} placeholder="e.g. Twice daily after meals for 5 days" className={fieldClass} />
             </div>
           </div>
         ))}
