@@ -77,9 +77,9 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
     HBsAg: "", HBsAb: "", HBeAg: "", HBeAb: "", HBcAb: "", Comment: ""
   });
   const [urineFields, setUrineFields] = useState<Record<string, string>>({});
-  const [renalFields, setRenalFields] = useState<Record<string, any>>({});
-  const [liverFields, setLiverFields] = useState<Record<string, any>>({});
-  const [fbcFields, setFbcFields] = useState<Record<string, any>>({});
+  const [renalFields, setRenalFields] = useState<Record<string, unknown>>({});
+  const [liverFields, setLiverFields] = useState<Record<string, unknown>>({});
+  const [fbcFields, setFbcFields] = useState<Record<string, unknown>>({});
   const [remarks, setRemarks] = useState("");
 
   const [singleResult, setSingleResult] = useState("");
@@ -101,7 +101,6 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
   const isViralScreen = ["hiv", "syphilis", "vdrl", "gonorrhoea", "hepatitis c", "hcv", "hepatitis b virus"].some(val => testName.toLowerCase().includes(val));
   
   const isHepProfile = (testName.toLowerCase().includes("hep") || testName.toLowerCase().includes("hepatitis")) && !isViralScreen;
-  const isSmallForm = isHbEstimate || isTyphoid || isBloodGroup || isMalaria || isViralScreen;
 
   const fieldClass = cn(
     "w-full rounded-lg border-[1.5px] border-border bg-bg px-3 py-2",
@@ -113,7 +112,8 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
     if (open && isMalaria && !singleResult) {
       setSingleResult("NO MPS SEEN");
     }
-  }, [open, isMalaria, singleResult]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isMalaria]);
 
   const autoDetectFlag = (valStr: string, refStr: string) => {
     if (!valStr.trim() || !refStr.includes('-')) return null;
@@ -132,7 +132,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
 
   const updateRenalVal = (k: string, prop: string, val: string) => {
     setRenalFields(prev => {
-      let row = prev[k] || { result: "", flag: "Normal", unit: RENAL_FIELDS.find(f => f.key === k)?.defUnit || "", ref: RENAL_FIELDS.find(f => f.key === k)?.defRef || "" };
+      const row = (prev[k] as any) || { result: "", flag: "Normal", unit: RENAL_FIELDS.find(f => f.key === k)?.defUnit || "", ref: RENAL_FIELDS.find(f => f.key === k)?.defRef || "" };
       const nextRow = { ...row, [prop]: val };
       if (prop === "result" || prop === "ref") {
         const auto = autoDetectFlag(nextRow.result, nextRow.ref);
@@ -144,7 +144,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
 
   const updateLiverVal = (k: string, prop: string, val: string) => {
     setLiverFields(prev => {
-      let row = prev[k] || { result: "", flag: "Normal", unit: LIVER_FIELDS.find(f => f.key === k)?.defUnit || "", ref: LIVER_FIELDS.find(f => f.key === k)?.defRef || "" };
+      const row = (prev[k] as any) || { result: "", flag: "Normal", unit: LIVER_FIELDS.find(f => f.key === k)?.defUnit || "", ref: LIVER_FIELDS.find(f => f.key === k)?.defRef || "" };
       const nextRow = { ...row, [prop]: val };
       if (prop === "result" || prop === "ref") {
         const auto = autoDetectFlag(nextRow.result, nextRow.ref);
@@ -156,7 +156,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
 
   const updateFbcVal = (k: string, prop: string, val: string) => {
     setFbcFields(prev => {
-      let row = prev[k] || { result: "", flag: "Normal", unit: FBC_FIELDS.find(f => f.key === k)?.defUnit || "", ref: FBC_FIELDS.find(f => f.key === k)?.defRef || "" };
+      const row = (prev[k] as any) || { result: "", flag: "Normal", unit: FBC_FIELDS.find(f => f.key === k)?.defUnit || "", ref: FBC_FIELDS.find(f => f.key === k)?.defRef || "" };
       const nextRow = { ...row, [prop]: val };
       if (prop === "result" || prop === "ref") {
         const auto = autoDetectFlag(nextRow.result, nextRow.ref);
@@ -189,7 +189,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
       }
     } else if (isRenalProfile) {
       finalResult = RENAL_FIELDS.map(f => {
-        const val = (prop: string) => renalFields[f.key]?.[prop] ?? (
+        const val = (prop: string) => (renalFields[f.key] as any)?.[prop] ?? (
            prop === "flag" ? "Normal" : prop === "unit" ? f.defUnit : prop === "ref" ? f.defRef : ""
         );
         return `${f.label}:\n> ${val("result") || "-"} (${val("flag")}) — ${val("unit")} [Ref: ${val("ref")}]`;
@@ -205,7 +205,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
            currentGrp = f.group;
            res += `\n[ ${f.group} ]\n`;
         }
-        const val = (prop: string) => liverFields[f.key]?.[prop] ?? (
+        const val = (prop: string) => (liverFields[f.key] as any)?.[prop] ?? (
            prop === "flag" ? "Normal" : prop === "unit" ? f.defUnit : prop === "ref" ? f.defRef : ""
         );
         res += `${f.label}:\n> ${val("result") || "-"} (${val("flag")}) — ${val("unit")} [Ref: ${val("ref")}]`;
@@ -217,7 +217,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
       }
     } else if (isFbcProfile) {
       finalResult = FBC_FIELDS.map(f => {
-        const val = (prop: string) => fbcFields[f.key]?.[prop] ?? (
+        const val = (prop: string) => (fbcFields[f.key] as any)?.[prop] ?? (
            prop === "flag" ? "Normal" : prop === "unit" ? f.defUnit : prop === "ref" ? f.defRef : ""
         );
         return `${f.label}:\n> ${val("result") || "-"} (${val("flag")}) — ${val("unit")} [Ref: ${val("ref")}]`;
@@ -390,7 +390,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
                 const isGroupStart = fieldGroup && (i === 0 || fieldGroup !== (targetFieldsObj as any)[i - 1]?.group);
                 
                 const val = (prop: string) => {
-                  const stateObj = isRenalProfile ? renalFields : isLiverProfile ? liverFields : fbcFields;
+                  const stateObj = (isRenalProfile ? renalFields : isLiverProfile ? liverFields : fbcFields) as Record<string, any>;
                   return stateObj[f.key]?.[prop] ?? (
                     prop === "flag" ? "Normal" : prop === "unit" ? f.defUnit : prop === "ref" ? f.defRef : ""
                   );

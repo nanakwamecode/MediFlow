@@ -133,11 +133,9 @@ export default function PatientDetailPage({ patientId }: Props) {
       {/* ─── Consults Tab ─── */}
       {activeTab === "consults" && (
         <div className="grid gap-4 sm:grid-cols-2">
-          {consults.length === 0 && (
             <div className="col-span-full p-10 text-center text-sm font-medium text-ink-3 border rounded-2xl border-dashed border-border-2 bg-white/50">
-              No consultations yet. Click "+ Consult" to add one.
+              No consultations yet. Click &quot;+ Consult&quot; to add one.
             </div>
-          )}
           {consults.map(c => (
             <div key={c.id} className="group relative overflow-hidden rounded-2xl border border-border bg-white p-5 shadow-sm transition-all hover:shadow-md">
               <div className="absolute left-0 top-0 h-full w-1.5 bg-blue opacity-50 backdrop-blur-sm transition-all group-hover:opacity-100"></div>
@@ -162,11 +160,9 @@ export default function PatientDetailPage({ patientId }: Props) {
       {/* ─── Labs Tab ─── */}
       {activeTab === "labs" && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {labs.length === 0 && (
             <div className="col-span-full p-10 text-center text-sm font-medium text-ink-3 border rounded-2xl border-dashed border-border-2 bg-white/50">
-              No lab requests yet. Click "+ Lab" to request one.
+              No lab requests yet. Click &quot;+ Lab&quot; to request one.
             </div>
-          )}
           {labs.map(l => (
             <div key={l.id} className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <div>
@@ -207,11 +203,9 @@ export default function PatientDetailPage({ patientId }: Props) {
       {/* ─── Pharmacy Tab ─── */}
       {activeTab === "meds" && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {meds.length === 0 && (
             <div className="col-span-full p-10 text-center text-sm font-medium text-ink-3 border rounded-2xl border-dashed border-border-2 bg-white/50">
-              No prescriptions yet. Click "+ Rx" to add one.
+              No prescriptions yet. Click &quot;+ Rx&quot; to add one.
             </div>
-          )}
           {meds.map(m => (
             <div key={m.id} className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <div>
