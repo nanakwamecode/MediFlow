@@ -12,12 +12,15 @@ export default function LoginPage() {
     <div className="fixed inset-0 flex bg-ink overflow-hidden">
       {/* Left — Branding Panel (hidden on mobile) */}
       <div className="relative hidden lg:flex lg:w-[55%] flex-col justify-between overflow-hidden">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1612] via-[#2a1f18] to-[#0d0a08]" />
+        {/* Warm burgundy gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2a1a15] via-[#3d2418] to-[#1a0f0a]" />
+
+        {/* Warm tint overlay */}
+        <div className="absolute inset-0 bg-accent/[0.04]" />
 
         {/* Subtle grid pattern overlay */}
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage:
               "linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)",
@@ -25,10 +28,10 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Accent glow orbs */}
-        <div className="absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-accent/8 blur-[120px]" />
-        <div className="absolute -bottom-40 right-10 h-[400px] w-[400px] rounded-full bg-accent/6 blur-[100px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-accent/4 blur-[80px]" />
+        {/* Dynamic ambient glow orbs */}
+        <div className="absolute -left-20 -top-20 h-[600px] w-[600px] rounded-full bg-accent/[0.18] blur-[140px] animate-orb-1" />
+        <div className="absolute -bottom-32 -right-12 h-[500px] w-[500px] rounded-full bg-accent/[0.14] blur-[120px] animate-orb-2" />
+        <div className="absolute top-1/2 left-1/3 -translate-y-1/2 h-[450px] w-[450px] rounded-full bg-accent/[0.10] blur-[100px] animate-orb-1" />
 
         {/* Top branding */}
         <div className="relative z-10 p-12">
@@ -117,11 +120,6 @@ export default function LoginPage() {
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
-
-            {/* Footer */}
-            <p className="mt-6 text-center font-mono text-[0.55rem] tracking-wider text-ink-4">
-              Protected by enterprise-grade security
-            </p>
           </div>
         </div>
       </div>

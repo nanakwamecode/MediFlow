@@ -23,7 +23,10 @@ const instrumentSans = Instrument_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "MediFlow — Clinic Management System",
+  title: {
+    default: "MediFlow — Clinic Management System",
+    template: "%s | MediFlow",
+  },
   description:
     "A comprehensive clinic management system for managing patients, vitals, consultations, laboratory investigations, and pharmacy prescriptions.",
 };
