@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -8,23 +9,64 @@ interface Props {
 }
 
 export default function PinGate({ children }: Props) {
+  const pathname = usePathname();
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const storageKey = `mediflow_pin_verified_${pathname}`;
+
   useEffect(() => {
-    // Check session storage on mount
-    const verified = sessionStorage.getItem("mediflow_pin_verified");
+    // Check session storage on mount / path change
+    const verified = sessionStorage.getItem(storageKey);
     setIsVerified(verified === "true");
-  }, []);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!isVerified) return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        // Lock all modules by removing their verified flags from session storage
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith("mediflow_pin_verified_")) {
+            sessionStorage.removeItem(key);
+          }
+        }
+        setIsVerified(false);
+      }, 10 * 60 * 1000); // 10 minutes inactivity
+    };
+
+    // Events that indicate user activity
+    const events = ["mousemove", "keydown", "mousedown", "touchstart", "scroll"];
+    
+    events.forEach((event) => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Initialize timer
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach((event) => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [isVerified]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (pin.trim() === "MDF0011") {
-      sessionStorage.setItem("mediflow_pin_verified", "true");
+      sessionStorage.setItem(storageKey, "true");
       setIsVerified(true);
+      setPin("");
     } else {
       setError("Invalid security PIN. Access denied.");
     }
