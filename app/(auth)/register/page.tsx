@@ -12,23 +12,26 @@ export default function RegisterPage() {
     <div className="fixed inset-0 flex bg-ink overflow-hidden">
       {/* Left — Branding Panel (hidden on mobile) */}
       <div className="relative hidden lg:flex lg:w-[55%] flex-col justify-between overflow-hidden">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2a1410] via-[#1a0c0a] to-[#0a0504]" />
+        {/* Warm burgundy gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2a1a15] via-[#3d2418] to-[#1a0f0a]" />
 
-        {/* Subtle dot pattern overlay */}
+        {/* Warm tint overlay */}
+        <div className="absolute inset-0 bg-accent/[0.04]" />
+
+        {/* Subtle grid pattern overlay */}
         <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage:
-              "radial-gradient(rgba(255,255,255,0.15) 1px, transparent 0)",
-            backgroundSize: "24px 24px",
+              "linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
           }}
         />
 
-        {/* Accent glow orbs */}
-        <div className="absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-accent/16 blur-[120px] animate-drift-slow" />
-        <div className="absolute -bottom-40 right-10 h-[400px] w-[400px] rounded-full bg-amber-600/10 blur-[100px] animate-drift-reverse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-accent/10 blur-[80px] animate-drift-slow" style={{ animationDelay: '-5s' }} />
+        {/* Dynamic ambient glow orbs */}
+        <div className="absolute -left-20 -top-20 h-[600px] w-[600px] rounded-full bg-accent/[0.18] blur-[140px] animate-orb-1" />
+        <div className="absolute -bottom-32 -right-12 h-[500px] w-[500px] rounded-full bg-accent/[0.14] blur-[120px] animate-orb-2" />
+        <div className="absolute top-1/2 left-1/3 -translate-y-1/2 h-[450px] w-[450px] rounded-full bg-accent/[0.10] blur-[100px] animate-orb-1" />
 
         {/* Top branding */}
         <div className="relative z-10 p-12">
