@@ -28,8 +28,8 @@ export default function NavItem({
         "px-3 py-3 text-left text-[0.9rem] font-medium whitespace-nowrap",
         "cursor-pointer transition-all duration-150 no-underline",
         active
-          ? "bg-accent text-white font-semibold shadow-md"
-          : "bg-transparent text-white/70 hover:bg-white/10 hover:text-white"
+          ? "bg-accent text-white font-semibold shadow-md shadow-accent/15"
+          : "bg-transparent text-ink-2 hover:bg-bg hover:text-ink"
       )}
     >
       <span className={cn(
