@@ -2,40 +2,40 @@
 
 @theme inline {
   /* ─── Brand Colors ─── */
-  --color-bg: #f5f2ee;
-  --color-bg-2: #ede9e3;
+  --color-bg: #f8fafc;
+  --color-bg-2: #f1f5f9;
   --color-card: #ffffff;
 
-  --color-border: #e0d9d0;
-  --color-border-2: #ccc5ba;
+  --color-border: #e2e8f0;
+  --color-border-2: #cbd5e1;
 
-  --color-ink: #1a1612;
-  --color-ink-2: #4a4540;
-  --color-ink-3: #8a837a;
-  --color-ink-4: #b5afa8;
+  --color-ink: #0f172a;
+  --color-ink-2: #334155;
+  --color-ink-3: #64748b;
+  --color-ink-4: #94a3b8;
 
-  --color-accent: #c8392b;
-  --color-accent-hover: #a82e22;
+  --color-accent: #4f46e5;
+  --color-accent-hover: #4338ca;
 
-  --color-status-normal: #2a7d4f;
-  --color-status-normal-bg: #edf6f1;
-  --color-status-normal-border: #b8dfc8;
+  --color-status-normal: #10b981;
+  --color-status-normal-bg: #ecfdf5;
+  --color-status-normal-border: #a7f3d0;
 
-  --color-status-elevated: #d4692a;
-  --color-status-elevated-bg: #fef4ee;
+  --color-status-elevated: #f59e0b;
+  --color-status-elevated-bg: #fffbeb;
 
-  --color-status-high: #c8392b;
-  --color-status-high-bg: #fdf0ef;
-  --color-status-high-border: #f5c5c0;
+  --color-status-high: #ef4444;
+  --color-status-high-bg: #fef2f2;
+  --color-status-high-border: #fecaca;
 
-  --color-status-crisis: #7a1010;
-  --color-status-crisis-bg: rgba(200, 57, 43, 0.12);
+  --color-status-crisis: #991b1b;
+  --color-status-crisis-bg: rgba(239, 68, 68, 0.1);
 
-  --color-blue: #2a5c8a;
-  --color-blue-bg: #eef3f8;
+  --color-blue: #0284c7;
+  --color-blue-bg: #f0f9ff;
 
   /* ─── Fonts ─── */
-  --font-serif: var(--font-dm-serif);
+  --font-serif: var(--font-instrument-sans);
   --font-mono: var(--font-dm-mono);
   --font-sans: var(--font-instrument-sans);
 

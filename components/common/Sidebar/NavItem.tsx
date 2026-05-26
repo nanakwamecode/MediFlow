@@ -24,24 +24,27 @@ export default function NavItem({
       href={href}
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-3 overflow-hidden rounded-lg border-none",
-        "px-3 py-3 text-left text-[0.9rem] font-medium whitespace-nowrap",
-        "cursor-pointer transition-all duration-150 no-underline",
+        "group flex w-full items-center gap-3 overflow-hidden rounded-xl border-none",
+        "px-3.5 py-3 text-left text-[0.88rem] font-medium whitespace-nowrap",
+        "cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] no-underline relative",
         active
-          ? "bg-accent text-white font-semibold shadow-md"
-          : "bg-transparent text-white/70 hover:bg-white/10 hover:text-white"
+          ? "bg-gradient-to-r from-accent to-accent-hover text-white font-semibold shadow-lg shadow-accent/20 scale-[1.02]"
+          : "bg-transparent text-white/60 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
       )}
     >
+      {active && (
+        <span className="absolute left-0 top-1/4 bottom-1/4 w-1 rounded-r-md bg-white animate-fade-in" />
+      )}
       <span className={cn(
-        "flex shrink-0 items-center justify-center transition-transform",
-        active ? "scale-110" : ""
+        "flex shrink-0 items-center justify-center transition-all duration-300",
+        active ? "scale-105 text-white" : "text-white/60 group-hover:text-white group-hover:scale-105"
       )}>
-        <NavIcon name={icon} className="h-6 w-6" />
+        <NavIcon name={icon} className="h-5 w-5" />
       </span>
       <span
         className={cn(
-          "overflow-hidden transition-opacity duration-150",
-          collapsed && "opacity-0"
+          "overflow-hidden transition-all duration-300",
+          collapsed ? "opacity-0 translate-x-4" : "opacity-100 translate-x-0"
         )}
       >
         {label}
