@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { db, isDbConfigured } from "@/lib/db";
 import { users } from "@/lib/schema";
 import {
   readJsonBody,
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const { phone, type } = validated;
 
     // For "reset" type, verify the phone belongs to an existing user
-    if (type === "reset") {
+    if (type === "reset" && isDbConfigured) {
       const [existing] = await db
         .select({ id: users.id })
         .from(users)

@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { db, isDbConfigured } from "@/lib/db";
 import { users } from "@/lib/schema";
 import {
   createSession,
@@ -19,15 +19,25 @@ export async function GET() {
     return NextResponse.json({ user: null }, { status: 401 });
   }
 
-  const [row] = await db
-    .select({
-      id: users.id,
-      username: users.username,
-      displayName: users.displayName,
-    })
-    .from(users)
-    .where(eq(users.id, session.userId))
-    .limit(1);
+  let row;
+  if (!isDbConfigured) {
+    row = {
+      id: session.userId,
+      username: session.username,
+      displayName: session.displayName,
+    };
+  } else {
+    const [dbRow] = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+      })
+      .from(users)
+      .where(eq(users.id, session.userId))
+      .limit(1);
+    row = dbRow;
+  }
 
   if (!row) {
     await deleteSession();
@@ -60,15 +70,25 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: validated.error }, { status: 400 });
     }
 
-    const [row] = await db
-      .update(users)
-      .set({ displayName: validated.displayName })
-      .where(eq(users.id, session.userId))
-      .returning({
-        id: users.id,
-        username: users.username,
-        displayName: users.displayName,
-      });
+    let row;
+    if (!isDbConfigured) {
+      row = {
+        id: session.userId,
+        username: session.username,
+        displayName: validated.displayName,
+      };
+    } else {
+      const [dbRow] = await db
+        .update(users)
+        .set({ displayName: validated.displayName })
+        .where(eq(users.id, session.userId))
+        .returning({
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+        });
+      row = dbRow;
+    }
 
     if (!row) {
       await deleteSession();

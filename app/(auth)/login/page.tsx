@@ -118,10 +118,6 @@ export default function LoginPage() {
               </svg>
             </Link>
 
-            {/* Footer */}
-            <p className="mt-6 text-center font-mono text-[0.55rem] tracking-wider text-ink-4">
-              Protected by enterprise-grade security
-            </p>
           </div>
         </div>
       </div>

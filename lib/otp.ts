@@ -1,6 +1,8 @@
-import { db } from "@/lib/db";
+import { db, isDbConfigured } from "@/lib/db";
 import { otpCodes } from "@/lib/schema";
 import { eq, and, gt, desc } from "drizzle-orm";
+
+const mockOtps = new Map<string, { code: string; type: string; expiresAt: Date }>();
 
 const OTP_EXPIRY_MINUTES = 5;
 const MAX_OTPS_PER_WINDOW = 3;
@@ -49,6 +51,10 @@ export async function sendSms(
 
 /** Check rate limit: max OTPs in a time window */
 export async function isRateLimited(phone: string): Promise<boolean> {
+  if (!isDbConfigured) {
+    return false;
+  }
+
   const windowStart = new Date(
     Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000
   );
@@ -76,6 +82,11 @@ export async function createOtp(
     Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000
   );
 
+  if (!isDbConfigured) {
+    mockOtps.set(phone, { code, type, expiresAt });
+    return code;
+  }
+
   await db.insert(otpCodes).values({
     phone,
     code,
@@ -92,6 +103,15 @@ export async function verifyOtp(
   code: string,
   type: "register" | "reset"
 ): Promise<boolean> {
+  if (!isDbConfigured) {
+    const mockRow = mockOtps.get(phone);
+    if (!mockRow) return false;
+    if (mockRow.code !== code || mockRow.type !== type) return false;
+    if (mockRow.expiresAt < new Date()) return false;
+    mockOtps.delete(phone);
+    return true;
+  }
+
   const now = new Date();
 
   const [row] = await db

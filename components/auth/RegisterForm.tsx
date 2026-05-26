@@ -48,7 +48,7 @@ export default function RegisterForm() {
     setSubmitting(false);
 
     if (success) {
-      router.push("/dashboard");
+      router.push("/mediflow");
     }
   };
 

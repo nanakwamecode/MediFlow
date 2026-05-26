@@ -79,7 +79,7 @@ export default function Sidebar() {
             label={item.label}
             active={currentTab === item.key}
             collapsed={sidebarCollapsed}
-            href={item.key === "dashboard" ? "/dashboard" : `/dashboard/${item.key}`}
+            href={item.key === "dashboard" ? "/mediflow" : `/mediflow/${item.key}`}
             onClick={() => {
               useUiStore.getState().clearViewingPatient();
             }}

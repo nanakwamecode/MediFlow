@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { db, isDbConfigured } from "@/lib/db";
 import { users } from "@/lib/schema";
 import {
   readJsonBody,
@@ -35,26 +35,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find user by phone
-    const [user] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.phone, phone))
-      .limit(1);
+    if (isDbConfigured) {
+      // Find user by phone
+      const [user] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.phone, phone))
+        .limit(1);
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "No account found with this phone number." },
-        { status: 404 }
-      );
+      if (!user) {
+        return NextResponse.json(
+          { error: "No account found with this phone number." },
+          { status: 404 }
+        );
+      }
+
+      // Update password
+      const passwordHash = await bcrypt.hash(newPassword, 12);
+      await db
+        .update(users)
+        .set({ passwordHash })
+        .where(eq(users.id, user.id));
     }
-
-    // Update password
-    const passwordHash = await bcrypt.hash(newPassword, 12);
-    await db
-      .update(users)
-      .set({ passwordHash })
-      .where(eq(users.id, user.id));
 
     return NextResponse.json({
       message: "Password reset successfully. You can now sign in.",

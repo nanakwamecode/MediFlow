@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { db, isDbConfigured } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { createSession } from "@/lib/auth";
 import {
@@ -24,44 +24,53 @@ export async function POST(req: NextRequest) {
 
     const { username, password, displayName } = validated;
 
-    // Check if username already taken
-    const existingUser = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.username, username))
-      .limit(1);
-
-    if (existingUser.length > 0) {
-      return NextResponse.json(
-        { error: "Username already taken." },
-        { status: 409 }
-      );
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-
     let newUser;
-    try {
-      [newUser] = await db
-        .insert(users)
-        .values({
-          username,
-          passwordHash,
-          displayName,
-        })
-        .returning({
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-        });
-    } catch (e) {
-      if (isUniqueViolation(e)) {
+
+    if (!isDbConfigured) {
+      newUser = {
+        id: "demo-registered-id-" + Math.floor(Math.random() * 10000),
+        username,
+        displayName: displayName || username,
+      };
+    } else {
+      // Check if username already taken
+      const existingUser = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+
+      if (existingUser.length > 0) {
         return NextResponse.json(
           { error: "Username already taken." },
           { status: 409 }
         );
       }
-      throw e;
+
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      try {
+        [newUser] = await db
+          .insert(users)
+          .values({
+            username,
+            passwordHash,
+            displayName,
+          })
+          .returning({
+            id: users.id,
+            username: users.username,
+            displayName: users.displayName,
+          });
+      } catch (e) {
+        if (isUniqueViolation(e)) {
+          return NextResponse.json(
+            { error: "Username already taken." },
+            { status: 409 }
+          );
+        }
+        throw e;
+      }
     }
 
     await createSession({

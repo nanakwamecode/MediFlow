@@ -29,7 +29,7 @@ export default function LoginForm() {
     setSubmitting(false);
 
     if (success) {
-      router.push("/dashboard");
+      router.push("/mediflow");
     }
   };
 
