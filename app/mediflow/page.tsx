@@ -6,5 +6,7 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardIndexPage() {
-  return <DashboardContent />;
+  return (
+    <DashboardContent />
+  );
 }

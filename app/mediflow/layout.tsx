@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useUiStore } from "@/store/uiStore";
 import { Sidebar } from "@/components/common/Sidebar";
@@ -16,10 +16,27 @@ export default function DashboardLayout({
   const isLoading = useAuthStore((s) => s.isLoading);
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) router.replace("/login");
   }, [isLoggedIn, isLoading, router]);
+
+  useEffect(() => {
+    const mainGroup = [
+      "/mediflow",
+      "/mediflow/consultations",
+      "/mediflow/labs",
+      "/mediflow/pharmacy",
+    ];
+
+    if (!mainGroup.includes(pathname)) {
+      // Lock them immediately
+      mainGroup.forEach((route) => {
+        sessionStorage.removeItem(`mediflow_pin_verified_${route}`);
+      });
+    }
+  }, [pathname]);
 
   if (isLoading || !isLoggedIn) return null;
 

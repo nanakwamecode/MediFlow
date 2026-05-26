@@ -71,7 +71,7 @@ export default function QuickAccessGrid() {
         <ModuleCard
           title="Vitals & Triage"
           description="Record BP, pulse, temperature and vitals"
-          href="/dashboard/vitals"
+          href="/mediflow/vitals"
           delay={330}
           gradientFrom="#c8392b"
           gradientTo="#e05545"
@@ -84,7 +84,7 @@ export default function QuickAccessGrid() {
         <ModuleCard
           title="Consultations"
           description="Diagnoses, symptoms & clinical notes"
-          href="/dashboard/consultations"
+          href="/mediflow/consultations"
           delay={400}
           gradientFrom="#2a5c8a"
           gradientTo="#3d7ab8"
@@ -97,7 +97,7 @@ export default function QuickAccessGrid() {
         <ModuleCard
           title="Laboratory"
           description="Request tests & review results"
-          href="/dashboard/labs"
+          href="/mediflow/labs"
           delay={470}
           gradientFrom="#d4692a"
           gradientTo="#e88b4d"
@@ -110,7 +110,7 @@ export default function QuickAccessGrid() {
         <ModuleCard
           title="Pharmacy"
           description="Prescriptions & dispense tracking"
-          href="/dashboard/pharmacy"
+          href="/mediflow/pharmacy"
           delay={540}
           gradientFrom="#2a7d4f"
           gradientTo="#3da86a"
