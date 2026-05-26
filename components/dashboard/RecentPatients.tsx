@@ -23,7 +23,7 @@ export default function RecentPatients({ patients, consultations }: Props) {
           Recent Patients
         </div>
         <Link
-          href="/dashboard/patients"
+          href="/mediflow/patients"
           className="flex items-center gap-1 font-mono text-[0.56rem] tracking-[0.15em] text-accent no-underline uppercase transition-colors hover:text-accent-hover"
         >
           View All
@@ -45,7 +45,7 @@ export default function RecentPatients({ patients, consultations }: Props) {
           return (
             <Link
               key={p.id}
-              href="/dashboard/patients"
+              href="/mediflow/patients"
               onClick={() => viewPatient(p.id)}
               className="animate-card-enter group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card no-underline transition-all duration-300 hover:-translate-y-1 hover:border-accent/25 hover:shadow-lg"
               style={{ animationDelay: `${610 + i * 70}ms` }}
