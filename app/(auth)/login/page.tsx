@@ -3,7 +3,7 @@ import LoginForm from "@/components/auth/LoginForm";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Sign In | MediFlow",
+  title: "Sign In",
   description: "Sign in to your MediFlow Clinic System account.",
 };
 

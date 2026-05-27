@@ -3,7 +3,7 @@ import RegisterForm from "@/components/auth/RegisterForm";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Create Account | MediFlow",
+  title: "Create Account",
   description: "Create your MediFlow Clinic System account.",
 };
 
