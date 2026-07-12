@@ -29,8 +29,11 @@ export default function PatientModal({ open, onClose, editPatient }: Props) {
   const [pulse, setPulse] = useState("");
   const [temp, setTemp] = useState("");
   const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
   const [rdTime, setRdTime] = useState(nowLocalISO());
   const [rdNotes, setRdNotes] = useState("");
+
+  const bmi = weight && height ? (parseFloat(weight) / ((parseFloat(height) / 100) ** 2)).toFixed(1) : "";
 
   const { addPatient, updatePatient, addVitals } = usePatientStore();
   const { showToast } = useToast();
@@ -73,14 +76,18 @@ export default function PatientModal({ open, onClose, editPatient }: Props) {
       const pulseN = parseInt(pulse);
       const tempN = parseFloat(temp);
       const weightN = parseFloat(weight);
+      const heightN = parseFloat(height);
+      const bmiN = parseFloat(bmi);
       
-      if (!isNaN(sysN) || !isNaN(diaN) || !isNaN(pulseN) || !isNaN(tempN) || !isNaN(weightN)) {
+      if (!isNaN(sysN) || !isNaN(diaN) || !isNaN(pulseN) || !isNaN(tempN) || !isNaN(weightN) || !isNaN(heightN)) {
         addVitals(id, {
           sys: isNaN(sysN) ? undefined : sysN, 
           dia: isNaN(diaN) ? undefined : diaN,
           pulse: isNaN(pulseN) ? undefined : pulseN,
           temperature: isNaN(tempN) ? undefined : tempN,
           weight: isNaN(weightN) ? undefined : weightN,
+          height: isNaN(heightN) ? undefined : heightN,
+          bmi: isNaN(bmiN) ? undefined : bmiN,
           time: rdTime ? new Date(rdTime).toISOString() : new Date().toISOString(),
           notes: rdNotes,
         });
@@ -121,12 +128,13 @@ export default function PatientModal({ open, onClose, editPatient }: Props) {
           <div className="mt-4 mb-3 border-b border-border pb-2 font-mono text-[0.58rem] tracking-[0.2em] text-ink-3 uppercase">
             Initial Vitals <span className="text-[0.56rem] normal-case tracking-normal opacity-55">(optional)</span>
           </div>
-          <div className="mb-3 grid grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="mb-3 grid grid-cols-3 md:grid-cols-6 gap-3">
             <div><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">SYS</label><input type="number" value={sys} onChange={(e) => setSys(e.target.value)} placeholder="120" className={fieldClass} /></div>
             <div><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">DIA</label><input type="number" value={dia} onChange={(e) => setDia(e.target.value)} placeholder="80" className={fieldClass} /></div>
             <div><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">Pulse</label><input type="number" value={pulse} onChange={(e) => setPulse(e.target.value)} placeholder="72" className={fieldClass} /></div>
             <div><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">Temp (°C)</label><input type="number" step="0.1" value={temp} onChange={(e) => setTemp(e.target.value)} placeholder="36.5" className={fieldClass} /></div>
             <div><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">Wt (kg)</label><input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="70" className={fieldClass} /></div>
+            <div><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">Ht (cm)</label><input type="number" step="0.1" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="175" className={fieldClass} /></div>
           </div>
           <div className="mb-3 grid grid-cols-2 gap-3">
              <div><label className="mb-1 block font-mono text-[0.58rem] tracking-[0.18em] text-ink-3 uppercase">Date & Time</label><input type="datetime-local" value={rdTime} onChange={(e) => setRdTime(e.target.value)} className={cn(fieldClass, "text-[0.7rem]")} /></div>
