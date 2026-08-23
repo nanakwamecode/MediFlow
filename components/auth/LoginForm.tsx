@@ -34,20 +34,20 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="flex items-center gap-2.5 rounded-xl border border-status-high-border bg-status-high-bg/60 px-4 py-3 backdrop-blur-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 text-status-high" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="flex items-center gap-2.5 rounded-xl border border-status-high-border bg-status-high-bg/60 px-4 py-3.5 backdrop-blur-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 shrink-0 text-status-high" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          <span className="text-xs font-medium text-status-high">{error}</span>
+          <span className="text-sm font-medium text-status-high">{error}</span>
         </div>
       )}
 
       {/* Username */}
       <div className="group">
-        <label className="mb-2 flex items-center gap-1.5 font-mono text-[0.6rem] font-medium tracking-[0.18em] text-ink-3 uppercase">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <label className="mb-2.5 flex items-center gap-2 text-sm font-medium text-ink-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
           </svg>
           Username
@@ -60,8 +60,8 @@ export default function LoginForm() {
           autoComplete="username"
           disabled={submitting}
           className={cn(
-            "w-full rounded-xl border-[1.5px] border-border bg-white/80 px-4 py-3.5",
-            "text-sm text-ink outline-none backdrop-blur-sm",
+            "w-full rounded-xl border-[1.5px] border-border bg-white/80 px-4 py-4",
+            "text-base text-ink outline-none backdrop-blur-sm",
             "transition-all duration-200",
             "placeholder:text-ink-4/60",
             "focus:border-accent focus:bg-white focus:shadow-[0_0_0_4px_rgba(200,57,43,0.08),0_1px_3px_rgba(0,0,0,0.05)]",
@@ -73,8 +73,8 @@ export default function LoginForm() {
 
       {/* Password */}
       <div className="group">
-        <label className="mb-2 flex items-center gap-1.5 font-mono text-[0.6rem] font-medium tracking-[0.18em] text-ink-3 uppercase">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <label className="mb-2.5 flex items-center gap-2 text-sm font-medium text-ink-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           Password
@@ -88,8 +88,8 @@ export default function LoginForm() {
             autoComplete="current-password"
             disabled={submitting}
             className={cn(
-              "w-full rounded-xl border-[1.5px] border-border bg-white/80 px-4 py-3.5 pr-11",
-              "text-sm text-ink outline-none backdrop-blur-sm",
+              "w-full rounded-xl border-[1.5px] border-border bg-white/80 px-4 py-4 pr-12",
+              "text-base text-ink outline-none backdrop-blur-sm",
               "transition-all duration-200",
               "placeholder:text-ink-4/60",
               "focus:border-accent focus:bg-white focus:shadow-[0_0_0_4px_rgba(200,57,43,0.08),0_1px_3px_rgba(0,0,0,0.05)]",
@@ -100,7 +100,7 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-md p-0.5 text-ink-4 transition-colors hover:text-ink-2"
+            className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer rounded-md p-1 text-ink-4 transition-colors hover:text-ink-2"
             tabIndex={-1}
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
@@ -123,8 +123,8 @@ export default function LoginForm() {
         type="submit"
         disabled={submitting || !username.trim() || !password}
         className={cn(
-          "relative w-full cursor-pointer overflow-hidden rounded-xl bg-accent px-4 py-3.5",
-          "text-sm font-semibold text-white",
+          "relative w-full cursor-pointer overflow-hidden rounded-xl bg-accent px-5 py-4",
+          "text-base font-semibold text-white",
           "transition-all duration-200",
           "hover:-translate-y-px hover:bg-accent-hover hover:shadow-lg hover:shadow-accent/20",
           "active:translate-y-0 active:shadow-none",
