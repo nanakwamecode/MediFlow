@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="fixed inset-0 flex bg-ink overflow-hidden">
+    <div className="flex min-h-screen bg-ink">
       {/* Left — Branding Panel (hidden on mobile) */}
-      <div className="relative hidden lg:flex lg:w-[55%] flex-col justify-between overflow-hidden">
+      <div className="relative hidden lg:flex lg:w-[55%] flex-col justify-between overflow-hidden sticky top-0 h-screen">
         {/* Warm burgundy gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#2a1a15] via-[#3d2418] to-[#1a0f0a]" />
 
@@ -64,7 +64,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Right — Register Form Panel (scrollable) */}
-      <div className="relative flex w-full flex-col lg:w-[45%]">
+      <div className="relative flex w-full flex-col lg:w-[45%] min-h-screen">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#f8f5f1] to-[#f0ece6]" />
 
@@ -73,7 +73,7 @@ export default function RegisterPage() {
         <div className="absolute bottom-0 left-0 h-32 w-32 bg-gradient-to-tr from-accent/3 to-transparent" />
 
         {/* Scrollable content */}
-        <div className="relative z-10 flex flex-1 flex-col items-center overflow-y-auto px-6 py-12 animate-slide-left" style={{ animationDelay: '0.2s', opacity: 0 }}>
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-12 animate-slide-left" style={{ animationDelay: '0.2s', opacity: 0 }}>
           {/* Mobile branding (only shown on mobile) */}
           <div className="mb-10 lg:hidden text-center animate-slide-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-ink shadow-lg">
