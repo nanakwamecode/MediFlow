@@ -28,7 +28,7 @@ export const LIVER_FIELDS = [
 ] as const;
 
 export const FBC_FIELDS = [
-  { key: "WBC", label: "WBC", defUnit: "", defRef: "3.5-9.5" },
+  { key: "WBC", label: "WBC", defUnit: "10*9/L", defRef: "3.5-9.5" },
   { key: "LYM_PCT", label: "LYM%", defUnit: "%", defRef: "20.0-50" },
   { key: "MID_PCT", label: "MID %", defUnit: "%", defRef: "3.0-10.0" },
   { key: "GRAN_PCT", label: "GRAN %", defUnit: "%", defRef: "40.0-75.0" },
@@ -50,4 +50,28 @@ export const FBC_FIELDS = [
   { key: "P_LCC", label: "P-LCC", defUnit: "10*9/L", defRef: "13.0-129" },
   { key: "PDW_SD", label: "PDW-SD", defUnit: "fL", defRef: "10.0-14.0" },
   { key: "PDW_CV", label: "PDW-CV", defUnit: "%", defRef: "15.0-18.0" }
+] as const;
+
+export const LIPID_FIELDS = [
+  { key: "CHOL", label: "Total Cholesterol", defUnit: "mmol/L", defRef: "3.1-5.2" },
+  { key: "TRIG", label: "Triglycerides", defUnit: "mmol/L", defRef: "0.4-1.7" },
+  { key: "HDL", label: "HDL Cholesterol", defUnit: "mmol/L", defRef: "1.0-1.6" },
+  { key: "LDL", label: "LDL Cholesterol", defUnit: "mmol/L", defRef: "1.8-3.4" },
+  { key: "VLDL", label: "VLDL Cholesterol", defUnit: "mmol/L", defRef: "0.2-1.0" }
+] as const;
+
+export const TFT_FIELDS = [
+  { key: "TSH", label: "TSH", defUnit: "uIU/mL", defRef: "0.27-4.20" },
+  { key: "FT3", label: "Free T3 (FT3)", defUnit: "pmol/L", defRef: "3.1-6.8" },
+  { key: "FT4", label: "Free T4 (FT4)", defUnit: "pmol/L", defRef: "12.0-22.0" }
+] as const;
+
+export const BMP_FIELDS = [
+  { key: "NA", label: "Sodium (Na+)", defUnit: "mmol/L", defRef: "135-145" },
+  { key: "K", label: "Potassium (K+)", defUnit: "mmol/L", defRef: "3.5-5.1" },
+  { key: "CL", label: "Chloride (Cl-)", defUnit: "mmol/L", defRef: "98-107" },
+  { key: "HCO3", label: "Bicarbonate (HCO3-)", defUnit: "mmol/L", defRef: "22-29" },
+  { key: "UREA", label: "Urea", defUnit: "mmol/L", defRef: "2.5-7.1" },
+  { key: "CREAT", label: "Creatinine", defUnit: "umol/L", defRef: "60-110" },
+  { key: "GLUC", label: "Glucose", defUnit: "mmol/L", defRef: "3.9-6.1" }
 ] as const;
