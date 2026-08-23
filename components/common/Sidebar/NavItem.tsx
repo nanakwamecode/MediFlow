@@ -24,19 +24,19 @@ export default function NavItem({
       href={href}
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-3 overflow-hidden rounded-lg border-none",
-        "px-3 py-3 text-left text-[0.9rem] font-medium whitespace-nowrap",
+        "flex w-full items-center gap-3 overflow-hidden rounded-xl border-none",
+        "px-3.5 py-2.5 text-left text-sm font-semibold whitespace-nowrap",
         "cursor-pointer transition-all duration-150 no-underline",
         active
-          ? "bg-accent text-white font-semibold shadow-md shadow-accent/15"
-          : "bg-transparent text-ink-2 hover:bg-bg hover:text-ink"
+          ? "bg-accent text-white shadow-md shadow-accent/20 font-bold"
+          : "bg-transparent text-ink-2 hover:bg-bg-2 hover:text-ink"
       )}
     >
       <span className={cn(
         "flex shrink-0 items-center justify-center transition-transform",
-        active ? "scale-110" : ""
+        active ? "scale-105" : ""
       )}>
-        <NavIcon name={icon} className="h-6 w-6" />
+        <NavIcon name={icon} className="h-5 w-5" />
       </span>
       <span
         className={cn(

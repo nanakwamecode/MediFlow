@@ -16,7 +16,6 @@ export default function RegisterForm() {
   const { register, error: apiError, clearError } = useAuthStore();
   const router = useRouter();
 
-  // Clear any existing auth errors when the register form mounts
   useEffect(() => {
     clearError();
   }, [clearError]);
@@ -47,155 +46,65 @@ export default function RegisterForm() {
     });
     setSubmitting(false);
 
-    if (success) {
-      router.push("/mediflow");
-    }
+    if (success) router.push("/mediflow");
   };
 
   const error = localError || apiError;
 
   const inputClass = cn(
-    "w-full rounded-xl border-[1.5px] border-border bg-white/80 px-4 py-3.5",
-    "text-sm text-ink outline-none backdrop-blur-sm",
-    "transition-all duration-200",
-    "placeholder:text-ink-4/60",
-    "focus:border-accent focus:bg-white focus:shadow-[0_0_0_4px_rgba(200,57,43,0.08),0_1px_3px_rgba(0,0,0,0.05)]",
-    "hover:border-border-2 hover:bg-white",
+    "w-full rounded-xl border border-border bg-white px-4 py-3",
+    "text-sm font-medium text-ink outline-none transition-all",
+    "placeholder:text-ink-4 focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.08)]",
     "disabled:opacity-50"
   );
+  const labelClass = "mb-1.5 flex items-center gap-1.5 text-xs font-bold text-ink-2";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="flex items-center gap-2.5 rounded-xl border border-status-high-border bg-status-high-bg/60 px-4 py-3 backdrop-blur-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 text-status-high" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="flex items-center gap-2.5 rounded-xl border border-status-high-border bg-status-high-bg px-4 py-3">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 text-status-high" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          <span className="text-xs font-medium text-status-high">{error}</span>
+          <span className="text-xs font-bold text-status-high">{error}</span>
         </div>
       )}
 
-      {/* Display Name */}
       <div>
-        <label className="mb-2 flex items-center gap-1.5 font-mono text-[0.6rem] font-medium tracking-[0.18em] text-ink-3 uppercase">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-          </svg>
-          Display Name
-        </label>
-        <input
-          type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          placeholder="e.g. Dr. Ama Boateng"
-          disabled={submitting}
-          className={inputClass}
-        />
+        <label className={labelClass}>Display Name</label>
+        <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="e.g. Dr. Ama Boateng" disabled={submitting} className={inputClass} />
       </div>
 
-      {/* Username */}
       <div>
-        <label className="mb-2 flex items-center gap-1.5 font-mono text-[0.6rem] font-medium tracking-[0.18em] text-ink-3 uppercase">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="4" /><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8" />
-          </svg>
-          Username
-        </label>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Choose a username"
-          disabled={submitting}
-          className={inputClass}
-        />
+        <label className={labelClass}>Username *</label>
+        <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" disabled={submitting} className={inputClass} />
       </div>
 
-      {/* Password */}
       <div>
-        <label className="mb-2 flex items-center gap-1.5 font-mono text-[0.6rem] font-medium tracking-[0.18em] text-ink-3 uppercase">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          Password
-        </label>
+        <label className={labelClass}>Password *</label>
         <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Min 4 characters"
-            disabled={submitting}
-            className={cn(inputClass, "pr-11")}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-md p-0.5 text-ink-4 transition-colors hover:text-ink-2"
-            tabIndex={-1}
-          >
+          <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 4 characters" disabled={submitting} className={cn(inputClass, "pr-11")} />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer p-0.5 text-ink-3 hover:text-ink" tabIndex={-1}>
             {showPassword ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
             )}
           </button>
         </div>
       </div>
 
-      {/* Confirm Password */}
       <div>
-        <label className="mb-2 flex items-center gap-1.5 font-mono text-[0.6rem] font-medium tracking-[0.18em] text-ink-3 uppercase">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-          Confirm Password
-        </label>
-        <input
-          type={showPassword ? "text" : "password"}
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          placeholder="Repeat password"
-          disabled={submitting}
-          className={inputClass}
-        />
+        <label className={labelClass}>Confirm Password *</label>
+        <input type={showPassword ? "text" : "password"} value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Repeat password" disabled={submitting} className={inputClass} />
       </div>
 
-      {/* Submit */}
       <button
         type="submit"
         disabled={submitting || !username.trim() || !password}
-        className={cn(
-          "relative w-full cursor-pointer overflow-hidden rounded-xl bg-accent px-4 py-3.5",
-          "text-sm font-semibold text-white",
-          "transition-all duration-200",
-          "hover:-translate-y-px hover:bg-accent-hover hover:shadow-lg hover:shadow-accent/20",
-          "active:translate-y-0 active:shadow-none",
-          "disabled:pointer-events-none disabled:opacity-50"
-        )}
+        className="w-full cursor-pointer rounded-xl bg-accent px-4 py-3.5 text-sm font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg active:scale-[0.99] disabled:opacity-50"
       >
-        <span className="relative flex items-center justify-center gap-2">
-          {submitting ? (
-            <>
-              <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Creating account…
-            </>
-          ) : (
-            <>
-              Create Account
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </>
-          )}
-        </span>
+        {submitting ? "Creating account…" : "Create Account"}
       </button>
     </form>
   );

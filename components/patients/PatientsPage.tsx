@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { usePatientStore } from "@/store/patientStore";
+import { usePatients } from "@/hooks/queries/usePatients";
+import { useVitals } from "@/hooks/queries/useVitals";
+import { useDeletePatient } from "@/hooks/mutations/useDeletePatient";
 import { useUiStore } from "@/store/uiStore";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { getInitials } from "@/lib/constants";
@@ -11,75 +13,87 @@ import LogVitalsModal from "@/components/vitals/LogVitalsModal";
 import { cn } from "@/lib/utils";
 import type { Patient } from "@/types";
 
+function PatientVitalsBadge({ patientId }: { patientId: string }) {
+  const { data: vitals = [] } = useVitals(patientId);
+  return (
+    <span className="rounded-full bg-card px-2.5 py-1 text-xs font-mono font-semibold text-ink-3 border border-border">
+      {vitals.length} log{vitals.length !== 1 ? "s" : ""}
+    </span>
+  );
+}
+
 export default function PatientsPage() {
-  const { patients, vitals, deletePatient } = usePatientStore();
+  const [search, setSearch] = useState("");
+  const { data: patients = [], isLoading } = usePatients(search || undefined);
+  const deletePatientMut = useDeletePatient();
   const { viewPatient } = useUiStore();
   const { showToast } = useToast();
-  const [search, setSearch] = useState("");
   const [ptModalOpen, setPtModalOpen] = useState(false);
   const [editPt, setEditPt] = useState<Patient | null>(null);
   const [logFor, setLogFor] = useState<Patient | null>(null);
 
-  const q = search.toLowerCase();
-  const filtered = q
-    ? patients.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.opdNumber || "").toLowerCase().includes(q) ||
-          (p.phone ?? "").toLowerCase().includes(q) ||
-          (p.town ?? "").toLowerCase().includes(q)
-      )
-    : patients;
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <svg className="h-8 w-8 animate-spin text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <p className="text-sm font-medium text-ink-3">Loading patients…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="animate-fade-in p-7 pb-20">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="font-serif text-3xl tracking-tight text-ink">Patients</h1>
-          <p className="text-xs text-ink-3">
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Patients</h1>
+          <p className="text-sm font-medium text-ink-3">
             {patients.length} patient{patients.length !== 1 ? "s" : ""} registered
           </p>
         </div>
         <button
           onClick={() => { setEditPt(null); setPtModalOpen(true); }}
-          className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-px hover:bg-accent-hover hover:shadow-md"
+          className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg hover:shadow-accent/30 active:scale-[0.98]"
         >
           + New Patient
         </button>
       </div>
 
       {/* Search */}
-      <div className="mb-3 flex items-center gap-2.5">
+      <div className="mb-4 flex items-center gap-3">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by patient name, OPD number, phone, or location…"
           className={cn(
-            "flex-1 rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
-            "font-mono text-sm text-ink outline-none transition-colors",
+            "flex-1 rounded-xl border border-border bg-card px-4 py-2.5",
+            "text-sm font-medium text-ink outline-none transition-colors",
             "placeholder:text-ink-4 focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.08)]"
           )}
         />
-        {q && (
-          <span className="font-mono text-[0.65rem] text-ink-3 whitespace-nowrap">
-            {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+        {search && (
+          <span className="font-mono text-xs font-bold text-ink-3 whitespace-nowrap">
+            {patients.length} result{patients.length !== 1 ? "s" : ""}
           </span>
         )}
       </div>
 
       {/* List */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        {filtered.length === 0 ? (
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+        {patients.length === 0 ? (
           <EmptyState
-            icon={q ? "🔍" : "♟"}
-            title={q ? "No matches found" : "No patients yet"}
-            subtitle={q ? "Try different search terms" : 'Click "+ New Patient" to add one'}
+            icon="heart"
+            title={search ? "No matches found" : "No patients yet"}
+            subtitle={search ? "Try different search terms" : 'Click "+ New Patient" to add one'}
           />
         ) : (
-          filtered.map((p) => {
-            const rd = vitals[p.id] || [];
-            const meta = [p.age ? `Age ${p.age}` : "", p.gender, p.town]
+          patients.map((p) => {
+            const meta = [p.age ? `Age ${p.age}` : "", p.gender, p.town, p.opdNumber ? `OPD: ${p.opdNumber}` : ""]
               .filter(Boolean)
               .join(" · ");
 
@@ -87,48 +101,48 @@ export default function PatientsPage() {
               <div
                 key={p.id}
                 onClick={() => viewPatient(p.id)}
-                className="flex cursor-pointer items-center gap-4 border-b border-border/50 px-5 py-3 transition-all last:border-b-0 hover:bg-bg/50 group hover:pl-6"
+                className="flex cursor-pointer items-center gap-4 border-b border-border/60 px-5 py-3.5 transition-all last:border-b-0 hover:bg-bg/60 group"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-bg-2 to-border font-serif text-[0.8rem] text-ink-2 shadow-sm ring-1 ring-border/50 group-hover:from-accent/10 group-hover:to-accent/5 group-hover:text-accent transition-all">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent/15 to-accent/5 font-serif text-sm font-bold text-accent shadow-sm ring-1 ring-accent/15 group-hover:scale-105 transition-all">
                   {getInitials(p.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[0.95rem] font-semibold text-ink transition-colors group-hover:text-accent">
+                  <div className="truncate text-base font-bold text-ink transition-colors group-hover:text-accent">
                     {p.name}
                   </div>
-                  <div className="mt-0.5 truncate font-mono text-[0.68rem] text-ink-3">
-                    {meta || "—"}
+                  <div className="mt-0.5 truncate font-mono text-xs font-medium text-ink-3">
+                    {meta || "General Record"}
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2 font-mono text-[0.62rem] text-ink-4">
-                  <span className="rounded-full bg-card px-2 py-0.5 border border-border">{rd.length} log{rd.length !== 1 ? "s" : ""}</span>
+                <div className="flex shrink-0 items-center gap-2">
+                  <PatientVitalsBadge patientId={p.id} />
                 </div>
                 <div
-                  className="flex shrink-0 items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="flex shrink-0 items-center gap-2"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => setLogFor(p)}
-                    className="cursor-pointer rounded-lg px-2.5 py-1.5 font-mono text-[0.7rem] font-semibold text-status-normal transition-colors hover:bg-status-normal-bg"
+                    className="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-bold text-status-normal transition-colors hover:bg-status-normal-bg"
                   >
-                    + Log Vitals
+                    + Vitals
                   </button>
-                  <span className="text-[0.65rem] text-border-2">·</span>
+                  <span className="text-border-2">·</span>
                   <button
                     onClick={() => { setEditPt(p); setPtModalOpen(true); }}
-                    className="cursor-pointer rounded-lg px-2.5 py-1.5 font-mono text-[0.7rem] font-semibold text-blue transition-colors hover:bg-blue-bg"
+                    className="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-bold text-blue transition-colors hover:bg-blue-bg"
                   >
                     Edit
                   </button>
-                  <span className="text-[0.65rem] text-border-2">·</span>
+                  <span className="text-border-2">·</span>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (confirm(`Delete "${p.name}" and all records?`)) {
-                        deletePatient(p.id);
+                        await deletePatientMut.mutateAsync(p.id);
                         showToast("Patient deleted", "✕");
                       }
                     }}
-                    className="cursor-pointer rounded-lg px-2.5 py-1.5 font-mono text-[0.7rem] font-semibold text-status-high transition-colors hover:bg-status-high-bg"
+                    className="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-bold text-status-high transition-colors hover:bg-status-high-bg"
                   >
                     Delete
                   </button>

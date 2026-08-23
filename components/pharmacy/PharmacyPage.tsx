@@ -1,35 +1,44 @@
 "use client";
 
-import { usePatientStore } from "@/store/patientStore";
-
-import { useToast } from "@/components/common/Toast/ToastProvider";
 import { useState } from "react";
-import { formatFullDate, getInitials } from "@/lib/constants";
+import { useAllPrescriptions } from "@/hooks/queries/usePrescriptions";
+import { getInitials } from "@/lib/constants";
 import AddPrescriptionModal from "@/components/pharmacy/AddPrescriptionModal";
+import PatientPharmacyDetail from "@/components/pharmacy/PatientPharmacyDetail";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
 import { cn } from "@/lib/utils";
 
 export default function PharmacyPage() {
-  const { patients, prescriptions } = usePatientStore();
+  const { data: allRx = [], isLoading } = useAllPrescriptions();
   const [rxFor, setRxFor] = useState<{ id: string; name: string } | null>(null);
   const [search, setSearch] = useState("");
   const [detailPatient, setDetailPatient] = useState<string | null>(null);
 
   const q = search.toLowerCase();
 
-  const patientRx = patients
-    .map((p) => ({ patient: p, meds: prescriptions[p.id] || [] }))
-    .filter((g) => g.meds.length > 0 || q === "")
-    .filter((g) => {
-      if (!q) return true;
-      return (
-        g.patient.name.toLowerCase().includes(q) ||
-        (g.patient.opdNumber || "").toLowerCase().includes(q) ||
-        g.meds.some((m) => m.medication.toLowerCase().includes(q))
-      );
-    });
+  // Group prescriptions by patient
+  const patientMap = new Map<string, { patientId: string; ptName: string; ptOpd?: string; meds: typeof allRx }>();
+  allRx.forEach((m) => {
+    if (!patientMap.has(m.patientId)) {
+      patientMap.set(m.patientId, {
+        patientId: m.patientId,
+        ptName: m.ptName || "Unknown Patient",
+        ptOpd: m.ptOpd,
+        meds: [],
+      });
+    }
+    patientMap.get(m.patientId)!.meds.push(m);
+  });
 
-  const allRx = Object.values(prescriptions).flat();
+  const patientRx = Array.from(patientMap.values()).filter((g) => {
+    if (!q) return true;
+    return (
+      g.ptName.toLowerCase().includes(q) ||
+      (g.ptOpd || "").toLowerCase().includes(q) ||
+      g.meds.some((m) => m.medication.toLowerCase().includes(q))
+    );
+  });
+
   const pendingCount = allRx.filter((r) => r.status === "pending").length;
   const dispensedCount = allRx.filter((r) => r.status === "dispensed").length;
 
@@ -42,16 +51,32 @@ export default function PharmacyPage() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <svg className="h-8 w-8 animate-spin text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <p className="text-sm font-medium text-ink-3">Loading prescriptions…</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="animate-fade-in p-7 pb-20">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="font-serif text-3xl tracking-tight text-ink">Pharmacy & Dispensary</h1>
-          <p className="text-xs text-ink-3">{pendingCount} pending · {dispensedCount} dispensed · {allRx.length} total</p>
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Pharmacy & Dispensary</h1>
+          <p className="text-sm font-medium text-ink-3">
+            {pendingCount} pending · {dispensedCount} dispensed · {allRx.length} total
+          </p>
         </div>
         <button
           onClick={() => setRxFor({ id: "", name: "" })}
-          className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-hover"
+          className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg hover:shadow-accent/30 active:scale-[0.98]"
         >
           + Prescribe
         </button>
@@ -65,46 +90,70 @@ export default function PharmacyPage() {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by patient name, OPD number, or medication…"
           className={cn(
-            "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
-            "font-mono text-sm text-ink outline-none transition-colors",
+            "w-full rounded-xl border border-border bg-card px-4 py-2.5",
+            "text-sm font-medium text-ink outline-none transition-colors",
             "placeholder:text-ink-4 focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.08)]"
           )}
         />
       </div>
 
       {patientRx.length === 0 ? (
-        <EmptyState icon="pill" title="No prescriptions" subtitle="Add a prescription using the buttons above." />
+        <EmptyState
+          icon="pill"
+          title="No prescriptions"
+          subtitle="Add a prescription using the button above."
+        />
       ) : (
         <div className="space-y-3">
-          {patientRx.map(({ patient: p, meds }) => {
+          {patientRx.map(({ patientId, ptName, meds }) => {
             const pending = meds.filter((m) => m.status === "pending").length;
             return (
               <div
-                key={p.id}
-                onClick={() => setDetailPatient(p.id)}
-                className="cursor-pointer rounded-lg border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                key={patientId}
+                onClick={() => setDetailPatient(patientId)}
+                className="cursor-pointer rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lg"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 font-serif text-sm text-accent">{getInitials(p.name)}</div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 font-serif text-sm font-bold text-accent">
+                      {getInitials(ptName)}
+                    </div>
                     <div>
-                      <div className="text-sm font-semibold text-ink">{p.name}</div>
-                      <div className="font-mono text-[0.6rem] text-ink-3">{meds.length} medication{meds.length !== 1 ? "s" : ""} · {pending} pending</div>
+                      <div className="text-base font-bold text-ink">{ptName}</div>
+                      <div className="text-xs font-semibold text-ink-3">
+                        {meds.length} medication{meds.length !== 1 ? "s" : ""} · {pending} pending
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {pending > 0 && <span className="text-[0.65rem] px-2 py-1 rounded-full font-mono uppercase bg-status-crisis-bg text-status-crisis">{pending} to dispense</span>}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-ink-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    {pending > 0 && (
+                      <span className="rounded-full bg-status-crisis/10 border border-status-crisis/20 px-3 py-1 text-xs font-bold uppercase text-status-crisis">
+                        {pending} to dispense
+                      </span>
+                    )}
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-ink-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
                   </div>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                {/* Medication Tags */}
+                <div className="mt-3 flex flex-wrap gap-2">
                   {meds.slice(0, 4).map((m) => (
-                    <span key={m.id} className={cn(
-                      "text-[0.6rem] px-2 py-0.5 rounded-full font-mono",
-                      m.status === "dispensed" ? "bg-status-normal-bg text-status-normal" : "bg-status-crisis-bg text-status-crisis"
-                    )}>{m.medication} {m.dosage}</span>
+                    <span
+                      key={m.id}
+                      className={cn(
+                        "rounded-md px-2.5 py-1 text-xs font-semibold border",
+                        m.status === "dispensed"
+                          ? "bg-status-normal-bg text-status-normal border-status-normal-border"
+                          : "bg-status-crisis/10 text-status-crisis border-status-crisis/20"
+                      )}
+                    >
+                      {m.medication} ({m.dosage})
+                    </span>
                   ))}
-                  {meds.length > 4 && <span className="text-[0.6rem] text-ink-4">+{meds.length - 4} more</span>}
+                  {meds.length > 4 && (
+                    <span className="text-xs font-bold text-ink-3 self-center">+{meds.length - 4} more</span>
+                  )}
                 </div>
               </div>
             );
@@ -112,97 +161,14 @@ export default function PharmacyPage() {
         </div>
       )}
 
-      {rxFor && <AddPrescriptionModal open={!!rxFor} onClose={() => setRxFor(null)} patientId={rxFor.id} patientName={rxFor.name} />}
-    </div>
-  );
-}
-
-// ─── Patient Pharmacy Detail ───
-function PatientPharmacyDetail({ patientId, onBack }: { patientId: string; onBack: () => void }) {
-  const patient = usePatientStore((s) => s.patients.find((p) => p.id === patientId));
-  const meds = usePatientStore((s) => s.prescriptions[patientId]) || [];
-  const dispensePrescription = usePatientStore((s) => s.dispensePrescription);
-  const { showToast } = useToast();
-  const [rxOpen, setRxOpen] = useState(false);
-
-  if (!patient) return null;
-
-  const pending = meds.filter((m) => m.status === "pending");
-  const dispensed = meds.filter((m) => m.status === "dispensed");
-
-  return (
-    <div className="animate-fade-in p-7 pb-20">
-      <div className="mb-5 flex items-center justify-between">
-        <button onClick={onBack} className="cursor-pointer rounded-lg border-[1.5px] border-border-2 bg-transparent px-3 py-1.5 text-xs font-semibold text-ink-2 hover:bg-bg-2 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to Pharmacy</button>
-        <button onClick={() => setRxOpen(true)} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover">+ Prescribe</button>
-      </div>
-
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 font-serif text-lg text-accent">{getInitials(patient.name)}</div>
-        <div>
-          <h1 className="font-serif text-2xl text-ink">{patient.name}</h1>
-          <p className="font-mono text-xs text-ink-3">{meds.length} medication{meds.length !== 1 ? "s" : ""} · {pending.length} pending</p>
-        </div>
-      </div>
-
-      {/* Pending */}
-      {pending.length > 0 && (
-        <>
-          <div className="mb-2 font-mono text-[0.56rem] tracking-[0.2em] text-status-crisis uppercase">Pending Dispensing ({pending.length})</div>
-          <div className="mb-5 space-y-2">
-            {pending.map((m) => (
-              <div key={m.id} className="flex items-center justify-between rounded-lg border border-status-crisis/20 bg-status-crisis-bg p-3">
-                <div>
-                  <div className="text-sm font-bold text-ink">{m.medication} <span className="font-normal text-ink-3 ml-1">{m.dosage}</span></div>
-                  <div className="text-xs text-ink-2 mt-0.5">{m.instructions}</div>
-                  <div className="font-mono text-[0.6rem] text-ink-3 mt-1">Prescribed: {formatFullDate(m.timePrescribed)} · By {m.prescribedBy}</div>
-                </div>
-                <button
-                  onClick={() => {
-                    if (confirm(`Dispense ${m.medication} ${m.dosage}?`)) {
-                      dispensePrescription(patientId, m.id);
-                      showToast("Dispensed", "✓");
-                    }
-                  }}
-                  className="cursor-pointer rounded-lg bg-status-normal px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 shrink-0 ml-3"
-                >
-                  Dispense
-                </button>
-              </div>
-            ))}
-          </div>
-        </>
+      {rxFor && (
+        <AddPrescriptionModal
+          open={!!rxFor}
+          onClose={() => setRxFor(null)}
+          patientId={rxFor.id}
+          patientName={rxFor.name}
+        />
       )}
-
-      {/* Dispensed */}
-      {dispensed.length > 0 && (
-        <>
-          <div className="mb-2 font-mono text-[0.56rem] tracking-[0.2em] text-status-normal uppercase">Dispensed ({dispensed.length})</div>
-          <div className="space-y-2">
-            {dispensed.map((m) => (
-              <div key={m.id} className="rounded-lg border border-border bg-card p-3 shadow-card">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="text-sm font-bold text-ink">{m.medication} <span className="font-normal text-ink-3 ml-1">{m.dosage}</span></div>
-                  <span className="text-[0.65rem] px-2 py-0.5 rounded-full font-mono uppercase bg-status-normal-bg text-status-normal">dispensed</span>
-                </div>
-                <div className="text-xs text-ink-2">{m.instructions}</div>
-                <div className="font-mono text-[0.6rem] text-ink-3 mt-1 flex gap-4">
-                  <span>Prescribed: {formatFullDate(m.timePrescribed)} by {m.prescribedBy}</span>
-                  {m.timeDispensed && <span>Dispensed: {formatFullDate(m.timeDispensed)}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {meds.length === 0 && (
-        <div className="p-8 text-center text-sm text-ink-3 border rounded-lg border-dashed border-border-2">
-          No prescriptions yet. Click &quot;+ Prescribe&quot; to add one.
-        </div>
-      )}
-
-      {rxOpen && <AddPrescriptionModal open={rxOpen} onClose={() => setRxOpen(false)} patientId={patientId} patientName={patient.name} />}
     </div>
   );
 }
