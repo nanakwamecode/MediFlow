@@ -1,181 +1,153 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import { usePatients } from "@/hooks/queries/usePatients";
 import { useAllVitals } from "@/hooks/queries/useVitals";
 import { useAllConsultations } from "@/hooks/queries/useConsultations";
 import { useAllLabs } from "@/hooks/queries/useLabs";
 import { useAllPrescriptions } from "@/hooks/queries/usePrescriptions";
-import { formatFullDate } from "@/lib/constants";
+import { TableSkeleton } from "@/components/common/Skeleton";
+import EmptyState from "@/components/common/EmptyState/EmptyState";
+import { exportRecordsPdf } from "./RecordsPrintView";
+import RecordEventRow, { RecordEvent } from "./RecordEventRow";
 import { cn } from "@/lib/utils";
-import { exportRecordsPdf } from "@/components/records/RecordsPrintView";
-import RecordEventRow, { type RecordEvent } from "./RecordEventRow";
-
-type Period = "daily" | "weekly" | "monthly";
 
 export default function RecordsPage() {
-  const { data: vitals = [], isLoading: vitalsLoading } = useAllVitals();
-  const { data: consultations = [], isLoading: consultsLoading } = useAllConsultations();
-  const { data: labs = [], isLoading: labsLoading } = useAllLabs();
-  const { data: prescriptions = [], isLoading: rxLoading } = useAllPrescriptions();
+  const { data: patients = [], isLoading: pL } = usePatients();
+  const { data: vitals = [], isLoading: vL } = useAllVitals();
+  const { data: consults = [], isLoading: cL } = useAllConsultations();
+  const { data: labs = [], isLoading: lL } = useAllLabs();
+  const { data: prescriptions = [], isLoading: rL } = useAllPrescriptions();
 
-  const [period, setPeriod] = useState<Period>("daily");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterPeriod, setFilterPeriod] = useState<string>("all");
   const [search, setSearch] = useState("");
 
-  const isLoading = vitalsLoading || consultsLoading || labsLoading || rxLoading;
-
-  const events = useMemo(() => {
-    const now = new Date();
-    const cutoff = new Date();
-    if (period === "daily") cutoff.setHours(0, 0, 0, 0);
-    else if (period === "weekly") cutoff.setDate(now.getDate() - 7);
-    else cutoff.setMonth(now.getMonth() - 1);
-
-    const q = search.toLowerCase();
-    const list: RecordEvent[] = [];
-
-    vitals.forEach((v) => {
-      if (new Date(v.time) >= cutoff) {
-        const ptName = v.ptName || "Unknown Patient";
-        if (!q || ptName.toLowerCase().includes(q) || (v.ptOpd || "").toLowerCase().includes(q)) {
-          list.push({
-            type: "Vitals",
-            time: v.time,
-            ptId: v.patientId,
-            ptName,
-            detail: `BP: ${v.sys ?? "-"}/${v.dia ?? "-"} · Pulse: ${v.pulse ?? "-"}`,
-            detail2: v.notes || undefined,
-          });
-        }
-      }
-    });
-
-    consultations.forEach((c) => {
-      if (new Date(c.time) >= cutoff) {
-        const ptName = c.ptName || "Unknown Patient";
-        if (!q || ptName.toLowerCase().includes(q) || (c.ptOpd || "").toLowerCase().includes(q) || (c.diagnosis || "").toLowerCase().includes(q)) {
-          list.push({
-            type: "Consultation",
-            time: c.time,
-            ptId: c.patientId,
-            ptName,
-            detail: c.diagnosis || "No diagnosis",
-            detail2: `${c.doctorId} — ${c.symptoms || ""}`,
-          });
-        }
-      }
-    });
-
-    labs.forEach((l) => {
-      if (new Date(l.timeRequested) >= cutoff) {
-        const ptName = l.ptName || "Unknown Patient";
-        if (!q || ptName.toLowerCase().includes(q) || (l.ptOpd || "").toLowerCase().includes(q) || l.testName.toLowerCase().includes(q)) {
-          list.push({
-            type: "Lab",
-            time: l.timeRequested,
-            ptId: l.patientId,
-            ptName,
-            detail: l.testName,
-            detail2: `${l.status} · By ${l.requestedBy}`,
-          });
-        }
-      }
-    });
-
-    prescriptions.forEach((m) => {
-      if (new Date(m.timePrescribed) >= cutoff) {
-        const ptName = m.ptName || "Unknown Patient";
-        if (!q || ptName.toLowerCase().includes(q) || (m.ptOpd || "").toLowerCase().includes(q) || m.medication.toLowerCase().includes(q)) {
-          list.push({
-            type: "Prescription",
-            time: m.timePrescribed,
-            ptId: m.patientId,
-            ptName,
-            detail: `${m.medication} ${m.dosage}`,
-            detail2: `${m.status} · By ${m.prescribedBy}`,
-          });
-        }
-      }
-    });
-
-    return list.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-  }, [vitals, consultations, labs, prescriptions, period, search]);
-
-  const handleExportCsv = () => {
-    const header = "Date,Type,Patient,Detail,Details\n";
-    const rows = events
-      .map((e) => `"${formatFullDate(e.time)}","${e.type}","${e.ptName}","${e.detail}","${(e.detail2 || "").replace(/"/g, '""')}"`)
-      .join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `mediflow_records_${period}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const isLoading = pL || vL || cL || lL || rL;
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <svg className="h-8 w-8 animate-spin text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          <p className="text-sm font-medium text-ink-3">Loading clinical records…</p>
-        </div>
-      </div>
-    );
+    return <TableSkeleton rows={7} cols={4} />;
   }
+
+  const patientMap = new Map(patients.map((p) => [p.id, p]));
+
+  const allEvents: RecordEvent[] = [
+    ...vitals.map((v) => ({
+      type: "Vitals",
+      time: v.time,
+      ptId: v.patientId,
+      ptName: patientMap.get(v.patientId)?.name || v.ptName || "Unknown Patient",
+      detail: `BP: ${v.sys || "-"}/${v.dia || "-"} mmHg · Pulse: ${v.pulse || "-"} bpm · Temp: ${v.temperature || "-"} °C`,
+      detail2: `Weight: ${v.weight || "-"} kg · Resp: ${v.respiratoryRate || "-"} cpm`,
+    })),
+    ...consults.map((c) => ({
+      type: "Consultation",
+      time: c.time,
+      ptId: c.patientId,
+      ptName: patientMap.get(c.patientId)?.name || c.ptName || "Unknown Patient",
+      detail: c.diagnosis ? `Dx: ${c.diagnosis}` : "Clinical notes recorded",
+      detail2: c.doctorId ? `Doctor: Dr. ${c.doctorId}` : undefined,
+    })),
+    ...labs.map((l) => ({
+      type: "Lab",
+      time: l.timeRequested,
+      ptId: l.patientId,
+      ptName: patientMap.get(l.patientId)?.name || l.ptName || "Unknown Patient",
+      detail: `${l.testName} (${l.status})`,
+      detail2: l.requestedBy ? `Requested by: ${l.requestedBy}` : undefined,
+    })),
+    ...prescriptions.map((r) => ({
+      type: "Prescription",
+      time: r.timePrescribed,
+      ptId: r.patientId,
+      ptName: patientMap.get(r.patientId)?.name || r.ptName || "Unknown Patient",
+      detail: `${r.medication} (${r.dosage || "-"})`,
+      detail2: `Status: ${r.status} · Prescribed by: ${r.prescribedBy || "-"}`,
+    })),
+  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+
+  const now = new Date();
+  const filtered = allEvents.filter((e) => {
+    if (filterType !== "all" && e.type !== filterType) return false;
+    const eDate = new Date(e.time);
+    if (filterPeriod === "today" && eDate.toDateString() !== now.toDateString()) return false;
+    if (filterPeriod === "week" && (now.getTime() - eDate.getTime()) > 7 * 86400000) return false;
+    if (filterPeriod === "month" && (now.getTime() - eDate.getTime()) > 30 * 86400000) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return e.ptName.toLowerCase().includes(q) || e.detail.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   return (
     <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Records & History</h1>
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Clinical Records Log</h1>
           <p className="text-sm font-medium text-ink-3">
-            {events.length} record{events.length !== 1 ? "s" : ""} for {period === "daily" ? "today" : period === "weekly" ? "this week" : "this month"}
+            {allEvents.length} total event{allEvents.length !== 1 ? "s" : ""} across all departments
           </p>
         </div>
-        <div className="flex gap-2.5">
-          <button onClick={handleExportCsv} className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-xs font-bold text-ink-2 shadow-sm transition-all hover:bg-bg-2 hover:text-accent">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-            CSV
-          </button>
-          <button onClick={() => exportRecordsPdf({ events, period })} className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-accent px-5 py-2 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-            Export PDF
-          </button>
-        </div>
+        <button
+          onClick={() => exportRecordsPdf({ events: filtered, period: filterPeriod })}
+          className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg active:scale-95 flex items-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" y2="3"/></svg>
+          Export PDF
+        </button>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search records by patient name, OPD number, test, or diagnosis…"
-          className={cn("w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors placeholder:text-ink-4 focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.08)]")}
+          placeholder="Search records by patient name or detail…"
+          className={cn(
+            "flex-1 min-w-[200px] rounded-xl border border-border bg-card px-4 py-2.5",
+            "text-sm font-medium text-ink outline-none transition-colors",
+            "placeholder:text-ink-4 focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.08)]"
+          )}
         />
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-ink outline-none focus:border-accent"
+        >
+          <option value="all">All Types</option>
+          <option value="Vitals">Vitals</option>
+          <option value="Consultation">Consultation</option>
+          <option value="Lab">Lab</option>
+          <option value="Prescription">Prescription</option>
+        </select>
+        <select
+          value={filterPeriod}
+          onChange={(e) => setFilterPeriod(e.target.value)}
+          className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-ink outline-none focus:border-accent"
+        >
+          <option value="all">All Time</option>
+          <option value="today">Today</option>
+          <option value="week">Past 7 Days</option>
+          <option value="month">Past 30 Days</option>
+        </select>
       </div>
 
-      <div className="mb-5 flex gap-2">
-        {(["daily", "weekly", "monthly"] as const).map((p) => (
-          <button key={p} onClick={() => setPeriod(p)} className={cn("cursor-pointer rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all", period === p ? "bg-accent text-white shadow-sm" : "border border-border bg-card text-ink-3 hover:bg-bg-2 hover:text-ink")}>
-            {p}
-          </button>
-        ))}
+      <div className="space-y-3">
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+            <EmptyState
+              icon="archive"
+              title="No records found"
+              subtitle="Try clearing or adjusting your search filters"
+            />
+          </div>
+        ) : (
+          filtered.map((e, idx) => (
+            <RecordEventRow key={idx} event={e} />
+          ))
+        )}
       </div>
-
-      {events.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border-2 p-10 text-center text-sm font-semibold text-ink-3 bg-card/50">
-          No records for this period.
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {events.map((e, i) => <RecordEventRow key={i} event={e} />)}
-        </div>
-      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useConsultations } from "@/hooks/queries/useConsultations";
 import { formatFullDate } from "@/lib/constants";
+import Skeleton from "@/components/common/Skeleton/Skeleton";
 
 interface Props {
   patientId: string;
@@ -11,7 +12,20 @@ export default function PatientConsultsTab({ patientId }: Props) {
   const { data: consults = [], isLoading } = useConsultations(patientId);
 
   if (isLoading) {
-    return <div className="p-8 text-center text-sm font-medium text-ink-3">Loading consultations…</div>;
+    return (
+      <div className="grid gap-4 sm:grid-cols-2">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="rounded-2xl border border-border bg-card p-5 shadow-card space-y-3">
+            <div className="flex justify-between">
+              <Skeleton className="h-5 w-40 rounded-md" />
+              <Skeleton className="h-4 w-20 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-full rounded-md" />
+            <Skeleton className="h-4 w-3/4 rounded-md" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (consults.length === 0) {

@@ -3,6 +3,7 @@
 import { useLabs } from "@/hooks/queries/useLabs";
 import { formatFullDate } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import Skeleton from "@/components/common/Skeleton/Skeleton";
 import type { LabInvestigation } from "@/types";
 
 interface Props {
@@ -19,7 +20,20 @@ export default function PatientLabsTab({
   const { data: labs = [], isLoading } = useLabs(patientId);
 
   if (isLoading) {
-    return <div className="p-8 text-center text-sm font-medium text-ink-3">Loading lab requests…</div>;
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-2xl border border-border bg-card p-5 shadow-card space-y-3">
+            <div className="flex justify-between">
+              <Skeleton className="h-5 w-32 rounded-md" />
+              <Skeleton className="h-5 w-20 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-44 rounded-md" />
+            <Skeleton className="h-9 w-full rounded-xl" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (labs.length === 0) {

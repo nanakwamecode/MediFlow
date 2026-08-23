@@ -2,68 +2,51 @@
 
 import { useState } from "react";
 import { useAllPrescriptions } from "@/hooks/queries/usePrescriptions";
-import { getInitials } from "@/lib/constants";
-import AddPrescriptionModal from "@/components/pharmacy/AddPrescriptionModal";
-import PatientPharmacyDetail from "@/components/pharmacy/PatientPharmacyDetail";
+import { usePatients } from "@/hooks/queries/usePatients";
+import { formatTime, formatFullDate } from "@/lib/constants";
+import { CardListSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
+import PatientPickerModal from "@/components/consultations/PatientPickerModal";
+import AddPrescriptionModal from "./AddPrescriptionModal";
+import PatientPharmacyDetail from "./PatientPharmacyDetail";
 import { cn } from "@/lib/utils";
+import type { PrescriptionRow } from "@/services/prescriptions.service";
 
 export default function PharmacyPage() {
-  const { data: allRx = [], isLoading } = useAllPrescriptions();
-  const [rxFor, setRxFor] = useState<{ id: string; name: string } | null>(null);
+  const { data: prescriptions = [], isLoading: rxLoading } = useAllPrescriptions();
+  const { data: patients = [], isLoading: patientsLoading } = usePatients();
+
   const [search, setSearch] = useState("");
-  const [detailPatient, setDetailPatient] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "dispensed">("all");
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [addPatient, setAddPatient] = useState<{ id: string; name: string } | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  const q = search.toLowerCase();
+  const isLoading = rxLoading || patientsLoading;
 
-  // Group prescriptions by patient
-  const patientMap = new Map<string, { patientId: string; ptName: string; ptOpd?: string; meds: typeof allRx }>();
-  allRx.forEach((m) => {
-    if (!patientMap.has(m.patientId)) {
-      patientMap.set(m.patientId, {
-        patientId: m.patientId,
-        ptName: m.ptName || "Unknown Patient",
-        ptOpd: m.ptOpd,
-        meds: [],
-      });
-    }
-    patientMap.get(m.patientId)!.meds.push(m);
-  });
+  if (isLoading) {
+    return <CardListSkeleton count={5} />;
+  }
 
-  const patientRx = Array.from(patientMap.values()).filter((g) => {
-    if (!q) return true;
-    return (
-      g.ptName.toLowerCase().includes(q) ||
-      (g.ptOpd || "").toLowerCase().includes(q) ||
-      g.meds.some((m) => m.medication.toLowerCase().includes(q))
-    );
-  });
-
-  const pendingCount = allRx.filter((r) => r.status === "pending").length;
-  const dispensedCount = allRx.filter((r) => r.status === "dispensed").length;
-
-  if (detailPatient) {
+  if (selectedPatientId) {
     return (
       <PatientPharmacyDetail
-        patientId={detailPatient}
-        onBack={() => setDetailPatient(null)}
+        patientId={selectedPatientId}
+        onBack={() => setSelectedPatientId(null)}
       />
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <svg className="h-8 w-8 animate-spin text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          <p className="text-sm font-medium text-ink-3">Loading prescriptions…</p>
-        </div>
-      </div>
-    );
-  }
+  const patientMap = new Map(patients.map((p) => [p.id, p]));
+
+  const filtered = prescriptions.filter((rx) => {
+    const p = patientMap.get(rx.patientId);
+    const pName = p ? p.name.toLowerCase() : (rx.ptName ? rx.ptName.toLowerCase() : "");
+    const s = search.toLowerCase();
+    const matchSearch = pName.includes(s) || rx.medication.toLowerCase().includes(s);
+    const matchStatus = filterStatus === "all" || rx.status === filterStatus;
+    return matchSearch && matchStatus;
+  });
 
   return (
     <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
@@ -71,102 +54,110 @@ export default function PharmacyPage() {
         <div>
           <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Pharmacy & Dispensary</h1>
           <p className="text-sm font-medium text-ink-3">
-            {pendingCount} pending · {dispensedCount} dispensed · {allRx.length} total
+            {prescriptions.filter((r) => r.status === "pending").length} pending · {prescriptions.filter((r) => r.status === "dispensed").length} dispensed
           </p>
         </div>
         <button
-          onClick={() => setRxFor({ id: "", name: "" })}
-          className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg hover:shadow-accent/30 active:scale-[0.98]"
+          onClick={() => setPickerOpen(true)}
+          className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg active:scale-95"
         >
-          + Prescribe
+          + New Prescription
         </button>
       </div>
 
-      {/* Search */}
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by patient name, OPD number, or medication…"
+          placeholder="Search by patient name or medication…"
           className={cn(
-            "w-full rounded-xl border border-border bg-card px-4 py-2.5",
+            "flex-1 min-w-[200px] rounded-xl border border-border bg-card px-4 py-2.5",
             "text-sm font-medium text-ink outline-none transition-colors",
             "placeholder:text-ink-4 focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.08)]"
           )}
         />
+        <div className="flex rounded-xl border border-border bg-card p-1">
+          {(["all", "pending", "dispensed"] as const).map((st) => (
+            <button
+              key={st}
+              onClick={() => setFilterStatus(st)}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-xs font-bold capitalize transition-all",
+                filterStatus === st ? "bg-accent text-white shadow-sm" : "text-ink-3 hover:text-ink"
+              )}
+            >
+              {st}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {patientRx.length === 0 ? (
-        <EmptyState
-          icon="pill"
-          title="No prescriptions"
-          subtitle="Add a prescription using the button above."
-        />
-      ) : (
-        <div className="space-y-3">
-          {patientRx.map(({ patientId, ptName, meds }) => {
-            const pending = meds.filter((m) => m.status === "pending").length;
+      <div className="space-y-3">
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+            <EmptyState
+              icon="pill"
+              title="No prescriptions found"
+              subtitle={search ? "Try adjusting your filters" : 'Click "+ New Prescription" to issue medication'}
+            />
+          </div>
+        ) : (
+          filtered.map((rx) => {
+            const p = patientMap.get(rx.patientId);
+            const ptName = p?.name || rx.ptName || "Unknown Patient";
+            const isPending = rx.status === "pending";
             return (
               <div
-                key={patientId}
-                onClick={() => setDetailPatient(patientId)}
-                className="cursor-pointer rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                key={rx.id}
+                onClick={() => setSelectedPatientId(rx.patientId)}
+                className="cursor-pointer rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:bg-bg/60 hover:shadow-md group"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 font-serif text-sm font-bold text-accent">
-                      {getInitials(ptName)}
-                    </div>
-                    <div>
-                      <div className="text-base font-bold text-ink">{ptName}</div>
-                      <div className="text-xs font-semibold text-ink-3">
-                        {meds.length} medication{meds.length !== 1 ? "s" : ""} · {pending} pending
-                      </div>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="font-bold text-base text-ink group-hover:text-accent transition-colors">{ptName}</div>
+                    <div className="font-mono text-xs font-semibold text-ink-3 mt-0.5">
+                      Prescribed: {formatFullDate(rx.timePrescribed)} · {formatTime(rx.timePrescribed)}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {pending > 0 && (
-                      <span className="rounded-full bg-status-crisis/10 border border-status-crisis/20 px-3 py-1 text-xs font-bold uppercase text-status-crisis">
-                        {pending} to dispense
-                      </span>
-                    )}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-ink-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m9 18 6-6-6-6" />
-                    </svg>
-                  </div>
+                  <span className={cn(
+                    "rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wider",
+                    isPending ? "bg-status-high-bg text-status-high border border-status-high-border" : "bg-status-normal-bg text-status-normal border border-status-normal-border"
+                  )}>
+                    {rx.status}
+                  </span>
                 </div>
-                {/* Medication Tags */}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {meds.slice(0, 4).map((m) => (
-                    <span
-                      key={m.id}
-                      className={cn(
-                        "rounded-md px-2.5 py-1 text-xs font-semibold border",
-                        m.status === "dispensed"
-                          ? "bg-status-normal-bg text-status-normal border-status-normal-border"
-                          : "bg-status-crisis/10 text-status-crisis border-status-crisis/20"
-                      )}
-                    >
-                      {m.medication} ({m.dosage})
-                    </span>
-                  ))}
-                  {meds.length > 4 && (
-                    <span className="text-xs font-bold text-ink-3 self-center">+{meds.length - 4} more</span>
-                  )}
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                  <span className="rounded-lg bg-bg-2 px-2.5 py-1 text-xs font-bold text-ink-2 border border-border">
+                    {rx.medication} {rx.dosage ? `(${rx.dosage})` : ""}
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-xs font-semibold text-ink-3">
+                  <span>Dr: {rx.prescribedBy || "Attending Doctor"}</span>
+                  <span className="font-bold text-accent">View Details →</span>
                 </div>
               </div>
             );
-          })}
-        </div>
+          })
+        )}
+      </div>
+
+      {pickerOpen && (
+        <PatientPickerModal
+          onSelect={(id, name) => {
+            setPickerOpen(false);
+            setAddPatient({ id, name });
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
       )}
 
-      {rxFor && (
+      {addPatient && (
         <AddPrescriptionModal
-          open={!!rxFor}
-          onClose={() => setRxFor(null)}
-          patientId={rxFor.id}
-          patientName={rxFor.name}
+          open={!!addPatient}
+          onClose={() => setAddPatient(null)}
+          patientId={addPatient.id}
+          patientName={addPatient.name}
         />
       )}
     </div>

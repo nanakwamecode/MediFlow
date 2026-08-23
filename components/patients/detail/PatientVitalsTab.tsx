@@ -4,6 +4,7 @@ import { useVitals } from "@/hooks/queries/useVitals";
 import { useDeleteVitals } from "@/hooks/mutations/useDeleteVitals";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { formatFullDate } from "@/lib/constants";
+import Skeleton from "@/components/common/Skeleton/Skeleton";
 
 interface Props {
   patientId: string;
@@ -15,7 +16,22 @@ export default function PatientVitalsTab({ patientId }: Props) {
   const { showToast } = useToast();
 
   if (isLoading) {
-    return <div className="p-8 text-center text-sm font-medium text-ink-3">Loading vitals…</div>;
+    return (
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-3">
+        <div className="flex gap-4 p-2 bg-bg-2/70 rounded-lg">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} className="h-4 flex-1 rounded-md" />
+          ))}
+        </div>
+        {[1, 2, 3].map((r) => (
+          <div key={r} className="flex gap-4 p-2">
+            {[1, 2, 3, 4, 5, 6].map((c) => (
+              <Skeleton key={c} className="h-4 flex-1 rounded-md" />
+            ))}
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (vitals.length === 0) {
