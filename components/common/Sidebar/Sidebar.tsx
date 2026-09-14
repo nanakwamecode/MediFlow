@@ -68,7 +68,7 @@ export default function Sidebar() {
         </div>
 
         {/* Nav */}
-        <nav className="flex flex-1 flex-col gap-1 overflow-hidden p-3 px-2">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3 px-2">
           {NAV_ITEMS.map((item) => {
             const segments = pathname.split("/").filter(Boolean);
             const currentTab = segments.length > 1 ? segments[1] : "dashboard";
@@ -89,7 +89,7 @@ export default function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className={cn("shrink-0 overflow-hidden border-t border-border/60 transition-all", sidebarCollapsed ? "p-2" : "p-3 px-3")}>
+        <div className={cn("mt-auto shrink-0 overflow-hidden border-t border-border/60 transition-all", sidebarCollapsed ? "p-2" : "p-3 px-3")}>
           <button
             onClick={() => setProfileOpen(true)}
             className={cn(
