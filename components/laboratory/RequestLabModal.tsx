@@ -16,7 +16,7 @@ interface Props {
 
 const COMMON_TESTS = [
   "Complete Blood Count (CBC)", "Basic Metabolic Panel (BMP)", "Liver Function Tests (LFT)",
-  "Lipid Panel", "Urinalysis", "Blood Glucose (Fasting)", "Random Blood Sugar (RBS)", "HbA1c",
+  "Lipid Panel", "Urinalysis", "Fasting Blood Sugar", "Random Blood Sugar (RBS)", "HbA1c",
   "Thyroid Function Tests (TFT)", "Renal Function Tests (RFT)", "Malaria Parasite Test",
   "Hepatitis B Surface Antigen", "Hepatitis B Profile Test", "Hepatitis C", "HIV Screening",
   "Widal Test", "Urine Culture & Sensitivity", "Chest X-Ray", "ECG", "Syphilis (VDRL/RPR)",
