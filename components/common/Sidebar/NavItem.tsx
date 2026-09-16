@@ -23,29 +23,49 @@ export default function NavItem({
     <Link
       href={href}
       onClick={onClick}
+      title={collapsed ? label : undefined}
       className={cn(
-        "flex w-full items-center gap-3 overflow-hidden rounded-xl border-none",
-        "px-3.5 py-2.5 text-left text-sm font-semibold whitespace-nowrap",
-        "cursor-pointer transition-all duration-150 no-underline",
+        "group relative flex items-center gap-3 rounded-xl no-underline",
+        "cursor-pointer transition-all duration-200",
+        collapsed ? "justify-center px-0 py-2.5" : "px-3 py-2.5",
         active
           ? "bg-accent text-white shadow-md shadow-accent/20 font-bold"
           : "bg-transparent text-ink-2 hover:bg-bg-2 hover:text-ink"
       )}
     >
-      <span className={cn(
-        "flex shrink-0 items-center justify-center transition-transform",
-        active ? "scale-105" : ""
-      )}>
-        <NavIcon name={icon} className="h-5 w-5" />
-      </span>
       <span
         className={cn(
-          "overflow-hidden transition-opacity duration-150",
-          collapsed && "opacity-0"
+          "flex shrink-0 items-center justify-center transition-transform duration-200",
+          active && "scale-110"
+        )}
+      >
+        <NavIcon name={icon} className="h-[18px] w-[18px]" />
+      </span>
+
+      <span
+        className={cn(
+          "text-sm font-semibold whitespace-nowrap transition-all duration-200",
+          collapsed
+            ? "w-0 opacity-0 overflow-hidden"
+            : "w-auto opacity-100"
         )}
       >
         {label}
       </span>
+
+      {/* Tooltip for collapsed state */}
+      {collapsed && (
+        <span
+          className={cn(
+            "pointer-events-none absolute left-full ml-2.5 z-50",
+            "rounded-lg bg-ink px-2.5 py-1.5 text-xs font-bold text-white",
+            "opacity-0 shadow-lg transition-opacity duration-150",
+            "group-hover:opacity-100"
+          )}
+        >
+          {label}
+        </span>
+      )}
     </Link>
   );
 }
