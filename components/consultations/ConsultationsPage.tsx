@@ -9,34 +9,35 @@ import EmptyState from "@/components/common/EmptyState/EmptyState";
 import PatientPickerModal from "./PatientPickerModal";
 import AddConsultationModal from "./AddConsultationModal";
 import ConsultationDetail from "./ConsultationDetail";
+import { useSearchParamState } from "@/hooks/useSearchParamState";
 import { cn } from "@/lib/utils";
-import type { ConsultationRow } from "@/services/consultations.service";
 
 export default function ConsultationsPage() {
   const { data: consults = [], isLoading: consultsLoading } = useAllConsultations();
   const { data: patients = [], isLoading: patientsLoading } = usePatients();
 
   const [search, setSearch] = useState("");
-  const [selectedConsult, setSelectedConsult] = useState<ConsultationRow | null>(null);
-  const [openInEditMode, setOpenInEditMode] = useState(false);
+  const [viewConsultId, setViewConsultId, clearViewConsultId] = useSearchParamState("consultId");
+  const [viewPatientId, setViewPatientId, clearViewPatientId] = useSearchParamState("patientId");
+  const [editParam, setEditParam, clearEditParam] = useSearchParamState("edit");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addConsultPatient, setAddConsultPatient] = useState<{ id: string; name: string } | null>(null);
+
+  if (viewConsultId && viewPatientId) {
+    return (
+      <ConsultationDetail
+        patientId={viewPatientId}
+        consultId={parseInt(viewConsultId, 10)}
+        onBack={() => { clearViewConsultId(); clearViewPatientId(); clearEditParam(); }}
+        initialEditing={editParam === "1"}
+      />
+    );
+  }
 
   const isLoading = consultsLoading || patientsLoading;
 
   if (isLoading) {
     return <CardListSkeleton count={5} />;
-  }
-
-  if (selectedConsult) {
-    return (
-      <ConsultationDetail
-        patientId={selectedConsult.patientId}
-        consultId={selectedConsult.id}
-        onBack={() => { setSelectedConsult(null); setOpenInEditMode(false); }}
-        initialEditing={openInEditMode}
-      />
-    );
   }
 
   const patientMap = new Map(patients.map((p) => [p.id, p]));
@@ -47,6 +48,12 @@ export default function ConsultationsPage() {
     const s = search.toLowerCase();
     return pName.includes(s) || (c.diagnosis && c.diagnosis.toLowerCase().includes(s));
   });
+
+  const openDetail = (consultId: number, patientId: string, editing = false) => {
+    setViewConsultId(String(consultId));
+    setViewPatientId(patientId);
+    if (editing) setEditParam("1");
+  };
 
   return (
     <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
@@ -95,7 +102,7 @@ export default function ConsultationsPage() {
             return (
               <div
                 key={c.id}
-                onClick={() => { setOpenInEditMode(false); setSelectedConsult(c); }}
+                onClick={() => openDetail(c.id, c.patientId)}
                 className="cursor-pointer rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:bg-bg/60 hover:shadow-md group"
               >
                 <div className="flex items-start justify-between gap-2">
@@ -146,16 +153,7 @@ export default function ConsultationsPage() {
           patientName={addConsultPatient.name}
           onCreated={(created) => {
             setAddConsultPatient(null);
-            setOpenInEditMode(true);
-            setSelectedConsult({
-              id: created.id,
-              patientId: created.patientId,
-              time: new Date().toISOString(),
-              doctorId: "",
-              symptoms: undefined,
-              diagnosis: undefined,
-              notes: undefined,
-            } as ConsultationRow);
+            openDetail(created.id, created.patientId, true);
           }}
         />
       )}

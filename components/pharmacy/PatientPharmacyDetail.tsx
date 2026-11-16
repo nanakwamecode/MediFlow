@@ -15,13 +15,13 @@ interface Props {
 }
 
 export default function PatientPharmacyDetail({ patientId, onBack }: Props) {
-  const { data: patient } = usePatient(patientId);
+  const { data: patient, isLoading: patientLoading } = usePatient(patientId);
   const { data: meds = [], isLoading } = usePrescriptions(patientId);
   const dispensePrescriptionMut = useDispensePrescription();
   const { showToast } = useToast();
   const [rxOpen, setRxOpen] = useState(false);
 
-  if (isLoading) {
+  if (isLoading || patientLoading) {
     return <div className="p-8 text-center text-sm font-medium text-ink-3">Loading prescriptions…</div>;
   }
 

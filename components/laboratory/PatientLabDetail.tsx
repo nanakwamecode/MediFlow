@@ -16,13 +16,13 @@ interface Props {
 }
 
 export default function PatientLabDetail({ patientId, onBack }: Props) {
-  const { data: patient } = usePatient(patientId);
+  const { data: patient, isLoading: patientLoading } = usePatient(patientId);
   const { data: labs = [], isLoading } = useLabs(patientId);
   const [resultFor, setResultFor] = useState<{ labId: number; testName: string } | null>(null);
   const [reqOpen, setReqOpen] = useState(false);
   const [viewingResult, setViewingResult] = useState<LabInvestigation | null>(null);
 
-  if (isLoading) {
+  if (isLoading || patientLoading) {
     return <div className="p-8 text-center text-sm font-medium text-ink-3">Loading laboratory investigations…</div>;
   }
 

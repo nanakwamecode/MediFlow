@@ -9,6 +9,7 @@ import EmptyState from "@/components/common/EmptyState/EmptyState";
 import PatientPickerModal from "@/components/consultations/PatientPickerModal";
 import AddPrescriptionModal from "./AddPrescriptionModal";
 import PatientPharmacyDetail from "./PatientPharmacyDetail";
+import { useSearchParamState } from "@/hooks/useSearchParamState";
 import { cn } from "@/lib/utils";
 import type { PrescriptionRow } from "@/services/prescriptions.service";
 
@@ -20,21 +21,22 @@ export default function PharmacyPage() {
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "dispensed">("all");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addPatient, setAddPatient] = useState<{ id: string; name: string } | null>(null);
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-
-  const isLoading = rxLoading || patientsLoading;
-
-  if (isLoading) {
-    return <CardListSkeleton count={5} />;
-  }
+  const [selectedPatientId, setSelectedPatientId, clearSelectedPatientId] =
+    useSearchParamState("patientId");
 
   if (selectedPatientId) {
     return (
       <PatientPharmacyDetail
         patientId={selectedPatientId}
-        onBack={() => setSelectedPatientId(null)}
+        onBack={clearSelectedPatientId}
       />
     );
+  }
+
+  const isLoading = rxLoading || patientsLoading;
+
+  if (isLoading) {
+    return <CardListSkeleton count={5} />;
   }
 
   const patientMap = new Map(patients.map((p) => [p.id, p]));

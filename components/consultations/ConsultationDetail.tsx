@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { usePatient } from "@/hooks/queries/usePatients";
 import { useConsultations } from "@/hooks/queries/useConsultations";
 import { useUpdateConsultation } from "@/hooks/mutations/useUpdateConsultation";
 import { useLabs } from "@/hooks/queries/useLabs";
 import { usePrescriptions } from "@/hooks/queries/usePrescriptions";
 import { formatFullDate, getInitials } from "@/lib/constants";
+import { CardListSkeleton } from "@/components/common/Skeleton";
 import AddPrescriptionModal from "@/components/pharmacy/AddPrescriptionModal";
 import RequestLabModal from "@/components/laboratory/RequestLabModal";
 import ViewLabResultModal from "@/components/laboratory/ViewLabResultModal";
@@ -21,8 +22,8 @@ interface Props {
 }
 
 export default function ConsultationDetail({ patientId, consultId, onBack, initialEditing = false }: Props) {
-  const { data: patient } = usePatient(patientId);
-  const { data: consults = [] } = useConsultations(patientId);
+  const { data: patient, isLoading: patientLoading } = usePatient(patientId);
+  const { data: consults = [], isLoading: consultsLoading } = useConsultations(patientId);
   const { data: allLabs = [] } = useLabs(patientId);
   const { data: allMeds = [] } = usePrescriptions(patientId);
   const updateConsultationMut = useUpdateConsultation();
@@ -40,7 +41,35 @@ export default function ConsultationDetail({ patientId, consultId, onBack, initi
   const [labOpen, setLabOpen] = useState(false);
   const [viewingResult, setViewingResult] = useState<LabInvestigation | null>(null);
 
-  if (!patient || !consult) return <div className="p-7 text-ink-3 font-semibold">Consultation not found</div>;
+  useEffect(() => {
+    if (consult) {
+      setSymptoms(consult.symptoms || "");
+      setDiagnosis(consult.diagnosis || "");
+      setNotes(consult.notes || "");
+    }
+  }, [consult]);
+
+  if (patientLoading || consultsLoading) {
+    return (
+      <div className="animate-fade-in p-6 sm:p-8 max-w-5xl mx-auto">
+        <CardListSkeleton count={4} />
+      </div>
+    );
+  }
+
+  if (!patient || !consult) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-ink-3 font-semibold mb-3">Consultation not found</p>
+        <button
+          onClick={onBack}
+          className="cursor-pointer rounded-xl border border-border bg-card px-4 py-2 text-xs font-bold text-ink-2 hover:bg-bg-2"
+        >
+          Back to Consultations
+        </button>
+      </div>
+    );
+  }
 
   const handleSave = async () => {
     await updateConsultationMut.mutateAsync({

@@ -7,6 +7,7 @@ import { useConsultations } from "@/hooks/queries/useConsultations";
 import { useLabs } from "@/hooks/queries/useLabs";
 import { usePrescriptions } from "@/hooks/queries/usePrescriptions";
 import { useUiStore } from "@/store/uiStore";
+import { useSearchParamState } from "@/hooks/useSearchParamState";
 import { PatientDetailSkeleton } from "@/components/common/Skeleton";
 import PatientDetailHeader from "./PatientDetailHeader";
 import PatientVitalsTab from "./detail/PatientVitalsTab";
@@ -25,9 +26,10 @@ import type { LabInvestigation } from "@/types";
 
 interface Props {
   patientId: string;
+  onBack?: () => void;
 }
 
-export default function PatientDetailPage({ patientId }: Props) {
+export default function PatientDetailPage({ patientId, onBack }: Props) {
   const { data: patient, isLoading } = usePatient(patientId);
   const { data: vitals = [] } = useVitals(patientId);
   const { data: consults = [] } = useConsultations(patientId);
@@ -35,6 +37,10 @@ export default function PatientDetailPage({ patientId }: Props) {
   const { data: meds = [] } = usePrescriptions(patientId);
 
   const clearViewingPatient = useUiStore((s) => s.clearViewingPatient);
+  const handleBack = () => {
+    if (onBack) onBack();
+    else clearViewingPatient();
+  };
 
   const [logOpen, setLogOpen] = useState(false);
   const [consultOpen, setConsultOpen] = useState(false);
@@ -43,7 +49,9 @@ export default function PatientDetailPage({ patientId }: Props) {
   const [editPatientOpen, setEditPatientOpen] = useState(false);
   const [resultFor, setResultFor] = useState<{ labId: number; testName: string } | null>(null);
   const [viewingResult, setViewingResult] = useState<LabInvestigation | null>(null);
-  const [activeTab, setActiveTab] = useState<"vitals" | "consults" | "labs" | "meds">("vitals");
+  const [activeTabParam, setActiveTabParam] = useSearchParamState("tab");
+  const activeTab = (activeTabParam as "vitals" | "consults" | "labs" | "meds") || "vitals";
+  const setActiveTab = (tab: "vitals" | "consults" | "labs" | "meds") => setActiveTabParam(tab);
 
   if (isLoading) {
     return <PatientDetailSkeleton />;
@@ -55,7 +63,7 @@ export default function PatientDetailPage({ patientId }: Props) {
         <div className="text-center">
           <div className="mb-2 text-3xl opacity-20">?</div>
           <div className="text-sm font-bold text-ink-2">Patient not found</div>
-          <button onClick={clearViewingPatient} className="mt-3 cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white flex items-center gap-1.5 mx-auto shadow-md">
+          <button onClick={handleBack} className="mt-3 cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white flex items-center gap-1.5 mx-auto shadow-md">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back
           </button>
         </div>
@@ -66,7 +74,7 @@ export default function PatientDetailPage({ patientId }: Props) {
   return (
     <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <button onClick={clearViewingPatient} className="group flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-xs font-bold text-ink-2 shadow-sm transition-all hover:border-border-2 hover:bg-bg-2">
+        <button onClick={handleBack} className="group flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-xs font-bold text-ink-2 shadow-sm transition-all hover:border-border-2 hover:bg-bg-2">
           <span className="transition-transform group-hover:-translate-x-0.5">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           </span> Back

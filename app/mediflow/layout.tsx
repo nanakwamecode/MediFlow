@@ -25,9 +25,12 @@ export default function DashboardLayout({
   useEffect(() => {
     const mainGroup = [
       "/mediflow",
+      "/mediflow/patients",
       "/mediflow/consultations",
       "/mediflow/labs",
       "/mediflow/pharmacy",
+      "/mediflow/records",
+      "/mediflow/vitals",
     ];
 
     if (!mainGroup.includes(pathname)) {

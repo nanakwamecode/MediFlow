@@ -9,6 +9,7 @@ import EmptyState from "@/components/common/EmptyState/EmptyState";
 import PatientPickerModal from "@/components/consultations/PatientPickerModal";
 import RequestLabModal from "./RequestLabModal";
 import PatientLabDetail from "./PatientLabDetail";
+import { useSearchParamState } from "@/hooks/useSearchParamState";
 import { cn } from "@/lib/utils";
 
 interface PatientLabSummary {
@@ -29,23 +30,22 @@ export default function LabPage() {
     id: string;
     name: string;
   } | null>(null);
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
-    null
-  );
-
-  const isLoading = labsLoading || patientsLoading;
-
-  if (isLoading) {
-    return <CardListSkeleton count={5} />;
-  }
+  const [selectedPatientId, setSelectedPatientId, clearSelectedPatientId] =
+    useSearchParamState("patientId");
 
   if (selectedPatientId) {
     return (
       <PatientLabDetail
         patientId={selectedPatientId}
-        onBack={() => setSelectedPatientId(null)}
+        onBack={clearSelectedPatientId}
       />
     );
+  }
+
+  const isLoading = labsLoading || patientsLoading;
+
+  if (isLoading) {
+    return <CardListSkeleton count={5} />;
   }
 
   const patientMap = new Map(patients.map((p) => [p.id, p]));
