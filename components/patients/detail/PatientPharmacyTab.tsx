@@ -3,7 +3,7 @@
 import { usePrescriptions } from "@/hooks/queries/usePrescriptions";
 import { useDispensePrescription } from "@/hooks/mutations/useDispensePrescription";
 import { useToast } from "@/components/common/Toast/ToastProvider";
-import { formatFullDate } from "@/lib/constants";
+import { formatDateOnly } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import Skeleton from "@/components/common/Skeleton/Skeleton";
 
@@ -77,14 +77,14 @@ export default function PatientPharmacyTab({ patientId }: Props) {
                 <span className="font-bold text-ink-2 mr-1">
                   Prescribed:
                 </span>
-                {formatFullDate(m.timePrescribed).split(",")[0]} by {m.prescribedBy}
+                {formatDateOnly(m.timePrescribed)} by {m.prescribedBy}
               </div>
               {m.timeDispensed && (
                 <div>
                   <span className="font-bold text-ink-2 mr-1">
                     Dispensed:
                   </span>
-                  {formatFullDate(m.timeDispensed).split(",")[0]}
+                  {formatDateOnly(m.timeDispensed)}
                 </div>
               )}
             </div>

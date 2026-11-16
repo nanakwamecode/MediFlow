@@ -5,7 +5,7 @@ import { useAllVitals } from "@/hooks/queries/useVitals";
 import { usePatients } from "@/hooks/queries/usePatients";
 import { useDeleteVitals } from "@/hooks/mutations/useDeleteVitals";
 import { useToast } from "@/components/common/Toast/ToastProvider";
-import { formatTime, formatFullDate } from "@/lib/constants";
+import { formatTime, formatDateOnly } from "@/lib/constants";
 import { TableSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
 import LogVitalsModal from "./LogVitalsModal";
@@ -109,7 +109,7 @@ export default function VitalsPage() {
                 return (
                   <tr key={v.id} className="hover:bg-bg/60 transition-colors">
                     <td className="px-5 py-4 font-mono text-xs font-semibold text-ink-3">
-                      <div>{formatFullDate(v.time)}</div>
+                      <div>{formatDateOnly(v.time)}</div>
                       <div className="text-[0.7rem] text-ink-4 font-bold">{formatTime(v.time)}</div>
                     </td>
                     <td className="px-5 py-4 font-bold text-ink">

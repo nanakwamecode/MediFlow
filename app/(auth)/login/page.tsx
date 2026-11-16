@@ -11,7 +11,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen bg-ink">
       {/* Left — Branding Panel (hidden on mobile) */}
-      <div className="relative hidden lg:flex lg:w-[55%] flex-col justify-between overflow-hidden sticky top-0 h-screen">
+      <div className="relative hidden lg:flex lg:w-[38%] flex-col justify-between overflow-hidden sticky top-0 h-screen">
         {/* Warm burgundy gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#2a1a15] via-[#3d2418] to-[#1a0f0a]" />
 
@@ -34,7 +34,7 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-1/3 -translate-y-1/2 h-[450px] w-[450px] rounded-full bg-accent/[0.10] blur-[100px] animate-orb-1" />
 
         {/* Top branding */}
-        <div className="relative z-10 p-12">
+        <div className="relative z-10 p-8 xl:p-12">
           <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/15 backdrop-blur-sm ring-1 ring-accent/20">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -49,8 +49,8 @@ export default function LoginPage() {
         </div>
 
         {/* Center hero content */}
-        <div className="relative z-10 px-12 pb-12 animate-slide-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
-          <h1 className="mb-6 font-serif text-[3.2rem] leading-[1.1] tracking-tight text-white/95">
+        <div className="relative z-10 px-8 pb-8 xl:px-12 xl:pb-12 animate-slide-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
+          <h1 className="mb-6 font-serif text-[2.6rem] xl:text-[3.2rem] leading-[1.1] tracking-tight text-white/95">
             Clinical
             <br />
             <span className="italic text-accent inline-block animate-float">Intelligence,</span>
@@ -64,7 +64,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right — Login Form Panel (scrollable) */}
-      <div className="relative flex w-full flex-col lg:w-[45%] min-h-screen">
+      <div className="relative flex w-full flex-col lg:w-[62%] min-h-screen">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#f8f5f1] to-[#f0ece6]" />
 

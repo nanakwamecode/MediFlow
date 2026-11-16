@@ -1,7 +1,7 @@
 "use client";
 
 import { useConsultations } from "@/hooks/queries/useConsultations";
-import { formatFullDate } from "@/lib/constants";
+import { formatDateOnly } from "@/lib/constants";
 import Skeleton from "@/components/common/Skeleton/Skeleton";
 
 interface Props {
@@ -49,7 +49,7 @@ export default function PatientConsultsTab({ patientId }: Props) {
               {c.diagnosis || "No Diagnosis Specified"}
             </div>
             <div className="rounded-full bg-bg-2 px-3 py-1 font-mono text-xs font-semibold text-ink-3 border border-border">
-              {formatFullDate(c.time).split(",")[0]}
+              {formatDateOnly(c.time)}
             </div>
           </div>
           <div className="mb-2 flex items-start gap-2 text-sm text-ink-2">

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAllConsultations } from "@/hooks/queries/useConsultations";
 import { usePatients } from "@/hooks/queries/usePatients";
-import { formatTime, formatFullDate } from "@/lib/constants";
+import { formatTime, formatDateOnly } from "@/lib/constants";
 import { CardListSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
 import PatientPickerModal from "./PatientPickerModal";
@@ -109,7 +109,7 @@ export default function ConsultationsPage() {
                   <div>
                     <div className="font-bold text-base text-ink group-hover:text-accent transition-colors">{ptName}</div>
                     <div className="font-mono text-xs font-semibold text-ink-3">
-                      {formatFullDate(c.time)} · {formatTime(c.time)}
+                      {formatDateOnly(c.time)} · {formatTime(c.time)}
                     </div>
                   </div>
                   {c.doctorId && (

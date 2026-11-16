@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAllPrescriptions } from "@/hooks/queries/usePrescriptions";
 import { usePatients } from "@/hooks/queries/usePatients";
-import { formatTime, formatFullDate } from "@/lib/constants";
+import { formatTime, formatDateOnly } from "@/lib/constants";
 import { CardListSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
 import PatientPickerModal from "@/components/consultations/PatientPickerModal";
@@ -119,7 +119,7 @@ export default function PharmacyPage() {
                   <div>
                     <div className="font-bold text-base text-ink group-hover:text-accent transition-colors">{ptName}</div>
                     <div className="font-mono text-xs font-semibold text-ink-3 mt-0.5">
-                      Prescribed: {formatFullDate(rx.timePrescribed)} · {formatTime(rx.timePrescribed)}
+                      Prescribed: {formatDateOnly(rx.timePrescribed)} · {formatTime(rx.timePrescribed)}
                     </div>
                   </div>
                   <span className={cn(

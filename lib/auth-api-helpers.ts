@@ -80,6 +80,12 @@ export function validateRegisterBody(data: unknown):
   if (!username || !password) {
     return { ok: false, error: "Username and password are required." };
   }
+  if (!username.startsWith("MDF")) {
+    return {
+      ok: false,
+      error: "Username must start with 'MDF'.",
+    };
+  }
   if (username.length > USERNAME_MAX) {
     return {
       ok: false,

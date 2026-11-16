@@ -1,7 +1,7 @@
 "use client";
 
 import { useLabs } from "@/hooks/queries/useLabs";
-import { formatFullDate } from "@/lib/constants";
+import { formatDateOnly } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import Skeleton from "@/components/common/Skeleton/Skeleton";
 import type { LabInvestigation } from "@/types";
@@ -70,7 +70,7 @@ export default function PatientLabsTab({
                 <span className="font-bold text-ink-2 mr-1">
                   Requested:
                 </span>
-                {formatFullDate(l.timeRequested).split(",")[0]}
+                {formatDateOnly(l.timeRequested)}
               </div>
               <div>
                 <span className="font-bold text-ink-2 mr-1">

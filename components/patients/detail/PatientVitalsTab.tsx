@@ -3,7 +3,7 @@
 import { useVitals } from "@/hooks/queries/useVitals";
 import { useDeleteVitals } from "@/hooks/mutations/useDeleteVitals";
 import { useToast } from "@/components/common/Toast/ToastProvider";
-import { formatFullDate } from "@/lib/constants";
+import { formatDateOnly } from "@/lib/constants";
 import Skeleton from "@/components/common/Skeleton/Skeleton";
 
 interface Props {
@@ -58,7 +58,7 @@ export default function PatientVitalsTab({ patientId }: Props) {
           {vitals.map((v) => (
             <tr key={v.id} className="transition-colors hover:bg-bg/60">
               <td className="px-4 py-3 text-xs font-semibold text-ink-2 whitespace-nowrap">
-                {formatFullDate(v.time).split(",")[0]}
+                {formatDateOnly(v.time)}
               </td>
               <td className="px-4 py-3 text-sm font-bold text-ink">
                 {v.sys ?? "-"}/{v.dia ?? "-"}
