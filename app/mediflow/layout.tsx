@@ -46,8 +46,11 @@ export default function DashboardLayout({
       <main
         className={cn(
           "min-h-screen min-w-0 flex-1 overflow-y-auto",
-          "transition-[margin-left] duration-250 ease-[cubic-bezier(.4,0,.2,1)]",
-          sidebarCollapsed ? "ml-[52px]" : "ml-[224px]"
+          "transition-[margin-left] duration-300 ease-[cubic-bezier(.4,0,.2,1)]",
+          /* Mobile: no margin, leave room for hamburger */
+          "ml-0 pt-16 lg:pt-0",
+          /* Desktop: match sidebar width */
+          sidebarCollapsed ? "lg:ml-[68px]" : "lg:ml-[232px]"
         )}
       >
         {children}

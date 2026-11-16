@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useUiStore } from "@/store/uiStore";
 import { getInitials } from "@/lib/constants";
 import type { Patient } from "@/types";
@@ -12,6 +13,12 @@ interface Props {
 
 export default function RecentPatients({ patients, onLogVitalsFor }: Props) {
   const { viewPatient } = useUiStore();
+  const router = useRouter();
+
+  const goToChart = (patientId: string) => {
+    viewPatient(patientId);
+    router.push("/mediflow/patients");
+  };
 
   if (patients.length === 0) return null;
 
@@ -54,7 +61,7 @@ export default function RecentPatients({ patients, onLogVitalsFor }: Props) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <button
-                      onClick={() => viewPatient(p.id)}
+                      onClick={() => goToChart(p.id)}
                       className="cursor-pointer truncate text-sm font-semibold text-ink hover:text-accent transition-colors block text-left"
                     >
                       {p.name}
@@ -81,7 +88,7 @@ export default function RecentPatients({ patients, onLogVitalsFor }: Props) {
               {/* Action Buttons */}
               <div className="mt-4 flex items-center gap-2 pt-3 border-t border-border/50">
                 <button
-                  onClick={() => viewPatient(p.id)}
+                  onClick={() => goToChart(p.id)}
                   className="flex-1 cursor-pointer rounded-lg bg-bg-2 py-1.5 text-center text-xs font-semibold text-ink-2 hover:bg-border transition-colors"
                 >
                   View Chart

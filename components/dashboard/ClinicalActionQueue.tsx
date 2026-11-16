@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAllLabs } from "@/hooks/queries/useLabs";
 import { useAllPrescriptions } from "@/hooks/queries/usePrescriptions";
 import { useUiStore } from "@/store/uiStore";
@@ -12,6 +13,12 @@ export default function ClinicalActionQueue() {
   const { data: allLabs = [] } = useAllLabs();
   const { data: allRx = [] } = useAllPrescriptions();
   const { viewPatient } = useUiStore();
+  const router = useRouter();
+
+  const goToChart = (patientId: string) => {
+    viewPatient(patientId);
+    router.push("/mediflow/patients");
+  };
 
   const [activeTab, setActiveTab] = useState<"labs" | "pharmacy">("labs");
   const [resultFor, setResultFor] = useState<{ patientId: string; labId: number; testName: string } | null>(null);
@@ -80,7 +87,7 @@ export default function ClinicalActionQueue() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => viewPatient(l.patientId)} className="cursor-pointer text-sm font-bold text-ink hover:text-accent hover:underline text-left">
+                        <button onClick={() => goToChart(l.patientId)} className="cursor-pointer text-sm font-bold text-ink hover:text-accent hover:underline text-left">
                           {l.ptName}
                         </button>
                         <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700 border border-amber-200">
@@ -91,7 +98,7 @@ export default function ClinicalActionQueue() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => viewPatient(l.patientId)} className="cursor-pointer rounded-xl border border-border px-3.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-bg-2">View Chart</button>
+                    <button onClick={() => goToChart(l.patientId)} className="cursor-pointer rounded-xl border border-border px-3.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-bg-2">View Chart</button>
                     <button onClick={() => setResultFor({ patientId: l.patientId, labId: l.id, testName: l.testName })} className="cursor-pointer rounded-xl bg-accent px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-accent-hover">Enter Result</button>
                   </div>
                 </div>
@@ -116,7 +123,7 @@ export default function ClinicalActionQueue() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => viewPatient(r.patientId)} className="cursor-pointer text-sm font-bold text-ink hover:text-accent hover:underline text-left">
+                      <button onClick={() => goToChart(r.patientId)} className="cursor-pointer text-sm font-bold text-ink hover:text-accent hover:underline text-left">
                         {r.ptName}
                       </button>
                       <span className="font-bold text-sm text-ink">{r.medication}</span>
@@ -125,7 +132,7 @@ export default function ClinicalActionQueue() {
                     <p className="text-xs font-medium text-ink-3 italic">&quot;{r.instructions}&quot; · by {r.prescribedBy}</p>
                   </div>
                 </div>
-                <button onClick={() => viewPatient(r.patientId)} className="cursor-pointer rounded-xl bg-status-normal px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:opacity-90">Dispense</button>
+                <button onClick={() => goToChart(r.patientId)} className="cursor-pointer rounded-xl bg-status-normal px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:opacity-90">Dispense</button>
               </div>
             ))}
           </div>

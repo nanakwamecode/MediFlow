@@ -3,28 +3,35 @@
 import { useState } from "react";
 import { useAllLabs } from "@/hooks/queries/useLabs";
 import { usePatients } from "@/hooks/queries/usePatients";
-import { formatTime, formatFullDate } from "@/lib/constants";
+import { getInitials } from "@/lib/constants";
 import { CardListSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
 import PatientPickerModal from "@/components/consultations/PatientPickerModal";
 import RequestLabModal from "./RequestLabModal";
-import EnterLabResultModal from "./EnterLabResultModal";
-import ViewLabResultModal from "./ViewLabResultModal";
 import PatientLabDetail from "./PatientLabDetail";
 import { cn } from "@/lib/utils";
-import type { LabRow } from "@/services/labs.service";
+
+interface PatientLabSummary {
+  patientId: string;
+  patientName: string;
+  pendingCount: number;
+  completedCount: number;
+  totalCount: number;
+}
 
 export default function LabPage() {
   const { data: labs = [], isLoading: labsLoading } = useAllLabs();
   const { data: patients = [], isLoading: patientsLoading } = usePatients();
 
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "completed">("all");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [requestPatient, setRequestPatient] = useState<{ id: string; name: string } | null>(null);
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-  const [enterResultFor, setEnterResultFor] = useState<LabRow | null>(null);
-  const [viewResultFor, setViewResultFor] = useState<LabRow | null>(null);
+  const [requestPatient, setRequestPatient] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
+    null
+  );
 
   const isLoading = labsLoading || patientsLoading;
 
@@ -43,22 +50,45 @@ export default function LabPage() {
 
   const patientMap = new Map(patients.map((p) => [p.id, p]));
 
-  const filtered = labs.filter((l) => {
+  const summaryMap = new Map<string, PatientLabSummary>();
+  for (const l of labs) {
+    const existing = summaryMap.get(l.patientId);
     const p = patientMap.get(l.patientId);
-    const pName = p ? p.name.toLowerCase() : (l.ptName ? l.ptName.toLowerCase() : "");
-    const s = search.toLowerCase();
-    const matchSearch = pName.includes(s) || l.testName.toLowerCase().includes(s);
-    const matchStatus = filterStatus === "all" || l.status === filterStatus;
-    return matchSearch && matchStatus;
-  });
+    const name = p?.name || l.ptName || "Unknown Patient";
+
+    if (existing) {
+      existing.totalCount++;
+      if (l.status === "pending") existing.pendingCount++;
+      if (l.status === "completed") existing.completedCount++;
+    } else {
+      summaryMap.set(l.patientId, {
+        patientId: l.patientId,
+        patientName: name,
+        pendingCount: l.status === "pending" ? 1 : 0,
+        completedCount: l.status === "completed" ? 1 : 0,
+        totalCount: 1,
+      });
+    }
+  }
+
+  const patientSummaries = Array.from(summaryMap.values());
+
+  const filtered = patientSummaries.filter((s) =>
+    s.patientName.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPending = labs.filter((l) => l.status === "pending").length;
+  const totalCompleted = labs.filter((l) => l.status === "completed").length;
 
   return (
     <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Laboratory Investigations</h1>
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">
+            Laboratory Investigations
+          </h1>
           <p className="text-sm font-medium text-ink-3">
-            {labs.filter((l) => l.status === "pending").length} pending · {labs.filter((l) => l.status === "completed").length} completed
+            {totalPending} pending · {totalCompleted} completed
           </p>
         </div>
         <button
@@ -69,90 +99,82 @@ export default function LabPage() {
         </button>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-4">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by patient name or test name…"
+          placeholder="Search by patient name…"
           className={cn(
-            "flex-1 min-w-[200px] rounded-xl border border-border bg-card px-4 py-2.5",
+            "w-full rounded-xl border border-border bg-card px-4 py-2.5",
             "text-sm font-medium text-ink outline-none transition-colors",
             "placeholder:text-ink-4 focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.08)]"
           )}
         />
-        <div className="flex rounded-xl border border-border bg-card p-1">
-          {(["all", "pending", "completed"] as const).map((st) => (
-            <button
-              key={st}
-              onClick={() => setFilterStatus(st)}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-xs font-bold capitalize transition-all",
-                filterStatus === st ? "bg-accent text-white shadow-sm" : "text-ink-3 hover:text-ink"
-              )}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {filtered.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-card">
             <EmptyState
               icon="flask"
               title="No lab orders found"
-              subtitle={search ? "Try adjusting your filters" : 'Click "+ Request Investigation" to order a lab'}
+              subtitle={
+                search
+                  ? "No patients match your search"
+                  : 'Click "+ Request Investigation" to order a lab'
+              }
             />
           </div>
         ) : (
-          filtered.map((l) => {
-            const p = patientMap.get(l.patientId);
-            const ptName = p?.name || l.ptName || "Unknown Patient";
-            const isPending = l.status === "pending";
-            return (
-              <div
-                key={l.id}
-                onClick={() => setSelectedPatientId(l.patientId)}
-                className="cursor-pointer rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:bg-bg/60 hover:shadow-md group"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="font-bold text-base text-ink group-hover:text-accent transition-colors">{l.testName}</div>
-                    <div className="font-bold text-sm text-ink-2">{ptName}</div>
-                    <div className="font-mono text-xs font-semibold text-ink-3 mt-1">
-                      Ordered: {formatFullDate(l.timeRequested)} · {formatTime(l.timeRequested)}
-                    </div>
+          filtered.map((s) => (
+            <button
+              key={s.patientId}
+              type="button"
+              onClick={() => setSelectedPatientId(s.patientId)}
+              className={cn(
+                "w-full cursor-pointer rounded-2xl border border-border bg-card",
+                "p-5 shadow-card transition-all text-left",
+                "hover:bg-bg/60 hover:shadow-md group"
+              )}
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent/15 font-serif text-lg font-bold text-accent transition-colors group-hover:bg-accent group-hover:text-white">
+                  {getInitials(s.patientName)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-base font-bold text-ink group-hover:text-accent transition-colors truncate">
+                    {s.patientName}
                   </div>
-                  <span className={cn(
-                    "rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wider",
-                    isPending ? "bg-status-high-bg text-status-high border border-status-high-border" : "bg-status-normal-bg text-status-normal border border-status-normal-border"
-                  )}>
-                    {l.status}
-                  </span>
+                  <div className="text-xs font-semibold text-ink-3 mt-0.5">
+                    {s.totalCount} test{s.totalCount !== 1 ? "s" : ""}
+                    {s.pendingCount > 0 && (
+                      <span className="text-status-high ml-1.5">
+                        · {s.pendingCount} pending
+                      </span>
+                    )}
+                    {s.completedCount > 0 && (
+                      <span className="text-status-normal ml-1.5">
+                        · {s.completedCount} completed
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-xs font-semibold text-ink-3">
-                  <span>Dr: {l.requestedBy || "Attending Doctor"}</span>
-                  {isPending ? (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setEnterResultFor(l); }}
-                      className="cursor-pointer font-bold text-status-normal hover:underline"
-                    >
-                      + Enter Result
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setViewResultFor(l); }}
-                      className="cursor-pointer font-bold text-accent hover:underline"
-                    >
-                      View Report →
-                    </button>
-                  )}
-                </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5 text-ink-4 group-hover:text-accent transition-colors shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
               </div>
-            );
-          })
+            </button>
+          ))
         )}
       </div>
 
@@ -172,31 +194,6 @@ export default function LabPage() {
           onClose={() => setRequestPatient(null)}
           patientId={requestPatient.id}
           patientName={requestPatient.name}
-        />
-      )}
-
-      {enterResultFor && (
-        <EnterLabResultModal
-          open={!!enterResultFor}
-          onClose={() => setEnterResultFor(null)}
-          patientId={enterResultFor.patientId}
-          labId={enterResultFor.id}
-          testName={enterResultFor.testName}
-        />
-      )}
-
-      {viewResultFor && (
-        <ViewLabResultModal
-          open={!!viewResultFor}
-          onClose={() => setViewResultFor(null)}
-          testName={viewResultFor.testName}
-          result={viewResultFor.result || ""}
-          timeCompleted={viewResultFor.timeCompleted}
-          requestedBy={viewResultFor.requestedBy}
-          patientName={patientMap.get(viewResultFor.patientId)?.name || viewResultFor.ptName}
-          patientAge={patientMap.get(viewResultFor.patientId)?.age}
-          patientGender={patientMap.get(viewResultFor.patientId)?.gender}
-          patientOpdNumber={patientMap.get(viewResultFor.patientId)?.opdNumber || viewResultFor.ptOpd}
         />
       )}
     </div>

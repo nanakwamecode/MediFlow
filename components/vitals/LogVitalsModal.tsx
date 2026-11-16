@@ -1,18 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Modal from "@/components/common/Modal/Modal";
 import { usePatients } from "@/hooks/queries/usePatients";
 import { useCreateVitals } from "@/hooks/mutations/useCreateVitals";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
-import { nowLocalISO } from "@/lib/constants";
+import { nowLocalISO, classify } from "@/lib/constants";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   patientId?: string;
   patientName?: string;
+}
+
+function generateVitalsNotes(values: {
+  sys: string;
+  dia: string;
+  pulse: string;
+  temperature: string;
+  respiratoryRate: string;
+  weight: string;
+  height: string;
+  bmi: string;
+}): string {
+  const parts: string[] = [];
+
+  const sysN = parseInt(values.sys);
+  const diaN = parseInt(values.dia);
+  if (!isNaN(sysN) && !isNaN(diaN)) {
+    const bp = classify(sysN, diaN);
+    parts.push(`BP ${sysN}/${diaN} mmHg (${bp.label})`);
+  }
+
+  const pulseN = parseInt(values.pulse);
+  if (!isNaN(pulseN)) {
+    let pulseLabel = "normal";
+    if (pulseN < 60) pulseLabel = "bradycardic";
+    else if (pulseN > 100) pulseLabel = "tachycardic";
+    parts.push(`Pulse ${pulseN} bpm (${pulseLabel})`);
+  }
+
+  const tempN = parseFloat(values.temperature);
+  if (!isNaN(tempN)) {
+    let tempLabel = "normal";
+    if (tempN < 36.1) tempLabel = "hypothermic";
+    else if (tempN >= 37.5 && tempN < 38.0) tempLabel = "low-grade fever";
+    else if (tempN >= 38.0 && tempN < 39.0) tempLabel = "febrile";
+    else if (tempN >= 39.0) tempLabel = "high fever";
+    parts.push(`Temp ${tempN}°C (${tempLabel})`);
+  }
+
+  const rrN = parseInt(values.respiratoryRate);
+  if (!isNaN(rrN)) {
+    let rrLabel = "normal";
+    if (rrN < 12) rrLabel = "bradypneic";
+    else if (rrN > 20) rrLabel = "tachypneic";
+    parts.push(`RR ${rrN}/min (${rrLabel})`);
+  }
+
+  const weightN = parseFloat(values.weight);
+  const heightN = parseFloat(values.height);
+  const bmiN = parseFloat(values.bmi);
+
+  if (!isNaN(weightN)) parts.push(`Wt ${weightN} kg`);
+  if (!isNaN(heightN)) parts.push(`Ht ${heightN} cm`);
+
+  if (!isNaN(bmiN)) {
+    let bmiLabel = "normal weight";
+    if (bmiN < 18.5) bmiLabel = "underweight";
+    else if (bmiN >= 25 && bmiN < 30) bmiLabel = "overweight";
+    else if (bmiN >= 30) bmiLabel = "obese";
+    parts.push(`BMI ${bmiN} (${bmiLabel})`);
+  }
+
+  return parts.join(". ") + (parts.length > 0 ? "." : "");
 }
 
 export default function LogVitalsModal({ open, onClose, patientId, patientName }: Props) {
@@ -30,8 +93,22 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
   const [respiratoryRate, setRr] = useState("");
   const [time, setTime] = useState(nowLocalISO());
   const [notes, setNotes] = useState("");
+  const [notesManuallyEdited, setNotesManuallyEdited] = useState(false);
 
   const bmi = weight && height ? (parseFloat(weight) / ((parseFloat(height) / 100) ** 2)).toFixed(1) : "";
+
+  /* Auto-generate notes whenever vitals change (unless user manually edited) */
+  const regenerateNotes = useCallback(() => {
+    if (notesManuallyEdited) return;
+    const generated = generateVitalsNotes({
+      sys, dia, pulse, temperature, respiratoryRate, weight, height, bmi,
+    });
+    setNotes(generated);
+  }, [sys, dia, pulse, temperature, respiratoryRate, weight, height, bmi, notesManuallyEdited]);
+
+  useEffect(() => {
+    regenerateNotes();
+  }, [regenerateNotes]);
 
   const filteredPatients = patients.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -40,6 +117,13 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
   const selectedPatient = patients.find(p => p.id === (patientId || selectedPatientId));
 
   const { showToast } = useToast();
+
+  const resetForm = () => {
+    setSys(""); setDia(""); setPulse(""); setTemp("");
+    setWeight(""); setHeight(""); setRr(""); setNotes("");
+    setTime(nowLocalISO()); setSelectedPatientId(patientId || "");
+    setNotesManuallyEdited(false);
+  };
 
   const handleSave = async () => {
     const sysN = parseInt(sys);
@@ -81,7 +165,7 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
 
       showToast("Vitals logged", "✓");
       onClose();
-      setSys(""); setDia(""); setPulse(""); setTemp(""); setWeight(""); setHeight(""); setRr(""); setNotes(""); setTime(nowLocalISO()); setSelectedPatientId(patientId || "");
+      resetForm();
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Failed to log vitals", "⚠");
     }
@@ -164,9 +248,54 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
         <div><label className={labelClass}>Height (cm)</label><input type="number" step="0.1" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="175" className={fieldClass} /></div>
         <div><label className={labelClass}>BMI</label><input type="text" value={bmi} readOnly placeholder="Auto" className={cn(fieldClass, "bg-bg-2 cursor-not-allowed font-bold text-ink-2")} /></div>
       </div>
-      <div className="mb-4 grid grid-cols-[1fr_2fr] gap-3">
-        <div><label className={labelClass}>Date & Time</label><input type="datetime-local" value={time} onChange={(e) => setTime(e.target.value)} className={fieldClass} /></div>
-        <div><label className={labelClass}>Notes</label><input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. Post-triage" className={fieldClass} /></div>
+      <div className="mb-2">
+        <label className={labelClass}>Date & Time</label>
+        <input type="datetime-local" value={time} onChange={(e) => setTime(e.target.value)} className={fieldClass} />
+      </div>
+
+      {/* Auto-generated Notes */}
+      <div className="mb-4">
+        <div className="mb-1.5 flex items-center justify-between">
+          <label className="text-xs font-bold text-ink-2 tracking-wide">
+            Clinical Notes
+          </label>
+          {notesManuallyEdited && (
+            <button
+              type="button"
+              onClick={() => {
+                setNotesManuallyEdited(false);
+                const generated = generateVitalsNotes({
+                  sys, dia, pulse, temperature, respiratoryRate, weight, height, bmi,
+                });
+                setNotes(generated);
+              }}
+              className="cursor-pointer text-[10px] font-bold text-accent hover:underline"
+            >
+              ↻ Regenerate
+            </button>
+          )}
+        </div>
+        <textarea
+          value={notes}
+          onChange={(e) => {
+            setNotes(e.target.value);
+            setNotesManuallyEdited(true);
+          }}
+          rows={3}
+          placeholder="Notes will auto-generate from vitals entered above…"
+          className={cn(
+            fieldClass,
+            "resize-none",
+            !notesManuallyEdited && notes
+              ? "border-status-normal/40 bg-status-normal-bg/30"
+              : ""
+          )}
+        />
+        {!notesManuallyEdited && notes && (
+          <p className="mt-1 text-[10px] font-medium text-status-normal">
+            ✦ Auto-generated — edit to customize
+          </p>
+        )}
       </div>
 
       <div className="mt-6 flex justify-end gap-2.5">
