@@ -18,6 +18,7 @@ export default function ConsultationsPage() {
 
   const [search, setSearch] = useState("");
   const [selectedConsult, setSelectedConsult] = useState<ConsultationRow | null>(null);
+  const [openInEditMode, setOpenInEditMode] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addConsultPatient, setAddConsultPatient] = useState<{ id: string; name: string } | null>(null);
 
@@ -32,7 +33,8 @@ export default function ConsultationsPage() {
       <ConsultationDetail
         patientId={selectedConsult.patientId}
         consultId={selectedConsult.id}
-        onBack={() => setSelectedConsult(null)}
+        onBack={() => { setSelectedConsult(null); setOpenInEditMode(false); }}
+        initialEditing={openInEditMode}
       />
     );
   }
@@ -93,7 +95,7 @@ export default function ConsultationsPage() {
             return (
               <div
                 key={c.id}
-                onClick={() => setSelectedConsult(c)}
+                onClick={() => { setOpenInEditMode(false); setSelectedConsult(c); }}
                 className="cursor-pointer rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:bg-bg/60 hover:shadow-md group"
               >
                 <div className="flex items-start justify-between gap-2">
@@ -142,6 +144,19 @@ export default function ConsultationsPage() {
           onClose={() => setAddConsultPatient(null)}
           patientId={addConsultPatient.id}
           patientName={addConsultPatient.name}
+          onCreated={(created) => {
+            setAddConsultPatient(null);
+            setOpenInEditMode(true);
+            setSelectedConsult({
+              id: created.id,
+              patientId: created.patientId,
+              time: new Date().toISOString(),
+              doctorId: "",
+              symptoms: undefined,
+              diagnosis: undefined,
+              notes: undefined,
+            } as ConsultationRow);
+          }}
         />
       )}
     </div>

@@ -12,9 +12,10 @@ interface Props {
   onClose: () => void;
   patientId: string;
   patientName: string;
+  onCreated?: (consult: { id: number; patientId: string }) => void;
 }
 
-export default function AddConsultationModal({ open, onClose, patientId, patientName }: Props) {
+export default function AddConsultationModal({ open, onClose, patientId, patientName, onCreated }: Props) {
   const [doctorId, setDoctorId] = useState("");
   const [symptoms, setSymptoms] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
@@ -37,7 +38,7 @@ export default function AddConsultationModal({ open, onClose, patientId, patient
       return;
     }
     try {
-      await createConsultationMut.mutateAsync({
+      const result = await createConsultationMut.mutateAsync({
         patientId,
         data: {
           time: time ? new Date(time).toISOString() : new Date().toISOString(),
@@ -47,9 +48,12 @@ export default function AddConsultationModal({ open, onClose, patientId, patient
           notes: notes.trim(),
         },
       });
-      showToast("Consultation saved", "✓");
-      onClose();
+      showToast("Consultation saved — you can now edit it", "✓");
       setDoctorId(""); setSymptoms(""); setDiagnosis(""); setNotes(""); setTime(nowLocalISO());
+      onClose();
+      if (onCreated) {
+        onCreated({ id: result.id, patientId });
+      }
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Failed to save consultation", "⚠");
     }

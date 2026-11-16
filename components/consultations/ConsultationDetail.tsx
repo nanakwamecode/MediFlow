@@ -17,9 +17,10 @@ interface Props {
   patientId: string;
   consultId: number;
   onBack: () => void;
+  initialEditing?: boolean;
 }
 
-export default function ConsultationDetail({ patientId, consultId, onBack }: Props) {
+export default function ConsultationDetail({ patientId, consultId, onBack, initialEditing = false }: Props) {
   const { data: patient } = usePatient(patientId);
   const { data: consults = [] } = useConsultations(patientId);
   const { data: allLabs = [] } = useLabs(patientId);
@@ -31,7 +32,7 @@ export default function ConsultationDetail({ patientId, consultId, onBack }: Pro
   const labs = useMemo(() => allLabs.filter((l) => l.requestedBy === doctorId), [allLabs, doctorId]);
   const meds = useMemo(() => allMeds.filter((m) => m.prescribedBy === doctorId), [allMeds, doctorId]);
 
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(initialEditing);
   const [symptoms, setSymptoms] = useState(consult?.symptoms || "");
   const [diagnosis, setDiagnosis] = useState(consult?.diagnosis || "");
   const [notes, setNotes] = useState(consult?.notes || "");
