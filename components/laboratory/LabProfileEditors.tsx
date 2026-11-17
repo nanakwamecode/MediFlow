@@ -3,7 +3,7 @@
 import { Fragment } from "react";
 import { cn } from "@/lib/utils";
 import { URINE_FIELDS } from "./labTestDefinitions";
-import { detectLabFlag } from "@/lib/labUtils";
+import { detectLabFlag, generateHepBInterpretation } from "@/lib/labUtils";
 
 interface HepProps {
   fields: { HBsAg: string; HBsAb: string; HBeAg: string; HBeAb: string; HBcAb: string; Comment: string };
@@ -12,6 +12,13 @@ interface HepProps {
 
 export function HepProfileEditor({ fields, onChange }: HepProps) {
   const fieldClass = "w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-accent";
+
+  const handleSelect = (k: "HBsAg" | "HBsAb" | "HBeAg" | "HBeAb" | "HBcAb", val: string) => {
+    const updated = { ...fields, [k]: val };
+    const auto = generateHepBInterpretation(updated);
+    onChange({ ...updated, Comment: auto || updated.Comment });
+  };
+
   return (
     <div className="space-y-3">
       <div className="border-b border-border pb-2 flex justify-between text-xs font-bold uppercase tracking-wider text-ink-3">
@@ -24,20 +31,23 @@ export function HepProfileEditor({ fields, onChange }: HepProps) {
           <select
             className={cn(fieldClass, "w-1/2")}
             value={fields[k]}
-            onChange={(e) => onChange({ ...fields, [k]: e.target.value })}
+            onChange={(e) => handleSelect(k, e.target.value)}
           >
             <option value="">Select...</option>
             <option value="POSITIVE">POSITIVE</option>
-            <option value="Negative">Negative</option>
+            <option value="NEGATIVE">NEGATIVE</option>
           </select>
         </div>
       ))}
       <div className="mt-4 border-t border-border pt-3">
-        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-ink-3">Comment</label>
+        <div className="mb-1.5 flex items-center justify-between">
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-3">Comment</label>
+          <span className="text-[10px] font-bold text-accent tracking-wide uppercase">Auto-Generated</span>
+        </div>
         <textarea
           value={fields.Comment}
           onChange={(e) => onChange({ ...fields, Comment: e.target.value })}
-          placeholder="E.g., CHRONIC INACTIVE VIRAL HEPATITIS B INFECTION"
+          placeholder="E.G., CHRONIC INACTIVE VIRAL HEPATITIS B INFECTION"
           rows={2}
           className={cn(fieldClass, "resize-none uppercase")}
         />
