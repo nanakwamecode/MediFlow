@@ -5,8 +5,9 @@ import Modal from "@/components/common/Modal/Modal";
 import { useUpdateLabResult } from "@/hooks/mutations/useUpdateLabResult";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
-import { URINE_FIELDS, RENAL_FIELDS, LIVER_FIELDS, FBC_FIELDS, LIPID_FIELDS, TFT_FIELDS, BMP_FIELDS } from "./labTestDefinitions";
+import { URINE_FIELDS, RENAL_FIELDS, LIVER_FIELDS, FBC_FIELDS, LIPID_FIELDS, TFT_FIELDS, BMP_FIELDS, CULTURE_ANTIBIOTICS } from "./labTestDefinitions";
 import { HepProfileEditor, UrineProfileEditor, QuantitativePanelEditor } from "./LabProfileEditors";
+import CultureSensitivityEditor, { type CultureFields, EMPTY_CULTURE } from "./CultureSensitivityEditor";
 import { detectLabFlag, getDefaultTestRef } from "@/lib/labUtils";
 
 interface Props {
@@ -22,6 +23,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
   const [hepFields, setHepFields] = useState({ HBsAg: "", HBsAb: "", HBeAg: "", HBeAb: "", HBcAb: "", Comment: "" });
   const [urineFields, setUrineFields] = useState<Record<string, string>>({});
   const [panelFields, setPanelFields] = useState<Record<string, unknown>>({});
+  const [cultureFields, setCultureFields] = useState<CultureFields>(EMPTY_CULTURE);
   const [remarks, setRemarks] = useState("");
   const [singleResult, setSingleResult] = useState("");
   const [singleUnit, setSingleUnit] = useState("");
@@ -43,10 +45,11 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
   const isHep = (name.includes("hep") || name.includes("hepatitis")) && !isViral;
   const isBlood = name.includes("blood group");
   const isMalaria = name.includes("malaria") || name.includes("bf");
+  const isCulture = name.includes("culture") && name.includes("sensitivity");
 
   const isPanel = isRenal || isLiver || isFbc || isLipid || isTft || isBmp;
   const defaultRef = getDefaultTestRef(testName);
-  const isSingleQuant = !isPanel && !isUrine && !isHep && !isViral && !isBlood && !isMalaria && !!defaultRef;
+  const isSingleQuant = !isPanel && !isUrine && !isHep && !isViral && !isBlood && !isMalaria && !isCulture && !!defaultRef;
 
   useEffect(() => {
     if (open) {
@@ -60,6 +63,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
       setSingleResult("");
       setRemarks("");
       setPanelFields({});
+      setCultureFields(EMPTY_CULTURE);
     }
   }, [open, testName]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -84,6 +88,10 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
       final = `HBsAg: ${hepFields.HBsAg || "-"}\nHBsAb: ${hepFields.HBsAb || "-"}\nHBeAg: ${hepFields.HBeAg || "-"}\nHBeAb: ${hepFields.HBeAb || "-"}\nHBcAb: ${hepFields.HBcAb || "-"}\n\nCOMMENT: ${hepFields.Comment || "-"}`;
     } else if (isUrine) {
       final = URINE_FIELDS.map((k) => `${k}: ${urineFields[k] || "-"}`).join("\n") + (urineFields.Comment ? `\n\nCOMMENT: ${urineFields.Comment}` : "");
+    } else if (isCulture) {
+      const sus = Object.entries(cultureFields.antibiogram).filter(([, v]) => v === "S").map(([k]) => k);
+      const res = Object.entries(cultureFields.antibiogram).filter(([, v]) => v === "R").map(([k]) => k);
+      final = `FINAL CULTURE TEST REPORT\n\nNumber of Organism(s): ${cultureFields.organisms || "-"}\nTotal Colony Count: ${cultureFields.colonyCount || "-"}\nCulture Isolate: ${cultureFields.cultureIsolate || "-"}\n\nANTIBIOGRAM REPORT (${cultureFields.cultureIsolate || "-"})\n\nSUSCEPTIBLE:\n${sus.length ? sus.map((a) => `  ${a} — S`).join("\n") : "  None"}\n\nRESISTANT:\n${res.length ? res.map((a) => `  ${a} — R`).join("\n") : "  None"}${cultureFields.remarks ? `\n\nREMARKS: ${cultureFields.remarks}` : ""}`;
     } else if (isPanel) {
       const fields = isRenal ? RENAL_FIELDS : isLiver ? LIVER_FIELDS : isFbc ? FBC_FIELDS : isLipid ? LIPID_FIELDS : isTft ? TFT_FIELDS : BMP_FIELDS;
       final = fields.map((f) => {
@@ -126,10 +134,11 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
   const fieldClass = "w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-accent";
 
   return (
-    <Modal open={open} onClose={onClose} title={`Enter Result — ${isHep ? "Hepatitis B Profile Test" : testName}`} maxWidth={isPanel ? "max-w-3xl" : "max-w-xl"}>
+    <Modal open={open} onClose={onClose} title={`Enter Result — ${isHep ? "Hepatitis B Profile Test" : testName}`} maxWidth={isPanel || isCulture ? "max-w-3xl" : "max-w-xl"}>
       <div className="mb-4">
         {isHep ? <HepProfileEditor fields={hepFields} onChange={setHepFields} /> :
          isUrine ? <UrineProfileEditor fields={urineFields} onChange={setUrineFields} /> :
+         isCulture ? <CultureSensitivityEditor fields={cultureFields} onChange={setCultureFields} /> :
          isPanel ? <QuantitativePanelEditor fields={isRenal ? RENAL_FIELDS : isLiver ? LIVER_FIELDS : isFbc ? FBC_FIELDS : isLipid ? LIPID_FIELDS : isTft ? TFT_FIELDS : BMP_FIELDS} state={panelFields} onUpdate={updatePanelVal} remarks={remarks} onRemarksChange={setRemarks} /> :
          isSingleQuant ? (
           <div className="space-y-4">

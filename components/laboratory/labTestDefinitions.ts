@@ -75,3 +75,26 @@ export const BMP_FIELDS = [
   { key: "CREAT", label: "Creatinine", defUnit: "umol/L", defRef: "60-110" },
   { key: "GLUC", label: "Glucose", defUnit: "mmol/L", defRef: "3.9-6.1" }
 ] as const;
+
+export const CULTURE_ANTIBIOTICS = [
+  "Amikacin", "Ampicilline/Sulbactam", "Cephalexin", "Nitrofurantoin",
+  "Ofloxacin", "Tazobactam/Piperacillin", "Cefotaxime", "Levofloxacin",
+  "Ceftriazone", "Ciprofloxacin", "Chloramphenicol", "Co-Trimoxazole",
+  "Tetracycline", "Gentamicin", "Meropenem", "Azithromycin",
+] as const;
+
+export const COMMON_ORGANISMS = [
+  "E. coli", "Klebsiella spp.", "Proteus spp.", "Pseudomonas aeruginosa",
+  "Staphylococcus aureus", "Enterococcus spp.", "Streptococcus spp.",
+  "Citrobacter spp.", "Acinetobacter spp.", "Candida spp.", "No growth",
+] as const;
+
+export const COLONY_COUNT_OPTIONS = [
+  "< 10³ CFU/ml", "10³ - 10⁴ CFU/ml", "10⁴ - 10⁵ CFU/ml",
+  "> 10⁵ CFU/ml (Each)", "> 10⁵ CFU/ml (Significant)",
+] as const;
+
+export const BLOOD_GLUCOSE_FIELDS = [
+  { key: "FBS", label: "Fasting Blood Sugar (FBS)", defUnit: "mmol/L", defRef: "3.9-5.6" },
+  { key: "RBS", label: "Random Blood Sugar (RBS)", defUnit: "mmol/L", defRef: "4.0-7.8" },
+] as const;
