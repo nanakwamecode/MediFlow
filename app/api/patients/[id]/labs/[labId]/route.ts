@@ -34,6 +34,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const updates: Record<string, unknown> = {};
   if (result !== null) updates.result = result;
+  if (typeof body.testName === "string" && body.testName.trim()) {
+    updates.testName = body.testName.trim();
+  }
   if (status) {
     updates.status = status;
     if (status === "completed") {

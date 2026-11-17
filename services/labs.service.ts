@@ -47,7 +47,7 @@ export async function createLab(
 export async function updateLabResult(
   patientId: string,
   labId: number,
-  data: { result?: string; status?: "completed" | "cancelled" }
+  data: { result?: string; status?: "completed" | "cancelled"; testName?: string }
 ): Promise<LabRow> {
   const res = await fetch(`/api/patients/${patientId}/labs/${labId}`, {
     method: "PATCH",

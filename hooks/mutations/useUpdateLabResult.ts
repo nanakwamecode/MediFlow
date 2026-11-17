@@ -12,7 +12,7 @@ export function useUpdateLabResult() {
     }: {
       patientId: string;
       labId: number;
-      data: { result?: string; status?: "completed" | "cancelled" };
+      data: { result?: string; status?: "completed" | "cancelled"; testName?: string };
     }) => updateLabResult(patientId, labId, data),
     onSuccess: (_result, { patientId }) => {
       queryClient.invalidateQueries({ queryKey: ["labs"] });

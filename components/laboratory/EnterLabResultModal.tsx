@@ -107,7 +107,15 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
     }
 
     try {
-      await updateLabResultMut.mutateAsync({ patientId, labId, data: { result: final, status: "completed" } });
+      await updateLabResultMut.mutateAsync({
+        patientId,
+        labId,
+        data: {
+          result: final,
+          status: "completed",
+          ...(isHep ? { testName: "Hepatitis B Profile Test" } : {}),
+        },
+      });
       showToast("Result saved", "✓");
       onClose();
     } catch (err) {
@@ -118,7 +126,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
   const fieldClass = "w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-accent";
 
   return (
-    <Modal open={open} onClose={onClose} title={`Enter Result — ${testName}`} maxWidth={isPanel ? "max-w-3xl" : "max-w-xl"}>
+    <Modal open={open} onClose={onClose} title={`Enter Result — ${isHep ? "Hepatitis B Profile Test" : testName}`} maxWidth={isPanel ? "max-w-3xl" : "max-w-xl"}>
       <div className="mb-4">
         {isHep ? <HepProfileEditor fields={hepFields} onChange={setHepFields} /> :
          isUrine ? <UrineProfileEditor fields={urineFields} onChange={setUrineFields} /> :
