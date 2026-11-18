@@ -33,6 +33,20 @@ export function formatShortDate(iso: string): string {
   return `${d.getDate()}/${d.getMonth() + 1}`;
 }
 
+export function formatDateOnly(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export function formatTime(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+
 export function getInitials(name: string): string {
   return (
     (name || "?")

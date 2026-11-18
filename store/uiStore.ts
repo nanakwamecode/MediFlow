@@ -30,7 +30,8 @@ export const useUiStore = create<UiState>()(
       name: "ui-storage",
       partialize: (state) => ({ 
         sidebarCollapsed: state.sidebarCollapsed,
-        activePage: state.activePage
+        activePage: state.activePage,
+        viewingPatientId: state.viewingPatientId,
       }),
     }
   )

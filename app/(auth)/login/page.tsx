@@ -3,15 +3,15 @@ import LoginForm from "@/components/auth/LoginForm";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Sign In | MediFlow",
+  title: "Sign In",
   description: "Sign in to your MediFlow Clinic System account.",
 };
 
 export default function LoginPage() {
   return (
-    <div className="fixed inset-0 flex bg-ink overflow-hidden">
+    <div className="flex min-h-screen bg-ink">
       {/* Left — Branding Panel (hidden on mobile) */}
-      <div className="relative hidden lg:flex lg:w-[55%] flex-col justify-between overflow-hidden">
+      <div className="relative hidden lg:flex lg:w-[38%] flex-col justify-between overflow-hidden sticky top-0 h-screen">
         {/* Warm burgundy gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#2a1a15] via-[#3d2418] to-[#1a0f0a]" />
 
@@ -34,7 +34,7 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-1/3 -translate-y-1/2 h-[450px] w-[450px] rounded-full bg-accent/[0.10] blur-[100px] animate-orb-1" />
 
         {/* Top branding */}
-        <div className="relative z-10 p-12">
+        <div className="relative z-10 p-8 xl:p-12">
           <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/15 backdrop-blur-sm ring-1 ring-accent/20">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -49,8 +49,8 @@ export default function LoginPage() {
         </div>
 
         {/* Center hero content */}
-        <div className="relative z-10 px-12 pb-12 animate-slide-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
-          <h1 className="mb-6 font-serif text-[3.2rem] leading-[1.1] tracking-tight text-white/95">
+        <div className="relative z-10 px-8 pb-8 xl:px-12 xl:pb-12 animate-slide-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
+          <h1 className="mb-6 font-serif text-[2.6rem] xl:text-[3.2rem] leading-[1.1] tracking-tight text-white/95">
             Clinical
             <br />
             <span className="italic text-accent inline-block animate-float">Intelligence,</span>
@@ -64,7 +64,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right — Login Form Panel (scrollable) */}
-      <div className="relative flex w-full flex-col lg:w-[45%]">
+      <div className="relative flex w-full flex-col lg:w-[62%] min-h-screen">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#f8f5f1] to-[#f0ece6]" />
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
         <div className="absolute bottom-0 left-0 h-32 w-32 bg-gradient-to-tr from-accent/3 to-transparent" />
 
         {/* Scrollable content — centered vertically */}
-        <div className="relative z-10 flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-12 animate-slide-left" style={{ animationDelay: '0.2s', opacity: 0 }}>
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-12 animate-slide-left" style={{ animationDelay: '0.2s', opacity: 0 }}>
           {/* Mobile branding (only shown on mobile) */}
           <div className="mb-10 lg:hidden text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-ink shadow-lg">
@@ -88,13 +88,13 @@ export default function LoginPage() {
           </div>
 
           {/* Form card */}
-          <div className="w-full max-w-[400px]">
+          <div className="w-full max-w-[420px]">
             {/* Welcome heading */}
-            <div className="mb-8">
-              <h2 className="font-serif text-[1.8rem] tracking-tight text-ink leading-tight">
+            <div className="mb-10">
+              <h2 className="font-serif text-[2.2rem] tracking-tight text-ink leading-tight">
                 Welcome back
               </h2>
-              <p className="mt-2 text-sm text-ink-3 leading-relaxed">
+              <p className="mt-3 text-base text-ink-3 leading-relaxed">
                 Sign in to continue managing your clinic
               </p>
             </div>
@@ -102,9 +102,9 @@ export default function LoginPage() {
             <LoginForm />
 
             {/* Divider */}
-            <div className="mt-10 flex items-center gap-3">
+            <div className="mt-10 flex items-center gap-4">
               <div className="h-px flex-1 bg-border" />
-              <span className="font-mono text-[0.55rem] tracking-[0.15em] text-ink-4 uppercase">
+              <span className="text-xs tracking-wide text-ink-4">
                 New to MediFlow?
               </span>
               <div className="h-px flex-1 bg-border" />
@@ -113,10 +113,10 @@ export default function LoginPage() {
             {/* Register link */}
             <Link
               href="/register"
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] border-border bg-white/60 px-4 py-3 text-sm font-semibold text-ink-2 no-underline transition-all hover:-translate-y-px hover:border-accent/30 hover:text-accent hover:shadow-md active:translate-y-0"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] border-border bg-white/60 px-5 py-3.5 text-base font-semibold text-ink-2 no-underline transition-all hover:-translate-y-px hover:border-accent/30 hover:text-accent hover:shadow-md active:translate-y-0"
             >
               Create an Account
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>

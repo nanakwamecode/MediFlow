@@ -1,114 +1,154 @@
 "use client";
 
-import { usePatientStore } from "@/store/patientStore";
-import { useUiStore } from "@/store/uiStore";
 import { useState } from "react";
-import { formatFullDate, getInitials, classify } from "@/lib/constants";
-import LogVitalsModal from "@/components/vitals/LogVitalsModal";
-import StatusPill from "@/components/common/Badge/StatusPill";
+import { useAllVitals } from "@/hooks/queries/useVitals";
+import { usePatients } from "@/hooks/queries/usePatients";
+import { useDeleteVitals } from "@/hooks/mutations/useDeleteVitals";
+import { useToast } from "@/components/common/Toast/ToastProvider";
+import { formatTime, formatDateOnly } from "@/lib/constants";
+import { isDateMatch } from "@/lib/dateUtils";
+import { TableSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
+import DateFilterBar from "@/components/common/DateFilter/DateFilterBar";
+import LogVitalsModal from "./LogVitalsModal";
 import { cn } from "@/lib/utils";
 
 export default function VitalsPage() {
-  const { patients, vitals } = usePatientStore();
-  const { viewPatient } = useUiStore();
-  const [logFor, setLogFor] = useState<{ id: string; name: string } | null>(null);
-  const [genericLogOpen, setGenericLogOpen] = useState(false);
+  const { data: vitals = [], isLoading: vitalsLoading } = useAllVitals();
+  const { data: patients = [], isLoading: patientsLoading } = usePatients();
+  const deleteVitalsMut = useDeleteVitals();
+  const { showToast } = useToast();
+
   const [search, setSearch] = useState("");
+  const [filterDate, setFilterDate] = useState("today");
+  const [logOpen, setLogOpen] = useState(false);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>("");
 
-  const q = search.toLowerCase();
+  if (vitalsLoading || patientsLoading) {
+    return <TableSkeleton rows={7} cols={8} />;
+  }
 
-  // Flatten all vitals across patients, attach patient info
-  const allVitals = patients
-    .flatMap((p) =>
-      (vitals[p.id] || []).map((v) => ({ ...v, ptId: p.id, ptName: p.name, ptOpd: p.opdNumber }))
-    )
-    .filter((v) => !q || v.ptName.toLowerCase().includes(q) || (v.ptOpd || "").toLowerCase().includes(q) || (v.notes || "").toLowerCase().includes(q))
-    .sort((a, b) => b.id - a.id);
+  const patientMap = new Map(patients.map((p) => [p.id, p]));
+  const dateFilteredVitals = vitals.filter((v) => isDateMatch(v.time, filterDate));
+
+  const filtered = dateFilteredVitals.filter((v) => {
+    const p = patientMap.get(v.patientId);
+    const pName = p ? p.name.toLowerCase() : (v.ptName ? v.ptName.toLowerCase() : "");
+    const s = search.toLowerCase();
+    const matchSearch = pName.includes(s) || v.time.toLowerCase().includes(s);
+    const matchPatient = !selectedPatientId || v.patientId === selectedPatientId;
+    return matchSearch && matchPatient;
+  });
 
   return (
-    <div className="animate-fade-in p-7 pb-20">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="font-serif text-3xl tracking-tight text-ink">Vitals & Triage</h1>
-          <p className="text-xs text-ink-3">
-            {allVitals.length} vitals record{allVitals.length !== 1 ? "s" : ""} across {patients.length} patient{patients.length !== 1 ? "s" : ""}
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Triage & Vitals</h1>
+          <p className="text-sm font-medium text-ink-3">
+            {dateFilteredVitals.length} recorded session{dateFilteredVitals.length !== 1 ? "s" : ""} on selected date
           </p>
         </div>
         <button
-          onClick={() => setGenericLogOpen(true)}
-          className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-px hover:bg-accent-hover hover:shadow-md"
+          onClick={() => setLogOpen(true)}
+          className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg active:scale-95"
         >
-          + Log Vitals
+          + Record Vitals
         </button>
       </div>
 
-      {/* Search */}
-      <div className="mb-4">
+      <DateFilterBar
+        selectedDate={filterDate}
+        onDateChange={setFilterDate}
+        badgeText={`${dateFilteredVitals.length} sessions`}
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by patient name or OPD number…"
+          placeholder="Filter vitals by patient name or notes…"
           className={cn(
-            "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
-            "font-mono text-sm text-ink outline-none transition-colors",
+            "flex-1 min-w-[200px] rounded-xl border border-border bg-card px-4 py-2.5",
+            "text-sm font-medium text-ink outline-none transition-colors",
             "placeholder:text-ink-4 focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.08)]"
           )}
         />
+        <select
+          value={selectedPatientId}
+          onChange={(e) => setSelectedPatientId(e.target.value)}
+          className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-ink outline-none transition-colors focus:border-accent"
+        >
+          <option value="">All Patients</option>
+          {patients.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
       </div>
 
-      {allVitals.length === 0 ? (
-        <EmptyState icon="heart" title="No vitals recorded" subtitle="Log vitals for a patient using the buttons above." />
-      ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-card shadow-card">
-          <table className="w-full border-collapse">
-            <thead>
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-card">
+        {filtered.length === 0 ? (
+          <EmptyState
+            icon="activity"
+            title="No vitals recorded"
+            subtitle={search || selectedPatientId ? "No matching logs found" : "No vitals recorded for this date. Change date filter or click '+ Record Vitals'"}
+          />
+        ) : (
+          <table className="w-full text-left text-sm">
+            <thead className="bg-bg-2/70 text-xs font-bold uppercase tracking-wider text-ink-2 border-b border-border/80">
               <tr>
-                {["Patient", "Date", "BP", "Pulse", "Temp", "Wt", "Ht", "BMI", "RR", "BP Status", "Notes"].map((h) => (
-                  <th key={h} className="bg-bg-2 px-3 py-2 text-left font-mono text-[0.54rem] tracking-[0.18em] text-ink-3 uppercase">{h}</th>
-                ))}
+                <th className="px-5 py-3.5">Date & Time</th>
+                <th className="px-5 py-3.5">Patient</th>
+                <th className="px-5 py-3.5">BP (mmHg)</th>
+                <th className="px-5 py-3.5">Pulse</th>
+                <th className="px-5 py-3.5">Temp</th>
+                <th className="px-5 py-3.5">Weight / Height</th>
+                <th className="px-5 py-3.5">BMI</th>
+                <th className="px-5 py-3.5">Resp</th>
+                <th className="px-5 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {allVitals.map((v) => {
-                const bpCat = v.sys && v.dia ? classify(v.sys, v.dia) : null;
+            <tbody className="divide-y divide-border/60">
+              {filtered.map((v) => {
+                const p = patientMap.get(v.patientId);
+                const ptName = p?.name || v.ptName || "Unknown Patient";
+                const bmi = v.bmi || (v.weight && v.height ? +(v.weight / ((v.height / 100) ** 2)).toFixed(1) : "—");
                 return (
-                  <tr
-                    key={`${v.ptId}-${v.id}`}
-                    onClick={() => viewPatient(v.ptId)}
-                    className="cursor-pointer border-b border-border transition-colors last:border-b-0 hover:bg-bg"
-                  >
-                    <td className="px-3 py-2 text-xs font-semibold text-ink">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[0.6rem] text-accent">{getInitials(v.ptName)}</div>
-                        {v.ptName}
-                      </div>
+                  <tr key={v.id} className="hover:bg-bg/60 transition-colors">
+                    <td className="px-5 py-4 font-mono text-xs font-semibold text-ink-3">
+                      <div>{formatDateOnly(v.time)}</div>
+                      <div className="text-[0.7rem] text-ink-4 font-bold">{formatTime(v.time)}</div>
                     </td>
-                    <td className="px-3 py-2 font-mono text-[0.68rem] text-ink-3 whitespace-nowrap">{formatFullDate(v.time)}</td>
-                    <td className="px-3 py-2 text-sm font-semibold">{v.sys ?? "-"}/{v.dia ?? "-"}</td>
-                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.pulse ?? "-"}</td>
-                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.temperature ? `${v.temperature}°C` : "-"}</td>
-                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.weight ? `${v.weight}kg` : "-"}</td>
-                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.height ? `${v.height}cm` : "-"}</td>
-                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.bmi ?? "-"}</td>
-                    <td className="px-3 py-2 font-mono text-sm text-ink-3">{v.respiratoryRate ?? "-"}</td>
-                    <td className="px-3 py-2">{bpCat ? <StatusPill label={bpCat.label} size="sm" /> : <span className="text-ink-4 text-xs">-</span>}</td>
-                    <td className="px-3 py-2 text-[0.65rem] text-ink-3 max-w-[120px] truncate">{v.notes || "-"}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{ptName}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.sys && v.dia ? `${v.sys}/${v.dia}` : "—"}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.pulse ? `${v.pulse} bpm` : "—"}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.temperature ? `${v.temperature} °C` : "—"}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.weight || "—"} kg / {v.height || "—"} cm</td>
+                    <td className="px-5 py-4 font-bold text-ink">{bmi}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.respiratoryRate ? `${v.respiratoryRate} cpm` : "—"}</td>
+                    <td className="px-5 py-4 text-right">
+                      <button
+                        onClick={async () => {
+                          if (confirm("Delete this vitals log?")) {
+                            await deleteVitalsMut.mutateAsync({ patientId: v.patientId, vitalId: v.id });
+                            showToast("Vitals log deleted", "✕");
+                          }
+                        }}
+                        className="cursor-pointer text-xs font-bold text-status-high hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
-      )}
+        )}
+      </div>
 
-      {logFor && (
-        <LogVitalsModal open={!!logFor} onClose={() => setLogFor(null)} patientId={logFor.id} patientName={logFor.name} />
-      )}
-      {genericLogOpen && (
-        <LogVitalsModal open={genericLogOpen} onClose={() => setGenericLogOpen(false)} />
-      )}
+      {logOpen && <LogVitalsModal open={logOpen} onClose={() => setLogOpen(false)} />}
     </div>
   );
 }

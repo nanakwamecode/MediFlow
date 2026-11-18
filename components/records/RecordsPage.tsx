@@ -1,153 +1,145 @@
 "use client";
 
-import { usePatientStore } from "@/store/patientStore";
 import { useState } from "react";
-import { formatFullDate, getInitials } from "@/lib/constants";
+import { usePatients } from "@/hooks/queries/usePatients";
+import { useAllVitals } from "@/hooks/queries/useVitals";
+import { useAllConsultations } from "@/hooks/queries/useConsultations";
+import { useAllLabs } from "@/hooks/queries/useLabs";
+import { useAllPrescriptions } from "@/hooks/queries/usePrescriptions";
+import { TableSkeleton } from "@/components/common/Skeleton";
+import EmptyState from "@/components/common/EmptyState/EmptyState";
+import DateFilterBar from "@/components/common/DateFilter/DateFilterBar";
+import { exportRecordsPdf } from "./RecordsPrintView";
+import RecordEventRow, { RecordEvent } from "./RecordEventRow";
+import { isDateMatch } from "@/lib/dateUtils";
 import { cn } from "@/lib/utils";
-import { exportRecordsPdf } from "@/components/records/RecordsPrintView";
-
-type Period = "daily" | "weekly" | "monthly";
 
 export default function RecordsPage() {
-  const { patients, vitals, consultations, labInvestigations, prescriptions } = usePatientStore();
-  const [period, setPeriod] = useState<Period>("daily");
+  const { data: patients = [], isLoading: pL } = usePatients();
+  const { data: vitals = [], isLoading: vL } = useAllVitals();
+  const { data: consults = [], isLoading: cL } = useAllConsultations();
+  const { data: labs = [], isLoading: lL } = useAllLabs();
+  const { data: prescriptions = [], isLoading: rL } = useAllPrescriptions();
+
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterDate, setFilterDate] = useState<string>("today");
   const [search, setSearch] = useState("");
 
-  const now = new Date();
-  const cutoff = new Date();
-  if (period === "daily") cutoff.setHours(0, 0, 0, 0);
-  else if (period === "weekly") cutoff.setDate(now.getDate() - 7);
-  else cutoff.setMonth(now.getMonth() - 1);
+  if (pL || vL || cL || lL || rL) {
+    return <TableSkeleton rows={7} cols={4} />;
+  }
 
-  const q = search.toLowerCase();
+  const patientMap = new Map(patients.map((p) => [p.id, p]));
 
-  // Gather all events
-  type Event = { type: string; time: string; ptId: string; ptName: string; detail: string; detail2?: string };
-  const events: Event[] = [];
+  const allEvents: RecordEvent[] = [
+    ...vitals.map((v) => ({
+      type: "Vitals",
+      time: v.time,
+      ptId: v.patientId,
+      ptName: patientMap.get(v.patientId)?.name || v.ptName || "Unknown Patient",
+      detail: `BP: ${v.sys || "-"}/${v.dia || "-"} mmHg · Pulse: ${v.pulse || "-"} bpm · Temp: ${v.temperature || "-"} °C`,
+      detail2: `Weight: ${v.weight || "-"} kg · Resp: ${v.respiratoryRate || "-"} cpm`,
+    })),
+    ...consults.map((c) => ({
+      type: "Consultation",
+      time: c.time,
+      ptId: c.patientId,
+      ptName: patientMap.get(c.patientId)?.name || c.ptName || "Unknown Patient",
+      detail: c.diagnosis ? `Dx: ${c.diagnosis}` : "Clinical notes recorded",
+      detail2: c.doctorId ? `Doctor: Dr. ${c.doctorId}` : undefined,
+    })),
+    ...labs.map((l) => ({
+      type: "Lab",
+      time: l.timeRequested,
+      ptId: l.patientId,
+      ptName: patientMap.get(l.patientId)?.name || l.ptName || "Unknown Patient",
+      detail: `${l.testName} (${l.status})`,
+      detail2: l.requestedBy ? `Requested by: ${l.requestedBy}` : undefined,
+    })),
+    ...prescriptions.map((r) => ({
+      type: "Prescription",
+      time: r.timePrescribed,
+      ptId: r.patientId,
+      ptName: patientMap.get(r.patientId)?.name || r.ptName || "Unknown Patient",
+      detail: `${r.medication} (${r.dosage || "-"})`,
+      detail2: `Status: ${r.status} · Prescribed by: ${r.prescribedBy || "-"}`,
+    })),
+  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
-  patients.forEach(p => {
-    (vitals[p.id] || []).forEach(v => {
-      if (new Date(v.time) >= cutoff) {
-        if (!q || p.name.toLowerCase().includes(q) || (p.opdNumber || "").toLowerCase().includes(q))
-          events.push({ type: "Vitals", time: v.time, ptId: p.id, ptName: p.name, detail: `BP: ${v.sys ?? "-"}/${v.dia ?? "-"} · Pulse: ${v.pulse ?? "-"}`, detail2: v.notes });
-      }
-    });
-    (consultations[p.id] || []).forEach(c => {
-      if (new Date(c.time) >= cutoff) {
-        if (!q || p.name.toLowerCase().includes(q) || (p.opdNumber || "").toLowerCase().includes(q) || (c.diagnosis || "").toLowerCase().includes(q))
-          events.push({ type: "Consultation", time: c.time, ptId: p.id, ptName: p.name, detail: c.diagnosis || "No diagnosis", detail2: `${c.doctorId} — ${c.symptoms || ""}` });
-      }
-    });
-    (labInvestigations[p.id] || []).forEach(l => {
-      if (new Date(l.timeRequested) >= cutoff) {
-        if (!q || p.name.toLowerCase().includes(q) || (p.opdNumber || "").toLowerCase().includes(q) || l.testName.toLowerCase().includes(q))
-          events.push({ type: "Lab", time: l.timeRequested, ptId: p.id, ptName: p.name, detail: l.testName, detail2: `${l.status} · By ${l.requestedBy}` });
-      }
-    });
-    (prescriptions[p.id] || []).forEach(m => {
-      if (new Date(m.timePrescribed) >= cutoff) {
-        if (!q || p.name.toLowerCase().includes(q) || (p.opdNumber || "").toLowerCase().includes(q) || m.medication.toLowerCase().includes(q))
-          events.push({ type: "Prescription", time: m.timePrescribed, ptId: p.id, ptName: p.name, detail: `${m.medication} ${m.dosage}`, detail2: `${m.status} · By ${m.prescribedBy}` });
-      }
-    });
+  const filtered = allEvents.filter((e) => {
+    if (filterType !== "all" && e.type !== filterType) return false;
+    if (!isDateMatch(e.time, filterDate)) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return e.ptName.toLowerCase().includes(q) || e.detail.toLowerCase().includes(q);
+    }
+    return true;
   });
 
-  events.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-
-  const typeColors: Record<string, string> = {
-    Vitals: "bg-status-high-bg text-status-high",
-    Consultation: "bg-blue-bg text-blue",
-    Lab: "bg-status-elevated-bg text-status-elevated",
-    Prescription: "bg-status-normal-bg text-status-normal",
-  };
-
-  // Export function
-  const handleExport = () => {
-    const header = "Date,Type,Patient,Detail,Details\n";
-    const rows = events.map(e =>
-      `"${formatFullDate(e.time)}","${e.type}","${e.ptName}","${e.detail}","${(e.detail2 || "").replace(/"/g, '""')}"`
-    ).join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `mediflow_records_${period}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
-    <div className="animate-fade-in p-7 pb-20">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="font-serif text-3xl tracking-tight text-ink">Records & History</h1>
-          <p className="text-xs text-ink-3">{events.length} record{events.length !== 1 ? "s" : ""} for {period === "daily" ? "today" : period === "weekly" ? "this week" : "this month"}</p>
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Clinical Records Log</h1>
+          <p className="text-sm font-medium text-ink-3">
+            {filtered.length} event{filtered.length !== 1 ? "s" : ""} on record
+          </p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={handleExport} className="cursor-pointer rounded-lg border border-border bg-card px-4 py-2 text-xs font-semibold text-ink-2 transition-all hover:bg-bg-2 hover:text-accent flex items-center gap-1.5 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-            CSV
-          </button>
-          <button onClick={() => exportRecordsPdf({ events, period })} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-accent/90 flex items-center gap-1.5 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-            Export PDF
-          </button>
-        </div>
+        <button
+          onClick={() => exportRecordsPdf({ events: filtered, period: filterDate })}
+          className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg active:scale-95 flex items-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Export PDF
+        </button>
       </div>
 
-      {/* Search */}
-      <div className="mb-4">
+      <DateFilterBar
+        selectedDate={filterDate}
+        onDateChange={setFilterDate}
+        badgeText={`${filtered.length} events`}
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search records by patient name, OPD number, test, or diagnosis…"
+          placeholder="Search records by patient name or detail…"
           className={cn(
-            "w-full rounded-lg border-[1.5px] border-border bg-card px-3.5 py-2",
-            "font-mono text-sm text-ink outline-none transition-colors",
+            "flex-1 min-w-[200px] rounded-xl border border-border bg-card px-4 py-2.5",
+            "text-sm font-medium text-ink outline-none transition-colors",
             "placeholder:text-ink-4 focus:border-accent focus:shadow-[0_0_0_3px_rgba(200,57,43,0.08)]"
           )}
         />
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-ink outline-none focus:border-accent"
+        >
+          <option value="all">All Types</option>
+          <option value="Vitals">Vitals</option>
+          <option value="Consultation">Consultation</option>
+          <option value="Lab">Lab</option>
+          <option value="Prescription">Prescription</option>
+        </select>
       </div>
 
-      {/* Period Filter */}
-      <div className="mb-5 flex gap-1 overflow-x-auto pb-1 scrollbar-none">
-        {(["daily", "weekly", "monthly"] as const).map(p => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            className={cn(
-              "px-3.5 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer",
-              period === p ? "bg-accent text-white" : "bg-card border border-border text-ink-3 hover:bg-bg-2"
-            )}
-          >
-            {p}
-          </button>
-        ))}
+      <div className="space-y-3">
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+            <EmptyState
+              icon="archive"
+              title="No records found"
+              subtitle="No clinical events recorded for this date. Change date filter or search query"
+            />
+          </div>
+        ) : (
+          filtered.map((e, idx) => (
+            <RecordEventRow key={idx} event={e} />
+          ))
+        )}
       </div>
-
-      {events.length === 0 ? (
-        <div className="p-8 text-center text-sm text-ink-3 border rounded-lg border-dashed border-border-2">No records for this period.</div>
-      ) : (
-        <div className="space-y-2">
-          {events.map((e, i) => (
-            <div key={i} className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 shadow-card">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[0.6rem] text-accent mt-0.5">
-                {getInitials(e.ptName)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm font-semibold text-ink">{e.ptName}</span>
-                  <span className={cn("text-[0.55rem] px-2 py-0.5 rounded-full font-mono uppercase", typeColors[e.type] || "bg-bg-2 text-ink-3")}>{e.type}</span>
-                </div>
-                <div className="text-xs text-ink-2">{e.detail}</div>
-                {e.detail2 && <div className="text-[0.65rem] text-ink-3 mt-0.5">{e.detail2}</div>}
-              </div>
-              <div className="font-mono text-[0.6rem] text-ink-4 whitespace-nowrap mt-0.5">{formatFullDate(e.time)}</div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
