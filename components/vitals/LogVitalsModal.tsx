@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Modal from "@/components/common/Modal/Modal";
 import { usePatients } from "@/hooks/queries/usePatients";
+import { useVitals } from "@/hooks/queries/useVitals";
 import { useCreateVitals } from "@/hooks/mutations/useCreateVitals";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
@@ -95,6 +96,16 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
   const [notes, setNotes] = useState("");
   const [notesManuallyEdited, setNotesManuallyEdited] = useState(false);
 
+  const targetPatientId = patientId || selectedPatientId;
+  const { data: patientVitals = [] } = useVitals(targetPatientId || null);
+
+  useEffect(() => {
+    if (!height && targetPatientId && patientVitals.length > 0) {
+      const known = patientVitals.find((v) => v.height && v.height > 0)?.height;
+      if (known) setHeight(String(known));
+    }
+  }, [targetPatientId, patientVitals]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const bmi = weight && height ? (parseFloat(weight) / ((parseFloat(height) / 100) ** 2)).toFixed(1) : "";
 
   /* Auto-generate notes whenever vitals change (unless user manually edited) */
@@ -146,6 +157,11 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
       return;
     }
 
+    const calculatedBmi = !isNaN(weightN) && !isNaN(heightN) && heightN > 0
+      ? +(weightN / ((heightN / 100) ** 2)).toFixed(1)
+      : undefined;
+    const finalBmi = !isNaN(bmiN) ? bmiN : calculatedBmi;
+
     try {
       await createVitalsMut.mutateAsync({
         patientId: targetPatientId,
@@ -156,7 +172,7 @@ export default function LogVitalsModal({ open, onClose, patientId, patientName }
           temperature: isNaN(tempN) ? undefined : tempN,
           weight: isNaN(weightN) ? undefined : weightN,
           height: isNaN(heightN) ? undefined : heightN,
-          bmi: isNaN(bmiN) ? undefined : bmiN,
+          bmi: finalBmi,
           respiratoryRate: isNaN(rrN) ? undefined : rrN,
           time: time ? new Date(time).toISOString() : new Date().toISOString(),
           notes,

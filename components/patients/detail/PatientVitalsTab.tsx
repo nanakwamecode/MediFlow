@@ -59,27 +59,34 @@ export default function PatientVitalsTab({ patientId, filterDate = "today" }: Pr
           </tr>
         </thead>
         <tbody className="divide-y divide-border/60">
-          {filteredVitals.map((v) => (
-            <tr key={v.id} className="transition-colors hover:bg-bg/60">
-              <td className="px-4 py-3 text-xs font-semibold text-ink-2 whitespace-nowrap">
-                {formatDateOnly(v.time)}
-              </td>
-              <td className="px-4 py-3 text-sm font-bold text-ink">
-                {v.sys ?? "-"}/{v.dia ?? "-"}
-              </td>
-              <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">{v.pulse ?? "-"}</td>
-              <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">
-                {v.temperature ? `${v.temperature}°C` : "-"}
-              </td>
-              <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">
-                {v.weight ? `${v.weight}kg` : "-"}
-              </td>
-              <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">
-                {v.height ? `${v.height}cm` : "-"}
-              </td>
-              <td className="px-4 py-3 font-mono text-sm font-bold text-ink">{v.bmi ?? "-"}</td>
-              <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">{v.respiratoryRate ?? "-"}</td>
-              <td className="px-4 py-3 text-xs font-medium text-ink-3">{v.notes || "-"}</td>
+          {filteredVitals.map((v) => {
+            const htNote = !v.height && v.notes ? v.notes.match(/Ht\s*([0-9.]+)\s*cm/i) : null;
+            const effectiveHt = v.height || (htNote ? parseFloat(htNote[1]) : vitals.find((vt) => vt.height && vt.height > 0)?.height);
+            const bmiNote = !v.bmi && v.notes ? v.notes.match(/BMI\s*([0-9.]+)/i) : null;
+            const bmiCalc = v.weight && effectiveHt ? +(v.weight / ((effectiveHt / 100) ** 2)).toFixed(1) : null;
+            const effectiveBmi = v.bmi ?? (bmiNote ? parseFloat(bmiNote[1]) : (bmiCalc ?? "-"));
+
+            return (
+              <tr key={v.id} className="transition-colors hover:bg-bg/60">
+                <td className="px-4 py-3 text-xs font-semibold text-ink-2 whitespace-nowrap">
+                  {formatDateOnly(v.time)}
+                </td>
+                <td className="px-4 py-3 text-sm font-bold text-ink">
+                  {v.sys ?? "-"}/{v.dia ?? "-"}
+                </td>
+                <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">{v.pulse ?? "-"}</td>
+                <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">
+                  {v.temperature ? `${v.temperature}°C` : "-"}
+                </td>
+                <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">
+                  {v.weight ? `${v.weight}kg` : "-"}
+                </td>
+                <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">
+                  {effectiveHt ? `${effectiveHt}cm` : "-"}
+                </td>
+                <td className="px-4 py-3 font-mono text-sm font-bold text-ink">{effectiveBmi}</td>
+                <td className="px-4 py-3 font-mono text-sm font-semibold text-ink-2">{v.respiratoryRate ?? "-"}</td>
+                <td className="px-4 py-3 text-xs font-medium text-ink-3">{v.notes || "-"}</td>
               <td className="px-4 py-3 text-right">
                 <button
                   onClick={async () => {
@@ -94,7 +101,8 @@ export default function PatientVitalsTab({ patientId, filterDate = "today" }: Pr
                 </button>
               </td>
             </tr>
-          ))}
+          );
+        })}
         </tbody>
       </table>
     </div>

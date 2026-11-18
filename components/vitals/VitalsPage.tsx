@@ -40,6 +40,13 @@ export default function VitalsPage() {
     return matchSearch && matchPatient;
   });
 
+  const knownHeightMap = new Map<string, number>();
+  for (const v of vitals) {
+    if (v.height && v.height > 0 && !knownHeightMap.has(v.patientId)) {
+      knownHeightMap.set(v.patientId, v.height);
+    }
+  }
+
   return (
     <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -113,7 +120,13 @@ export default function VitalsPage() {
               {filtered.map((v) => {
                 const p = patientMap.get(v.patientId);
                 const ptName = p?.name || v.ptName || "Unknown Patient";
-                const bmi = v.bmi || (v.weight && v.height ? +(v.weight / ((v.height / 100) ** 2)).toFixed(1) : "—");
+                const htFromNotes = !v.height && v.notes ? v.notes.match(/Ht\s*([0-9.]+)\s*cm/i) : null;
+                const effectiveHeight = v.height || (htFromNotes ? parseFloat(htFromNotes[1]) : knownHeightMap.get(v.patientId));
+
+                const bmiFromNotes = !v.bmi && v.notes ? v.notes.match(/BMI\s*([0-9.]+)/i) : null;
+                const bmiCalc = v.weight && effectiveHeight ? +(v.weight / ((effectiveHeight / 100) ** 2)).toFixed(1) : null;
+                const displayBmi = v.bmi ?? (bmiFromNotes ? parseFloat(bmiFromNotes[1]) : (bmiCalc ?? "—"));
+
                 return (
                   <tr key={v.id} className="hover:bg-bg/60 transition-colors">
                     <td className="px-5 py-4 font-mono text-xs font-semibold text-ink-3">
@@ -124,8 +137,8 @@ export default function VitalsPage() {
                     <td className="px-5 py-4 font-bold text-ink">{v.sys && v.dia ? `${v.sys}/${v.dia}` : "—"}</td>
                     <td className="px-5 py-4 font-bold text-ink">{v.pulse ? `${v.pulse} bpm` : "—"}</td>
                     <td className="px-5 py-4 font-bold text-ink">{v.temperature ? `${v.temperature} °C` : "—"}</td>
-                    <td className="px-5 py-4 font-bold text-ink">{v.weight || "—"} kg / {v.height || "—"} cm</td>
-                    <td className="px-5 py-4 font-bold text-ink">{bmi}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.weight || "—"} kg / {effectiveHeight || "—"} cm</td>
+                    <td className="px-5 py-4 font-bold text-ink">{displayBmi}</td>
                     <td className="px-5 py-4 font-bold text-ink">{v.respiratoryRate ? `${v.respiratoryRate} cpm` : "—"}</td>
                     <td className="px-5 py-4 text-right">
                       <button
