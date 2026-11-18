@@ -23,6 +23,8 @@ export default function ConsultationsPage() {
   const [viewConsultId, setViewConsultId, clearViewConsultId] = useSearchParamState("consultId");
   const [viewPatientId, setViewPatientId, clearViewPatientId] = useSearchParamState("patientId");
   const [editParam, , clearEditParam] = useSearchParamState("edit");
+  const [newConsultPtId, setNewConsultPtId, clearNewConsultPtId] = useSearchParamState("newConsultPt");
+  const [pickerParam, setPickerParam, clearPickerParam] = useSearchParamState("picker");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addConsultPatient, setAddConsultPatient] = useState<{ id: string; name: string } | null>(null);
 
@@ -51,6 +53,11 @@ export default function ConsultationsPage() {
     return pName.includes(s) || (c.diagnosis && c.diagnosis.toLowerCase().includes(s));
   });
 
+  const isPickerOpen = pickerOpen || pickerParam === "1";
+  const activeConsultPatient = newConsultPtId
+    ? { id: newConsultPtId, name: patientMap.get(newConsultPtId)?.name || addConsultPatient?.name || "Patient" }
+    : addConsultPatient;
+
   return (
     <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -61,7 +68,7 @@ export default function ConsultationsPage() {
           </p>
         </div>
         <button
-          onClick={() => setPickerOpen(true)}
+          onClick={() => { setPickerParam("1"); setPickerOpen(true); }}
           className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg active:scale-95"
         >
           + New Consultation
@@ -137,22 +144,24 @@ export default function ConsultationsPage() {
         )}
       </div>
 
-      {pickerOpen && (
+      {isPickerOpen && (
         <PatientPickerModal
           onSelect={(id, name) => {
+            clearPickerParam();
             setPickerOpen(false);
+            setNewConsultPtId(id);
             setAddConsultPatient({ id, name });
           }}
-          onClose={() => setPickerOpen(false)}
+          onClose={() => { clearPickerParam(); setPickerOpen(false); }}
         />
       )}
 
-      {addConsultPatient && (
+      {activeConsultPatient && (
         <AddConsultationModal
-          open={!!addConsultPatient}
-          onClose={() => setAddConsultPatient(null)}
-          patientId={addConsultPatient.id}
-          patientName={addConsultPatient.name}
+          open={!!activeConsultPatient}
+          onClose={() => { clearNewConsultPtId(); setAddConsultPatient(null); }}
+          patientId={activeConsultPatient.id}
+          patientName={activeConsultPatient.name}
         />
       )}
     </div>

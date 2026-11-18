@@ -29,10 +29,6 @@ export default function RegisterForm() {
       setLocalError("Username and password are required.");
       return;
     }
-    if (!username.trim().startsWith("MDF")) {
-      setLocalError("Username must start with 'MDF'.");
-      return;
-    }
     if (password.length < 4) {
       setLocalError("Password must be at least 4 characters.");
       return;
@@ -80,11 +76,8 @@ export default function RegisterForm() {
       </div>
 
       <div>
-        <label className={labelClass}>
-          Username *
-          <span className="text-[11px] font-normal text-ink-3">(must start with MDF)</span>
-        </label>
-        <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g. MDF_doctor" disabled={submitting} className={inputClass} />
+        <label className={labelClass}>Username *</label>
+        <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" disabled={submitting} className={inputClass} />
       </div>
 
       <div>

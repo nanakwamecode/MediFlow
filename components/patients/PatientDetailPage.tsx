@@ -24,7 +24,6 @@ import ViewLabResultModal from "@/components/laboratory/ViewLabResultModal";
 import PatientModal from "@/components/patients/PatientModal";
 import { isDateMatch } from "@/lib/dateUtils";
 import { cn } from "@/lib/utils";
-import type { LabInvestigation } from "@/types";
 
 interface Props {
   patientId: string;
@@ -45,16 +44,23 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
   };
 
   const [filterDate, setFilterDate] = useState("today");
-  const [logOpen, setLogOpen] = useState(false);
-  const [consultOpen, setConsultOpen] = useState(false);
-  const [labOpen, setLabOpen] = useState(false);
-  const [rxOpen, setRxOpen] = useState(false);
-  const [editPatientOpen, setEditPatientOpen] = useState(false);
-  const [resultFor, setResultFor] = useState<{ labId: number; testName: string } | null>(null);
-  const [viewingResult, setViewingResult] = useState<LabInvestigation | null>(null);
+  const [modalParam, setModalParam, clearModalParam] = useSearchParamState("modal");
+  const [resultLabParam, setResultLabParam, clearResultLabParam] = useSearchParamState("resultLab");
+  const [viewLabParam, setViewLabParam, clearViewLabParam] = useSearchParamState("viewLab");
   const [activeTabParam, setActiveTabParam] = useSearchParamState("tab");
+
   const activeTab = (activeTabParam as "vitals" | "consults" | "labs" | "meds") || "vitals";
   const setActiveTab = (tab: "vitals" | "consults" | "labs" | "meds") => setActiveTabParam(tab);
+
+  const logOpen = modalParam === "vitals";
+  const consultOpen = modalParam === "consult";
+  const labOpen = modalParam === "lab";
+  const rxOpen = modalParam === "rx";
+  const editPatientOpen = modalParam === "edit";
+
+  const resultLabItem = resultLabParam ? labs.find((l) => String(l.id) === resultLabParam) : null;
+  const resultFor = resultLabItem ? { labId: resultLabItem.id, testName: resultLabItem.testName } : null;
+  const viewingResult = viewLabParam ? labs.find((l) => String(l.id) === viewLabParam) || null : null;
 
   if (isLoading) return <PatientDetailSkeleton />;
 
@@ -86,23 +92,21 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
           </span> Back
         </button>
         <div className="flex flex-wrap gap-2 rounded-2xl border border-border bg-card p-1.5 shadow-sm">
-          <button onClick={() => setLogOpen(true)} className="cursor-pointer rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-accent-hover active:scale-95">+ Vitals</button>
-          <button onClick={() => setConsultOpen(true)} className="cursor-pointer rounded-xl bg-blue px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:opacity-90 active:scale-95">+ Consult</button>
-          <button onClick={() => setLabOpen(true)} className="cursor-pointer rounded-xl bg-bg-2 px-4 py-2 text-xs font-bold text-ink hover:bg-border active:scale-95 transition-all">+ Lab</button>
-          <button onClick={() => setRxOpen(true)} className="cursor-pointer rounded-xl bg-bg-2 px-4 py-2 text-xs font-bold text-ink hover:bg-border active:scale-95 transition-all">+ Rx</button>
+          <button onClick={() => setModalParam("vitals")} className="cursor-pointer rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-accent-hover active:scale-95">+ Vitals</button>
+          <button onClick={() => setModalParam("consult")} className="cursor-pointer rounded-xl bg-blue px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:opacity-90 active:scale-95">+ Consult</button>
+          <button onClick={() => setModalParam("lab")} className="cursor-pointer rounded-xl bg-bg-2 px-4 py-2 text-xs font-bold text-ink hover:bg-border active:scale-95 transition-all">+ Lab</button>
+          <button onClick={() => setModalParam("rx")} className="cursor-pointer rounded-xl bg-bg-2 px-4 py-2 text-xs font-bold text-ink hover:bg-border active:scale-95 transition-all">+ Rx</button>
         </div>
       </div>
 
-      <PatientDetailHeader patient={patient} onEdit={() => setEditPatientOpen(true)} />
+      <PatientDetailHeader patient={patient} onEdit={() => setModalParam("edit")} />
 
-      {/* Date Filter Bar */}
       <DateFilterBar
         selectedDate={filterDate}
         onDateChange={setFilterDate}
         badgeText={`${fLabs.filter((l) => l.status === "pending").length} pending labs · ${fMeds.filter((m) => m.status === "pending").length} pending rx`}
       />
 
-      {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
         {(["vitals", "consults", "labs", "meds"] as const).map((tab) => (
           <button
@@ -126,19 +130,19 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
         <PatientLabsTab
           patientId={patientId}
           filterDate={filterDate}
-          onEnterResult={(l) => setResultFor(l)}
-          onViewResult={(l) => setViewingResult(l)}
+          onEnterResult={(l) => setResultLabParam(String(l.labId))}
+          onViewResult={(l) => setViewLabParam(String(l.id))}
         />
       )}
       {activeTab === "meds" && <PatientPharmacyTab patientId={patientId} filterDate={filterDate} />}
 
-      <LogVitalsModal open={logOpen} onClose={() => setLogOpen(false)} patientId={patientId} patientName={patient.name} />
-      <AddConsultationModal open={consultOpen} onClose={() => setConsultOpen(false)} patientId={patientId} patientName={patient.name} />
-      <RequestLabModal open={labOpen} onClose={() => setLabOpen(false)} patientId={patientId} patientName={patient.name} />
-      <AddPrescriptionModal open={rxOpen} onClose={() => setRxOpen(false)} patientId={patientId} patientName={patient.name} />
-      {editPatientOpen && <PatientModal open={editPatientOpen} onClose={() => setEditPatientOpen(false)} editPatient={patient} />}
-      {resultFor && <EnterLabResultModal open={!!resultFor} onClose={() => setResultFor(null)} patientId={patientId} labId={resultFor.labId} testName={resultFor.testName} />}
-      {viewingResult && <ViewLabResultModal open={!!viewingResult} onClose={() => setViewingResult(null)} testName={viewingResult.testName} result={viewingResult.result || ""} timeCompleted={viewingResult.timeCompleted} requestedBy={viewingResult.requestedBy} />}
+      <LogVitalsModal open={logOpen} onClose={clearModalParam} patientId={patientId} patientName={patient.name} />
+      <AddConsultationModal open={consultOpen} onClose={clearModalParam} patientId={patientId} patientName={patient.name} />
+      <RequestLabModal open={labOpen} onClose={clearModalParam} patientId={patientId} patientName={patient.name} />
+      <AddPrescriptionModal open={rxOpen} onClose={clearModalParam} patientId={patientId} patientName={patient.name} />
+      {editPatientOpen && <PatientModal open={editPatientOpen} onClose={clearModalParam} editPatient={patient} />}
+      {resultFor && <EnterLabResultModal open={!!resultFor} onClose={clearResultLabParam} patientId={patientId} labId={resultFor.labId} testName={resultFor.testName} />}
+      {viewingResult && <ViewLabResultModal open={!!viewingResult} onClose={clearViewLabParam} testName={viewingResult.testName} result={viewingResult.result || ""} timeCompleted={viewingResult.timeCompleted} requestedBy={viewingResult.requestedBy} />}
     </div>
   );
 }
