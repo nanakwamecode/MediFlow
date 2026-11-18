@@ -72,7 +72,7 @@ export function exportLabResultsPdf({
         .lab-header h3 { font-size: 11pt; font-weight: 700; color: #c8392b; margin-bottom: 4px; }
         .lab-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 8pt; font-family: monospace; color: #666; }
         .lab-body { padding: 12px 14px; }
-        .lab-body pre { font-family: monospace; font-size: 9.5pt; white-space: pre-wrap; word-break: break-word; line-height: 1.6; color: #333; }
+        .lab-body pre { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Instrument Sans', Helvetica, Arial, sans-serif; font-size: 9.5pt; font-weight: 500; white-space: pre-wrap; word-break: break-word; line-height: 1.6; color: #222; }
         .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 8pt; color: #999; text-align: center; }
         @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .no-print { display: none !important; } }
         .print-btn { position: fixed; top: 16px; right: 16px; background: #c8392b; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-size: 13px; font-weight: 600; cursor: pointer; z-index: 1000; }

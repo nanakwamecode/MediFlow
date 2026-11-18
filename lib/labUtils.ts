@@ -59,23 +59,7 @@ export function detectLabFlag(
   return null;
 }
 
-/**
- * Returns default unit and reference range for known standalone single tests
- */
-export function getDefaultTestRef(testName: string): { unit: string; ref: string } | null {
-  const n = testName.toLowerCase();
-  if (n.includes("hba1c")) return { unit: "%", ref: "4.0-5.6" };
-  if (n.includes("blood glucose test")) return null; // handled as a panel
-  if (n.includes("uric acid")) return { unit: "umol/L", ref: "200-430" };
-  if (n.includes("psa")) return { unit: "ng/mL", ref: "< 4.0" };
-  if (n.includes("crp")) return { unit: "mg/L", ref: "< 5.0" };
-  if (n.includes("esr")) return { unit: "mm/hr", ref: "0-20" };
-  if (n.includes("calcium")) return { unit: "mmol/L", ref: "2.15-2.55" };
-  if (n.includes("hemoglobin") || n.includes("haemoglobin") || n.includes("hb estimate") || n === "hb") {
-    return { unit: "g/dL", ref: "11.5-15.0" };
-  }
-  return null;
-}
+export { getDefaultTestRef } from "./labRefRanges";
 
 /**
  * Automatically generates a clinical comment/interpretation for a Hepatitis B 5-marker profile.

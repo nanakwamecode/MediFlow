@@ -5,6 +5,17 @@ export const URINE_FIELDS = [
   "T.vaginalis", "Cast (Type)", "Crystals (Type)", "Others"
 ] as const;
 
+export const STOOL_FIELDS = [
+  "Colour", "Consistency", "Mucus", "Blood",
+  "Pus cells", "RBCs", "Macrophages", "Yeast cells",
+  "Ova / Parasites", "Cysts / Trophozoites", "Vegetable cells", "Others"
+] as const;
+
+export const HVS_FIELDS = [
+  "Appearance", "Pus cells", "Epithelial cells", "Trichomonas vaginalis",
+  "Yeast cells (Candida)", "Clue cells", "Gram Stain / Flora", "Others"
+] as const;
+
 export const RENAL_FIELDS = [
   { key: "UREA", label: "UREA", defUnit: "mmol/L", defRef: "2.10-7.10" },
   { key: "CREATININE", label: "CREATININE", defUnit: "umol/L", defRef: "53-115" },
@@ -97,4 +108,13 @@ export const COLONY_COUNT_OPTIONS = [
 export const BLOOD_GLUCOSE_FIELDS = [
   { key: "FBS", label: "Fasting Blood Sugar (FBS)", defUnit: "mmol/L", defRef: "3.9-5.6" },
   { key: "RBS", label: "Random Blood Sugar (RBS)", defUnit: "mmol/L", defRef: "4.0-7.8" },
+] as const;
+
+export const HORMONAL_PROFILE_FIELDS = [
+  { key: "FSH", label: "FSH", defUnit: "mIU/mL", defRef: "1.5-12.4" },
+  { key: "LH", label: "LH", defUnit: "mIU/mL", defRef: "1.7-8.6" },
+  { key: "PROLACTIN", label: "Prolactin", defUnit: "ng/mL", defRef: "4.8-23.3" },
+  { key: "PROGESTERONE", label: "Progesterone", defUnit: "ng/mL", defRef: "0.2-25.0" },
+  { key: "ESTRADIOL", label: "Estradiol (E2)", defUnit: "pg/mL", defRef: "12.5-166.0" },
+  { key: "TESTOSTERONE", label: "Testosterone", defUnit: "nmol/L", defRef: "8.4-28.7" },
 ] as const;

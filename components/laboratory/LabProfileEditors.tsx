@@ -59,14 +59,15 @@ export function HepProfileEditor({ fields, onChange }: HepProps) {
 interface UrineProps {
   fields: Record<string, string>;
   onChange: (fields: Record<string, string>) => void;
+  fieldList?: readonly string[];
 }
 
-export function UrineProfileEditor({ fields, onChange }: UrineProps) {
+export function UrineProfileEditor({ fields, onChange, fieldList = URINE_FIELDS }: UrineProps) {
   const fieldClass = "w-full rounded-lg border border-border bg-bg px-3 py-1.5 text-sm font-medium text-ink outline-none focus:border-accent";
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 max-h-[300px] overflow-y-auto p-1">
-        {URINE_FIELDS.map((k) => (
+        {fieldList.map((k) => (
           <div key={k} className="flex items-center justify-between gap-3 border-b border-border/50 pb-1.5">
             <span className="font-bold text-xs text-ink">{k}</span>
             <input
