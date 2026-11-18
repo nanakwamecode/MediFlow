@@ -65,9 +65,7 @@ export function detectLabFlag(
 export function getDefaultTestRef(testName: string): { unit: string; ref: string } | null {
   const n = testName.toLowerCase();
   if (n.includes("hba1c")) return { unit: "%", ref: "4.0-5.6" };
-  if (n.includes("fasting") && n.includes("glucose")) return { unit: "mmol/L", ref: "3.9-5.6" };
-  if (n.includes("random blood sugar") || n.includes("rbs")) return { unit: "mmol/L", ref: "4.0-7.8" };
-  if (n.includes("blood glucose")) return { unit: "mmol/L", ref: "3.9-6.1" };
+  if (n.includes("blood glucose test")) return null; // handled as a panel
   if (n.includes("uric acid")) return { unit: "umol/L", ref: "200-430" };
   if (n.includes("psa")) return { unit: "ng/mL", ref: "< 4.0" };
   if (n.includes("crp")) return { unit: "mg/L", ref: "< 5.0" };

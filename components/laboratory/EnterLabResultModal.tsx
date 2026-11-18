@@ -5,7 +5,7 @@ import Modal from "@/components/common/Modal/Modal";
 import { useUpdateLabResult } from "@/hooks/mutations/useUpdateLabResult";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { cn } from "@/lib/utils";
-import { URINE_FIELDS, RENAL_FIELDS, LIVER_FIELDS, FBC_FIELDS, LIPID_FIELDS, TFT_FIELDS, BMP_FIELDS, CULTURE_ANTIBIOTICS } from "./labTestDefinitions";
+import { URINE_FIELDS, RENAL_FIELDS, LIVER_FIELDS, FBC_FIELDS, LIPID_FIELDS, TFT_FIELDS, BMP_FIELDS, CULTURE_ANTIBIOTICS, BLOOD_GLUCOSE_FIELDS } from "./labTestDefinitions";
 import { HepProfileEditor, UrineProfileEditor, QuantitativePanelEditor } from "./LabProfileEditors";
 import CultureSensitivityEditor, { type CultureFields, EMPTY_CULTURE } from "./CultureSensitivityEditor";
 import { detectLabFlag, getDefaultTestRef } from "@/lib/labUtils";
@@ -46,8 +46,9 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
   const isBlood = name.includes("blood group");
   const isMalaria = name.includes("malaria") || name.includes("bf");
   const isCulture = name.includes("culture") && name.includes("sensitivity");
+  const isBloodGlucose = name.includes("blood glucose test") || (name.includes("blood glucose") && !name.includes("fasting") && !name.includes("random"));
 
-  const isPanel = isRenal || isLiver || isFbc || isLipid || isTft || isBmp;
+  const isPanel = isRenal || isLiver || isFbc || isLipid || isTft || isBmp || isBloodGlucose;
   const defaultRef = getDefaultTestRef(testName);
   const isSingleQuant = !isPanel && !isUrine && !isHep && !isViral && !isBlood && !isMalaria && !isCulture && !!defaultRef;
 
@@ -93,7 +94,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
       const res = Object.entries(cultureFields.antibiogram).filter(([, v]) => v === "R").map(([k]) => k);
       final = `FINAL CULTURE TEST REPORT\n\nNumber of Organism(s): ${cultureFields.organisms || "-"}\nTotal Colony Count: ${cultureFields.colonyCount || "-"}\nCulture Isolate: ${cultureFields.cultureIsolate || "-"}\n\nANTIBIOGRAM REPORT (${cultureFields.cultureIsolate || "-"})\n\nSUSCEPTIBLE:\n${sus.length ? sus.map((a) => `  ${a} — S`).join("\n") : "  None"}\n\nRESISTANT:\n${res.length ? res.map((a) => `  ${a} — R`).join("\n") : "  None"}${cultureFields.remarks ? `\n\nREMARKS: ${cultureFields.remarks}` : ""}`;
     } else if (isPanel) {
-      const fields = isRenal ? RENAL_FIELDS : isLiver ? LIVER_FIELDS : isFbc ? FBC_FIELDS : isLipid ? LIPID_FIELDS : isTft ? TFT_FIELDS : BMP_FIELDS;
+      const fields = isRenal ? RENAL_FIELDS : isLiver ? LIVER_FIELDS : isFbc ? FBC_FIELDS : isLipid ? LIPID_FIELDS : isTft ? TFT_FIELDS : isBloodGlucose ? BLOOD_GLUCOSE_FIELDS : BMP_FIELDS;
       final = fields.map((f) => {
         const row = (panelFields[f.key] as Record<string, string>) || {};
         const resVal = row.result || "-";
@@ -139,7 +140,7 @@ export default function EnterLabResultModal({ open, onClose, patientId, labId, t
         {isHep ? <HepProfileEditor fields={hepFields} onChange={setHepFields} /> :
          isUrine ? <UrineProfileEditor fields={urineFields} onChange={setUrineFields} /> :
          isCulture ? <CultureSensitivityEditor fields={cultureFields} onChange={setCultureFields} /> :
-         isPanel ? <QuantitativePanelEditor fields={isRenal ? RENAL_FIELDS : isLiver ? LIVER_FIELDS : isFbc ? FBC_FIELDS : isLipid ? LIPID_FIELDS : isTft ? TFT_FIELDS : BMP_FIELDS} state={panelFields} onUpdate={updatePanelVal} remarks={remarks} onRemarksChange={setRemarks} /> :
+         isPanel ? <QuantitativePanelEditor fields={isRenal ? RENAL_FIELDS : isLiver ? LIVER_FIELDS : isFbc ? FBC_FIELDS : isLipid ? LIPID_FIELDS : isTft ? TFT_FIELDS : isBloodGlucose ? BLOOD_GLUCOSE_FIELDS : BMP_FIELDS} state={panelFields} onUpdate={updatePanelVal} remarks={remarks} onRemarksChange={setRemarks} /> :
          isSingleQuant ? (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-[1.5fr_1fr_0.9fr_1fr] gap-3 items-center">

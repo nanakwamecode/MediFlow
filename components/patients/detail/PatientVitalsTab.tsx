@@ -4,13 +4,15 @@ import { useVitals } from "@/hooks/queries/useVitals";
 import { useDeleteVitals } from "@/hooks/mutations/useDeleteVitals";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { formatDateOnly } from "@/lib/constants";
+import { isDateMatch } from "@/lib/dateUtils";
 import Skeleton from "@/components/common/Skeleton/Skeleton";
 
 interface Props {
   patientId: string;
+  filterDate?: string;
 }
 
-export default function PatientVitalsTab({ patientId }: Props) {
+export default function PatientVitalsTab({ patientId, filterDate = "today" }: Props) {
   const { data: vitals = [], isLoading } = useVitals(patientId);
   const deleteVitalsMut = useDeleteVitals();
   const { showToast } = useToast();
@@ -34,10 +36,12 @@ export default function PatientVitalsTab({ patientId }: Props) {
     );
   }
 
-  if (vitals.length === 0) {
+  const filteredVitals = vitals.filter((v) => isDateMatch(v.time, filterDate));
+
+  if (filteredVitals.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border-2 bg-white/50 p-10 text-center text-sm font-semibold text-ink-3">
-        No vitals logged yet. Click &quot;+ Vitals&quot; to log one.
+        No vitals logged for the selected date. Click &quot;+ Vitals&quot; to log one or adjust date filter.
       </div>
     );
   }
@@ -55,7 +59,7 @@ export default function PatientVitalsTab({ patientId }: Props) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border/60">
-          {vitals.map((v) => (
+          {filteredVitals.map((v) => (
             <tr key={v.id} className="transition-colors hover:bg-bg/60">
               <td className="px-4 py-3 text-xs font-semibold text-ink-2 whitespace-nowrap">
                 {formatDateOnly(v.time)}

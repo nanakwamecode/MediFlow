@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useAllLabs } from "@/hooks/queries/useLabs";
 import { usePatients } from "@/hooks/queries/usePatients";
 import { getInitials } from "@/lib/constants";
+import { isDateMatch } from "@/lib/dateUtils";
 import { CardListSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
+import DateFilterBar from "@/components/common/DateFilter/DateFilterBar";
 import PatientPickerModal from "@/components/consultations/PatientPickerModal";
 import RequestLabModal from "./RequestLabModal";
 import PatientLabDetail from "./PatientLabDetail";
@@ -25,33 +27,24 @@ export default function LabPage() {
   const { data: patients = [], isLoading: patientsLoading } = usePatients();
 
   const [search, setSearch] = useState("");
+  const [filterDate, setFilterDate] = useState("today");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [requestPatient, setRequestPatient] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-  const [selectedPatientId, setSelectedPatientId, clearSelectedPatientId] =
-    useSearchParamState("patientId");
+  const [requestPatient, setRequestPatient] = useState<{ id: string; name: string } | null>(null);
+  const [selectedPatientId, setSelectedPatientId, clearSelectedPatientId] = useSearchParamState("patientId");
 
   if (selectedPatientId) {
-    return (
-      <PatientLabDetail
-        patientId={selectedPatientId}
-        onBack={clearSelectedPatientId}
-      />
-    );
+    return <PatientLabDetail patientId={selectedPatientId} onBack={clearSelectedPatientId} initialDate={filterDate} />;
   }
 
-  const isLoading = labsLoading || patientsLoading;
-
-  if (isLoading) {
+  if (labsLoading || patientsLoading) {
     return <CardListSkeleton count={5} />;
   }
 
   const patientMap = new Map(patients.map((p) => [p.id, p]));
+  const dateFilteredLabs = labs.filter((l) => isDateMatch(l.timeRequested, filterDate));
 
   const summaryMap = new Map<string, PatientLabSummary>();
-  for (const l of labs) {
+  for (const l of dateFilteredLabs) {
     const existing = summaryMap.get(l.patientId);
     const p = patientMap.get(l.patientId);
     const name = p?.name || l.ptName || "Unknown Patient";
@@ -72,24 +65,17 @@ export default function LabPage() {
   }
 
   const patientSummaries = Array.from(summaryMap.values());
+  const filtered = patientSummaries.filter((s) => s.patientName.toLowerCase().includes(search.toLowerCase()));
 
-  const filtered = patientSummaries.filter((s) =>
-    s.patientName.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const totalPending = labs.filter((l) => l.status === "pending").length;
-  const totalCompleted = labs.filter((l) => l.status === "completed").length;
+  const totalPending = dateFilteredLabs.filter((l) => l.status === "pending").length;
+  const totalCompleted = dateFilteredLabs.filter((l) => l.status === "completed").length;
 
   return (
-    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">
-            Laboratory Investigations
-          </h1>
-          <p className="text-sm font-medium text-ink-3">
-            {totalPending} pending · {totalCompleted} completed
-          </p>
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Laboratory Investigations</h1>
+          <p className="text-sm font-medium text-ink-3">{totalPending} pending · {totalCompleted} completed</p>
         </div>
         <button
           onClick={() => setPickerOpen(true)}
@@ -99,7 +85,13 @@ export default function LabPage() {
         </button>
       </div>
 
-      <div className="mb-4">
+      <DateFilterBar
+        selectedDate={filterDate}
+        onDateChange={setFilterDate}
+        badgeText={`${totalPending} pending · ${totalCompleted} completed`}
+      />
+
+      <div>
         <input
           type="text"
           value={search}
@@ -119,11 +111,7 @@ export default function LabPage() {
             <EmptyState
               icon="flask"
               title="No lab orders found"
-              subtitle={
-                search
-                  ? "No patients match your search"
-                  : 'Click "+ Request Investigation" to order a lab'
-              }
+              subtitle={search ? "No patients match your search" : "No lab orders for the selected date. Change date filter or click '+ Request Investigation'"}
             />
           </div>
         ) : (
@@ -132,46 +120,21 @@ export default function LabPage() {
               key={s.patientId}
               type="button"
               onClick={() => setSelectedPatientId(s.patientId)}
-              className={cn(
-                "w-full cursor-pointer rounded-2xl border border-border bg-card",
-                "p-5 shadow-card transition-all text-left",
-                "hover:bg-bg/60 hover:shadow-md group"
-              )}
+              className="w-full cursor-pointer rounded-2xl border border-border bg-card p-5 shadow-card transition-all text-left hover:bg-bg/60 hover:shadow-md group"
             >
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent/15 font-serif text-lg font-bold text-accent transition-colors group-hover:bg-accent group-hover:text-white">
                   {getInitials(s.patientName)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-base font-bold text-ink group-hover:text-accent transition-colors truncate">
-                    {s.patientName}
-                  </div>
+                  <div className="text-base font-bold text-ink group-hover:text-accent transition-colors truncate">{s.patientName}</div>
                   <div className="text-xs font-semibold text-ink-3 mt-0.5">
                     {s.totalCount} test{s.totalCount !== 1 ? "s" : ""}
-                    {s.pendingCount > 0 && (
-                      <span className="text-status-high ml-1.5">
-                        · {s.pendingCount} pending
-                      </span>
-                    )}
-                    {s.completedCount > 0 && (
-                      <span className="text-status-normal ml-1.5">
-                        · {s.completedCount} completed
-                      </span>
-                    )}
+                    {s.pendingCount > 0 && <span className="text-status-high ml-1.5">· {s.pendingCount} pending</span>}
+                    {s.completedCount > 0 && <span className="text-status-normal ml-1.5">· {s.completedCount} completed</span>}
                   </div>
                 </div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5 text-ink-4 group-hover:text-accent transition-colors shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-ink-4 group-hover:text-accent transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
               </div>
             </button>
           ))

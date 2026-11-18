@@ -4,44 +4,39 @@ import { useState } from "react";
 import { useAllPrescriptions } from "@/hooks/queries/usePrescriptions";
 import { usePatients } from "@/hooks/queries/usePatients";
 import { formatTime, formatDateOnly } from "@/lib/constants";
+import { isDateMatch } from "@/lib/dateUtils";
 import { CardListSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
+import DateFilterBar from "@/components/common/DateFilter/DateFilterBar";
 import PatientPickerModal from "@/components/consultations/PatientPickerModal";
 import AddPrescriptionModal from "./AddPrescriptionModal";
 import PatientPharmacyDetail from "./PatientPharmacyDetail";
 import { useSearchParamState } from "@/hooks/useSearchParamState";
 import { cn } from "@/lib/utils";
-import type { PrescriptionRow } from "@/services/prescriptions.service";
 
 export default function PharmacyPage() {
   const { data: prescriptions = [], isLoading: rxLoading } = useAllPrescriptions();
   const { data: patients = [], isLoading: patientsLoading } = usePatients();
 
   const [search, setSearch] = useState("");
+  const [filterDate, setFilterDate] = useState("today");
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "dispensed">("all");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addPatient, setAddPatient] = useState<{ id: string; name: string } | null>(null);
-  const [selectedPatientId, setSelectedPatientId, clearSelectedPatientId] =
-    useSearchParamState("patientId");
+  const [selectedPatientId, setSelectedPatientId, clearSelectedPatientId] = useSearchParamState("patientId");
 
   if (selectedPatientId) {
-    return (
-      <PatientPharmacyDetail
-        patientId={selectedPatientId}
-        onBack={clearSelectedPatientId}
-      />
-    );
+    return <PatientPharmacyDetail patientId={selectedPatientId} onBack={clearSelectedPatientId} initialDate={filterDate} />;
   }
 
-  const isLoading = rxLoading || patientsLoading;
-
-  if (isLoading) {
+  if (rxLoading || patientsLoading) {
     return <CardListSkeleton count={5} />;
   }
 
   const patientMap = new Map(patients.map((p) => [p.id, p]));
+  const dateFilteredMeds = prescriptions.filter((r) => isDateMatch(r.timePrescribed, filterDate));
 
-  const filtered = prescriptions.filter((rx) => {
+  const filtered = dateFilteredMeds.filter((rx) => {
     const p = patientMap.get(rx.patientId);
     const pName = p ? p.name.toLowerCase() : (rx.ptName ? rx.ptName.toLowerCase() : "");
     const s = search.toLowerCase();
@@ -50,14 +45,15 @@ export default function PharmacyPage() {
     return matchSearch && matchStatus;
   });
 
+  const pendingCount = dateFilteredMeds.filter((r) => r.status === "pending").length;
+  const dispensedCount = dateFilteredMeds.filter((r) => r.status === "dispensed").length;
+
   return (
-    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Pharmacy & Dispensary</h1>
-          <p className="text-sm font-medium text-ink-3">
-            {prescriptions.filter((r) => r.status === "pending").length} pending · {prescriptions.filter((r) => r.status === "dispensed").length} dispensed
-          </p>
+          <p className="text-sm font-medium text-ink-3">{pendingCount} pending · {dispensedCount} dispensed</p>
         </div>
         <button
           onClick={() => setPickerOpen(true)}
@@ -67,7 +63,13 @@ export default function PharmacyPage() {
         </button>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <DateFilterBar
+        selectedDate={filterDate}
+        onDateChange={setFilterDate}
+        badgeText={`${pendingCount} pending · ${dispensedCount} dispensed`}
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
         <input
           type="text"
           value={search}
@@ -101,7 +103,7 @@ export default function PharmacyPage() {
             <EmptyState
               icon="pill"
               title="No prescriptions found"
-              subtitle={search ? "Try adjusting your filters" : 'Click "+ New Prescription" to issue medication'}
+              subtitle={search ? "Try adjusting your filters" : "No prescriptions for this date. Change date filter or click '+ New Prescription'"}
             />
           </div>
         ) : (

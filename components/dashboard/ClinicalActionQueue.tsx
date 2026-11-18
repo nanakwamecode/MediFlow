@@ -4,69 +4,123 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAllLabs } from "@/hooks/queries/useLabs";
 import { useAllPrescriptions } from "@/hooks/queries/usePrescriptions";
+import { useDeleteLab } from "@/hooks/mutations/useDeleteLab";
+import { useDeletePrescription } from "@/hooks/mutations/useDeletePrescription";
+import { useToast } from "@/components/common/Toast/ToastProvider";
 import { useUiStore } from "@/store/uiStore";
 import { formatFullDate, getInitials } from "@/lib/constants";
+import { isDateMatch, formatFilterDateLabel } from "@/lib/dateUtils";
 import { cn } from "@/lib/utils";
 import EnterLabResultModal from "@/components/laboratory/EnterLabResultModal";
 
 export default function ClinicalActionQueue() {
   const { data: allLabs = [] } = useAllLabs();
   const { data: allRx = [] } = useAllPrescriptions();
+  const deleteLabMut = useDeleteLab();
+  const deletePrescriptionMut = useDeletePrescription();
+  const { showToast } = useToast();
   const { viewPatient } = useUiStore();
   const router = useRouter();
+
+  const [activeTab, setActiveTab] = useState<"labs" | "pharmacy">("labs");
+  const [filterDate, setFilterDate] = useState<"today" | "all">("today");
+  const [resultFor, setResultFor] = useState<{ patientId: string; labId: number; testName: string } | null>(null);
 
   const goToChart = (patientId: string) => {
     viewPatient(patientId);
     router.push("/mediflow/patients");
   };
 
-  const [activeTab, setActiveTab] = useState<"labs" | "pharmacy">("labs");
-  const [resultFor, setResultFor] = useState<{ patientId: string; labId: number; testName: string } | null>(null);
+  const pendingLabs = allLabs
+    .filter((l) => l.status === "pending" && isDateMatch(l.timeRequested, filterDate))
+    .slice(0, 5);
 
-  const pendingLabs = allLabs.filter((l) => l.status === "pending").slice(0, 5);
-  const pendingRx = allRx.filter((r) => r.status === "pending").slice(0, 5);
+  const pendingRx = allRx
+    .filter((r) => r.status === "pending" && isDateMatch(r.timePrescribed, filterDate))
+    .slice(0, 5);
+
+  const handleDeleteLab = async (patientId: string, labId: number, testName: string) => {
+    if (confirm(`Delete requested test "${testName}"?`)) {
+      try {
+        await deleteLabMut.mutateAsync({ patientId, labId });
+        showToast("Requested test deleted", "✓");
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to delete test", "⚠");
+      }
+    }
+  };
+
+  const handleDeleteRx = async (patientId: string, prescriptionId: number, med: string) => {
+    if (confirm(`Delete prescription for "${med}"?`)) {
+      try {
+        await deletePrescriptionMut.mutateAsync({ patientId, prescriptionId });
+        showToast("Prescription deleted", "✓");
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to delete prescription", "⚠");
+      }
+    }
+  };
 
   return (
     <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between border-b border-border/70 bg-bg/40 px-6 py-4">
+      <div className="flex flex-wrap items-center justify-between border-b border-border/70 bg-bg/40 px-6 py-4 gap-2">
         <div>
-          <h2 className="text-base font-bold text-ink">Clinical Action Queue</h2>
-          <p className="text-xs font-medium text-ink-3">Tasks requiring clinical attention & review</p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-bold text-ink">Clinical Action Queue</h2>
+            <span className="text-xs font-semibold text-ink-3">({formatFilterDateLabel(filterDate)})</span>
+          </div>
+          <p className="text-xs font-medium text-ink-3">Tasks requiring clinical attention & review for {filterDate === "today" ? "today" : "all time"}</p>
         </div>
-        <div className="flex rounded-xl border border-border bg-card p-1">
-          <button
-            onClick={() => setActiveTab("labs")}
-            className={cn(
-              "flex cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all",
-              activeTab === "labs" ? "bg-accent text-white shadow-sm" : "text-ink-3 hover:text-ink"
-            )}
-          >
-            <span>Lab Queue</span>
-            {pendingLabs.length > 0 && (
-              <span className={cn("rounded-full px-2 py-0.5 text-xs font-mono font-bold", activeTab === "labs" ? "bg-white/20 text-white" : "bg-accent/15 text-accent")}>
-                {pendingLabs.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("pharmacy")}
-            className={cn(
-              "flex cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all",
-              activeTab === "pharmacy" ? "bg-status-normal text-white shadow-sm" : "text-ink-3 hover:text-ink"
-            )}
-          >
-            <span>Pharmacy Queue</span>
-            {pendingRx.length > 0 && (
-              <span className={cn("rounded-full px-2 py-0.5 text-xs font-mono font-bold", activeTab === "pharmacy" ? "bg-white/20 text-white" : "bg-status-normal/15 text-status-normal")}>
-                {pendingRx.length}
-              </span>
-            )}
-          </button>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-xl border border-border bg-card p-0.5 text-xs font-bold">
+            <button
+              onClick={() => setFilterDate("today")}
+              className={cn("rounded-lg px-2.5 py-1 transition-all", filterDate === "today" ? "bg-accent text-white" : "text-ink-3 hover:text-ink")}
+            >
+              Today
+            </button>
+            <button
+              onClick={() => setFilterDate("all")}
+              className={cn("rounded-lg px-2.5 py-1 transition-all", filterDate === "all" ? "bg-accent text-white" : "text-ink-3 hover:text-ink")}
+            >
+              All Time
+            </button>
+          </div>
+
+          <div className="flex rounded-xl border border-border bg-card p-1">
+            <button
+              onClick={() => setActiveTab("labs")}
+              className={cn(
+                "flex cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all",
+                activeTab === "labs" ? "bg-accent text-white shadow-sm" : "text-ink-3 hover:text-ink"
+              )}
+            >
+              <span>Lab Queue</span>
+              {pendingLabs.length > 0 && (
+                <span className={cn("rounded-full px-2 py-0.5 text-xs font-mono font-bold", activeTab === "labs" ? "bg-white/20 text-white" : "bg-accent/15 text-accent")}>
+                  {pendingLabs.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("pharmacy")}
+              className={cn(
+                "flex cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all",
+                activeTab === "pharmacy" ? "bg-status-normal text-white shadow-sm" : "text-ink-3 hover:text-ink"
+              )}
+            >
+              <span>Pharmacy Queue</span>
+              {pendingRx.length > 0 && (
+                <span className={cn("rounded-full px-2 py-0.5 text-xs font-mono font-bold", activeTab === "pharmacy" ? "bg-white/20 text-white" : "bg-status-normal/15 text-status-normal")}>
+                  {pendingRx.length}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-5">
         {activeTab === "labs" ? (
           pendingLabs.length === 0 ? (
@@ -74,7 +128,7 @@ export default function ClinicalActionQueue() {
               <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-status-normal-bg text-status-normal">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
               </div>
-              <p className="text-sm font-bold text-ink">Lab queue is clear</p>
+              <p className="text-sm font-bold text-ink">Lab queue is clear for {filterDate === "today" ? "today" : "all time"}</p>
               <p className="mt-0.5 text-xs font-medium text-ink-3">No pending lab orders awaiting results</p>
             </div>
           ) : (
@@ -100,6 +154,7 @@ export default function ClinicalActionQueue() {
                   <div className="flex items-center gap-2">
                     <button onClick={() => goToChart(l.patientId)} className="cursor-pointer rounded-xl border border-border px-3.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-bg-2">View Chart</button>
                     <button onClick={() => setResultFor({ patientId: l.patientId, labId: l.id, testName: l.testName })} className="cursor-pointer rounded-xl bg-accent px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-accent-hover">Enter Result</button>
+                    <button onClick={() => handleDeleteLab(l.patientId, l.id, l.testName)} className="cursor-pointer rounded-xl border border-border px-2.5 py-1.5 text-xs font-bold text-ink-3 hover:text-status-high hover:border-status-high-border hover:bg-status-high-bg transition-colors">Delete</button>
                   </div>
                 </div>
               ))}
@@ -110,7 +165,7 @@ export default function ClinicalActionQueue() {
             <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-status-normal-bg text-status-normal">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
             </div>
-            <p className="text-sm font-bold text-ink">Dispensary queue is clear</p>
+            <p className="text-sm font-bold text-ink">Dispensary queue is clear for {filterDate === "today" ? "today" : "all time"}</p>
             <p className="mt-0.5 text-xs font-medium text-ink-3">All prescribed medications have been dispensed</p>
           </div>
         ) : (
@@ -132,7 +187,10 @@ export default function ClinicalActionQueue() {
                     <p className="text-xs font-medium text-ink-3 italic">&quot;{r.instructions}&quot; · by {r.prescribedBy}</p>
                   </div>
                 </div>
-                <button onClick={() => goToChart(r.patientId)} className="cursor-pointer rounded-xl bg-status-normal px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:opacity-90">Dispense</button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => goToChart(r.patientId)} className="cursor-pointer rounded-xl bg-status-normal px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:opacity-90">Dispense</button>
+                  <button onClick={() => handleDeleteRx(r.patientId, r.id, r.medication)} className="cursor-pointer rounded-xl border border-border px-2.5 py-1.5 text-xs font-bold text-ink-3 hover:text-status-high hover:border-status-high-border hover:bg-status-high-bg transition-colors">Delete</button>
+                </div>
               </div>
             ))}
           </div>

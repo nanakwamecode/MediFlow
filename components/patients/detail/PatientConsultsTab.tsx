@@ -2,13 +2,15 @@
 
 import { useConsultations } from "@/hooks/queries/useConsultations";
 import { formatDateOnly } from "@/lib/constants";
+import { isDateMatch } from "@/lib/dateUtils";
 import Skeleton from "@/components/common/Skeleton/Skeleton";
 
 interface Props {
   patientId: string;
+  filterDate?: string;
 }
 
-export default function PatientConsultsTab({ patientId }: Props) {
+export default function PatientConsultsTab({ patientId, filterDate = "today" }: Props) {
   const { data: consults = [], isLoading } = useConsultations(patientId);
 
   if (isLoading) {
@@ -28,17 +30,19 @@ export default function PatientConsultsTab({ patientId }: Props) {
     );
   }
 
-  if (consults.length === 0) {
+  const filteredConsults = consults.filter((c) => isDateMatch(c.time, filterDate));
+
+  if (filteredConsults.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border-2 bg-white/50 p-10 text-center text-sm font-semibold text-ink-3">
-        No consultations yet. Click &quot;+ Consult&quot; to add one.
+        No consultations found for the selected date. Click &quot;+ Consult&quot; to add one or adjust date filter.
       </div>
     );
   }
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      {consults.map((c) => (
+      {filteredConsults.map((c) => (
         <div
           key={c.id}
           className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:shadow-lg"

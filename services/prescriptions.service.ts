@@ -65,3 +65,21 @@ export async function dispensePrescription(
   const json = await res.json();
   return json.data;
 }
+
+export async function deletePrescription(
+  patientId: string,
+  prescriptionId: number
+): Promise<{ success: boolean }> {
+  const res = await fetch(
+    `/api/patients/${patientId}/prescriptions/${prescriptionId}`,
+    {
+      method: "DELETE",
+    }
+  );
+  if (!res.ok) {
+    const json = await res.json();
+    throw new Error(json.error || "Failed to delete prescription");
+  }
+  const json = await res.json();
+  return json.data;
+}

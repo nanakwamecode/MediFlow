@@ -8,8 +8,10 @@ import { useAllLabs } from "@/hooks/queries/useLabs";
 import { useAllPrescriptions } from "@/hooks/queries/usePrescriptions";
 import { TableSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
+import DateFilterBar from "@/components/common/DateFilter/DateFilterBar";
 import { exportRecordsPdf } from "./RecordsPrintView";
 import RecordEventRow, { RecordEvent } from "./RecordEventRow";
+import { isDateMatch } from "@/lib/dateUtils";
 import { cn } from "@/lib/utils";
 
 export default function RecordsPage() {
@@ -20,12 +22,10 @@ export default function RecordsPage() {
   const { data: prescriptions = [], isLoading: rL } = useAllPrescriptions();
 
   const [filterType, setFilterType] = useState<string>("all");
-  const [filterPeriod, setFilterPeriod] = useState<string>("all");
+  const [filterDate, setFilterDate] = useState<string>("today");
   const [search, setSearch] = useState("");
 
-  const isLoading = pL || vL || cL || lL || rL;
-
-  if (isLoading) {
+  if (pL || vL || cL || lL || rL) {
     return <TableSkeleton rows={7} cols={4} />;
   }
 
@@ -66,13 +66,9 @@ export default function RecordsPage() {
     })),
   ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
-  const now = new Date();
   const filtered = allEvents.filter((e) => {
     if (filterType !== "all" && e.type !== filterType) return false;
-    const eDate = new Date(e.time);
-    if (filterPeriod === "today" && eDate.toDateString() !== now.toDateString()) return false;
-    if (filterPeriod === "week" && (now.getTime() - eDate.getTime()) > 7 * 86400000) return false;
-    if (filterPeriod === "month" && (now.getTime() - eDate.getTime()) > 30 * 86400000) return false;
+    if (!isDateMatch(e.time, filterDate)) return false;
     if (search) {
       const q = search.toLowerCase();
       return e.ptName.toLowerCase().includes(q) || e.detail.toLowerCase().includes(q);
@@ -81,24 +77,30 @@ export default function RecordsPage() {
   });
 
   return (
-    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Clinical Records Log</h1>
           <p className="text-sm font-medium text-ink-3">
-            {allEvents.length} total event{allEvents.length !== 1 ? "s" : ""} across all departments
+            {filtered.length} event{filtered.length !== 1 ? "s" : ""} on record
           </p>
         </div>
         <button
-          onClick={() => exportRecordsPdf({ events: filtered, period: filterPeriod })}
+          onClick={() => exportRecordsPdf({ events: filtered, period: filterDate })}
           className="cursor-pointer rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all hover:bg-accent-hover hover:shadow-lg active:scale-95 flex items-center gap-2"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" y2="3"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
           Export PDF
         </button>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <DateFilterBar
+        selectedDate={filterDate}
+        onDateChange={setFilterDate}
+        badgeText={`${filtered.length} events`}
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
         <input
           type="text"
           value={search}
@@ -121,16 +123,6 @@ export default function RecordsPage() {
           <option value="Lab">Lab</option>
           <option value="Prescription">Prescription</option>
         </select>
-        <select
-          value={filterPeriod}
-          onChange={(e) => setFilterPeriod(e.target.value)}
-          className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-ink outline-none focus:border-accent"
-        >
-          <option value="all">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">Past 7 Days</option>
-          <option value="month">Past 30 Days</option>
-        </select>
       </div>
 
       <div className="space-y-3">
@@ -139,7 +131,7 @@ export default function RecordsPage() {
             <EmptyState
               icon="archive"
               title="No records found"
-              subtitle="Try clearing or adjusting your search filters"
+              subtitle="No clinical events recorded for this date. Change date filter or search query"
             />
           </div>
         ) : (

@@ -9,6 +9,7 @@ import { usePrescriptions } from "@/hooks/queries/usePrescriptions";
 import { useUiStore } from "@/store/uiStore";
 import { useSearchParamState } from "@/hooks/useSearchParamState";
 import { PatientDetailSkeleton } from "@/components/common/Skeleton";
+import DateFilterBar from "@/components/common/DateFilter/DateFilterBar";
 import PatientDetailHeader from "./PatientDetailHeader";
 import PatientVitalsTab from "./detail/PatientVitalsTab";
 import PatientConsultsTab from "./detail/PatientConsultsTab";
@@ -21,6 +22,7 @@ import AddPrescriptionModal from "@/components/pharmacy/AddPrescriptionModal";
 import EnterLabResultModal from "@/components/laboratory/EnterLabResultModal";
 import ViewLabResultModal from "@/components/laboratory/ViewLabResultModal";
 import PatientModal from "@/components/patients/PatientModal";
+import { isDateMatch } from "@/lib/dateUtils";
 import { cn } from "@/lib/utils";
 import type { LabInvestigation } from "@/types";
 
@@ -42,6 +44,7 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
     else clearViewingPatient();
   };
 
+  const [filterDate, setFilterDate] = useState("today");
   const [logOpen, setLogOpen] = useState(false);
   const [consultOpen, setConsultOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
@@ -53,9 +56,7 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
   const activeTab = (activeTabParam as "vitals" | "consults" | "labs" | "meds") || "vitals";
   const setActiveTab = (tab: "vitals" | "consults" | "labs" | "meds") => setActiveTabParam(tab);
 
-  if (isLoading) {
-    return <PatientDetailSkeleton />;
-  }
+  if (isLoading) return <PatientDetailSkeleton />;
 
   if (!patient) {
     return (
@@ -71,9 +72,14 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
     );
   }
 
+  const fVitals = vitals.filter((v) => isDateMatch(v.time, filterDate));
+  const fConsults = consults.filter((c) => isDateMatch(c.time, filterDate));
+  const fLabs = labs.filter((l) => isDateMatch(l.timeRequested, filterDate));
+  const fMeds = meds.filter((m) => isDateMatch(m.timePrescribed, filterDate));
+
   return (
-    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <button onClick={handleBack} className="group flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-xs font-bold text-ink-2 shadow-sm transition-all hover:border-border-2 hover:bg-bg-2">
           <span className="transition-transform group-hover:-translate-x-0.5">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -89,8 +95,15 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
 
       <PatientDetailHeader patient={patient} onEdit={() => setEditPatientOpen(true)} />
 
+      {/* Date Filter Bar */}
+      <DateFilterBar
+        selectedDate={filterDate}
+        onDateChange={setFilterDate}
+        badgeText={`${fLabs.filter((l) => l.status === "pending").length} pending labs · ${fMeds.filter((m) => m.status === "pending").length} pending rx`}
+      />
+
       {/* Tabs */}
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
         {(["vitals", "consults", "labs", "meds"] as const).map((tab) => (
           <button
             key={tab}
@@ -102,23 +115,23 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
                 : "bg-card text-ink-3 hover:bg-bg-2 hover:text-ink ring-1 ring-border shadow-sm"
             )}
           >
-            {tab === "meds" ? `Pharmacy (${meds.length})` : tab === "consults" ? `Consults (${consults.length})` : tab === "labs" ? `Labs (${labs.length})` : `Vitals (${vitals.length})`}
+            {tab === "meds" ? `Pharmacy (${fMeds.length})` : tab === "consults" ? `Consults (${fConsults.length})` : tab === "labs" ? `Labs (${fLabs.length})` : `Vitals (${fVitals.length})`}
           </button>
         ))}
       </div>
 
-      {activeTab === "vitals" && <PatientVitalsTab patientId={patientId} />}
-      {activeTab === "consults" && <PatientConsultsTab patientId={patientId} />}
+      {activeTab === "vitals" && <PatientVitalsTab patientId={patientId} filterDate={filterDate} />}
+      {activeTab === "consults" && <PatientConsultsTab patientId={patientId} filterDate={filterDate} />}
       {activeTab === "labs" && (
         <PatientLabsTab
           patientId={patientId}
+          filterDate={filterDate}
           onEnterResult={(l) => setResultFor(l)}
           onViewResult={(l) => setViewingResult(l)}
         />
       )}
-      {activeTab === "meds" && <PatientPharmacyTab patientId={patientId} />}
+      {activeTab === "meds" && <PatientPharmacyTab patientId={patientId} filterDate={filterDate} />}
 
-      {/* Modals */}
       <LogVitalsModal open={logOpen} onClose={() => setLogOpen(false)} patientId={patientId} patientName={patient.name} />
       <AddConsultationModal open={consultOpen} onClose={() => setConsultOpen(false)} patientId={patientId} patientName={patient.name} />
       <RequestLabModal open={labOpen} onClose={() => setLabOpen(false)} patientId={patientId} patientName={patient.name} />

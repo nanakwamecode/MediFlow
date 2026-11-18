@@ -1,23 +1,30 @@
 "use client";
 
 import { useLabs } from "@/hooks/queries/useLabs";
+import { useDeleteLab } from "@/hooks/mutations/useDeleteLab";
+import { useToast } from "@/components/common/Toast/ToastProvider";
 import { formatDateOnly } from "@/lib/constants";
+import { isDateMatch } from "@/lib/dateUtils";
 import { cn } from "@/lib/utils";
 import Skeleton from "@/components/common/Skeleton/Skeleton";
 import type { LabInvestigation } from "@/types";
 
 interface Props {
   patientId: string;
+  filterDate?: string;
   onEnterResult: (lab: { labId: number; testName: string }) => void;
   onViewResult: (lab: LabInvestigation) => void;
 }
 
 export default function PatientLabsTab({
   patientId,
+  filterDate = "today",
   onEnterResult,
   onViewResult,
 }: Props) {
   const { data: labs = [], isLoading } = useLabs(patientId);
+  const deleteLabMut = useDeleteLab();
+  const { showToast } = useToast();
 
   if (isLoading) {
     return (
@@ -36,17 +43,30 @@ export default function PatientLabsTab({
     );
   }
 
-  if (labs.length === 0) {
+  const filteredLabs = labs.filter((l) => isDateMatch(l.timeRequested, filterDate));
+
+  if (filteredLabs.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border-2 bg-white/50 p-10 text-center text-sm font-semibold text-ink-3">
-        No lab requests yet. Click &quot;+ Lab&quot; to request one.
+        No lab requests found for the selected date. Click &quot;+ Lab&quot; to order one or adjust date filter.
       </div>
     );
   }
 
+  const handleDelete = async (labId: number, testName: string) => {
+    if (confirm(`Delete requested test "${testName}"?`)) {
+      try {
+        await deleteLabMut.mutateAsync({ patientId, labId });
+        showToast("Requested test deleted", "✓");
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to delete test", "⚠");
+      }
+    }
+  };
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {labs.map((l) => (
+      {filteredLabs.map((l) => (
         <div
           key={l.id}
           className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:shadow-lg"
@@ -67,15 +87,11 @@ export default function PatientLabsTab({
             </div>
             <div className="mb-3 flex flex-col gap-1 text-xs text-ink-3">
               <div>
-                <span className="font-bold text-ink-2 mr-1">
-                  Requested:
-                </span>
+                <span className="font-bold text-ink-2 mr-1">Requested:</span>
                 {formatDateOnly(l.timeRequested)}
               </div>
               <div>
-                <span className="font-bold text-ink-2 mr-1">
-                  Ordered By:
-                </span>
+                <span className="font-bold text-ink-2 mr-1">Ordered By:</span>
                 {l.requestedBy}
               </div>
             </div>
@@ -94,12 +110,22 @@ export default function PatientLabsTab({
             )}
           </div>
           {l.status === "pending" && (
-            <button
-              onClick={() => onEnterResult({ labId: l.id, testName: l.testName })}
-              className="mt-4 w-full cursor-pointer rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-accent-hover active:scale-[0.98]"
-            >
-              Enter Result
-            </button>
+            <div className="mt-4 flex items-center gap-2">
+              <button
+                onClick={() => onEnterResult({ labId: l.id, testName: l.testName })}
+                className="flex-1 cursor-pointer rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-accent-hover active:scale-[0.98]"
+              >
+                Enter Result
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(l.id, l.testName)}
+                disabled={deleteLabMut.isPending}
+                className="cursor-pointer rounded-xl border border-border px-3 py-2 text-xs font-bold text-ink-3 hover:text-status-high hover:border-status-high-border hover:bg-status-high-bg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
           )}
         </div>
       ))}

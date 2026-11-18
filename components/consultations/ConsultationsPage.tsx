@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useAllConsultations } from "@/hooks/queries/useConsultations";
 import { usePatients } from "@/hooks/queries/usePatients";
 import { formatTime, formatDateOnly } from "@/lib/constants";
+import { isDateMatch } from "@/lib/dateUtils";
 import { CardListSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
+import DateFilterBar from "@/components/common/DateFilter/DateFilterBar";
 import PatientPickerModal from "./PatientPickerModal";
 import AddConsultationModal from "./AddConsultationModal";
 import ConsultationDetail from "./ConsultationDetail";
@@ -17,9 +19,10 @@ export default function ConsultationsPage() {
   const { data: patients = [], isLoading: patientsLoading } = usePatients();
 
   const [search, setSearch] = useState("");
+  const [filterDate, setFilterDate] = useState("today");
   const [viewConsultId, setViewConsultId, clearViewConsultId] = useSearchParamState("consultId");
   const [viewPatientId, setViewPatientId, clearViewPatientId] = useSearchParamState("patientId");
-  const [editParam, setEditParam, clearEditParam] = useSearchParamState("edit");
+  const [editParam, , clearEditParam] = useSearchParamState("edit");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addConsultPatient, setAddConsultPatient] = useState<{ id: string; name: string } | null>(null);
 
@@ -34,34 +37,27 @@ export default function ConsultationsPage() {
     );
   }
 
-  const isLoading = consultsLoading || patientsLoading;
-
-  if (isLoading) {
+  if (consultsLoading || patientsLoading) {
     return <CardListSkeleton count={5} />;
   }
 
   const patientMap = new Map(patients.map((p) => [p.id, p]));
+  const dateFilteredConsults = consults.filter((c) => isDateMatch(c.time, filterDate));
 
-  const filtered = consults.filter((c) => {
+  const filtered = dateFilteredConsults.filter((c) => {
     const p = patientMap.get(c.patientId);
     const pName = p ? p.name.toLowerCase() : (c.ptName ? c.ptName.toLowerCase() : "");
     const s = search.toLowerCase();
     return pName.includes(s) || (c.diagnosis && c.diagnosis.toLowerCase().includes(s));
   });
 
-  const openDetail = (consultId: number, patientId: string, editing = false) => {
-    setViewConsultId(String(consultId));
-    setViewPatientId(patientId);
-    if (editing) setEditParam("1");
-  };
-
   return (
-    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Consultations</h1>
           <p className="text-sm font-medium text-ink-3">
-            {consults.length} medical consultation{consults.length !== 1 ? "s" : ""} on record
+            {dateFilteredConsults.length} consultation{dateFilteredConsults.length !== 1 ? "s" : ""} on record
           </p>
         </div>
         <button
@@ -72,7 +68,13 @@ export default function ConsultationsPage() {
         </button>
       </div>
 
-      <div className="mb-4">
+      <DateFilterBar
+        selectedDate={filterDate}
+        onDateChange={setFilterDate}
+        badgeText={`${dateFilteredConsults.length} consults`}
+      />
+
+      <div>
         <input
           type="text"
           value={search}
@@ -92,7 +94,7 @@ export default function ConsultationsPage() {
             <EmptyState
               icon="file"
               title="No consultations found"
-              subtitle={search ? "Try adjusting your search query" : 'Click "+ New Consultation" to start'}
+              subtitle={search ? "Try adjusting your search query" : "No consultations for this date. Change date filter or click '+ New Consultation'"}
             />
           </div>
         ) : (
@@ -102,7 +104,7 @@ export default function ConsultationsPage() {
             return (
               <div
                 key={c.id}
-                onClick={() => openDetail(c.id, c.patientId)}
+                onClick={() => { setViewConsultId(String(c.id)); setViewPatientId(c.patientId); }}
                 className="cursor-pointer rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:bg-bg/60 hover:shadow-md group"
               >
                 <div className="flex items-start justify-between gap-2">
@@ -151,10 +153,6 @@ export default function ConsultationsPage() {
           onClose={() => setAddConsultPatient(null)}
           patientId={addConsultPatient.id}
           patientName={addConsultPatient.name}
-          onCreated={(created) => {
-            setAddConsultPatient(null);
-            openDetail(created.id, created.patientId, true);
-          }}
         />
       )}
     </div>

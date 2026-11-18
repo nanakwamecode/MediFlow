@@ -71,3 +71,35 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   return NextResponse.json({ data: updated });
 }
+
+export async function DELETE(_req: NextRequest, { params }: RouteParams) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id, labId } = await params;
+  const labIdNum = parseInt(labId, 10);
+  if (isNaN(labIdNum)) {
+    return NextResponse.json({ error: "Invalid lab ID" }, { status: 400 });
+  }
+
+  const [deleted] = await db
+    .delete(labInvestigations)
+    .where(
+      and(
+        eq(labInvestigations.id, labIdNum),
+        eq(labInvestigations.patientId, id)
+      )
+    )
+    .returning();
+
+  if (!deleted) {
+    return NextResponse.json(
+      { error: "Lab investigation not found" },
+      { status: 404 }
+    );
+  }
+
+  return NextResponse.json({ data: { success: true } });
+}

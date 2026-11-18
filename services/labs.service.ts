@@ -61,3 +61,18 @@ export async function updateLabResult(
   const json = await res.json();
   return json.data;
 }
+
+export async function deleteLab(
+  patientId: string,
+  labId: number
+): Promise<{ success: boolean }> {
+  const res = await fetch(`/api/patients/${patientId}/labs/${labId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    const json = await res.json();
+    throw new Error(json.error || "Failed to delete lab investigation");
+  }
+  const json = await res.json();
+  return json.data;
+}

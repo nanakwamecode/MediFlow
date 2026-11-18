@@ -67,3 +67,38 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   return NextResponse.json({ data: updated });
 }
+
+export async function DELETE(_req: NextRequest, { params }: RouteParams) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id, prescriptionId } = await params;
+  const prescIdNum = parseInt(prescriptionId, 10);
+  if (isNaN(prescIdNum)) {
+    return NextResponse.json(
+      { error: "Invalid prescription ID" },
+      { status: 400 }
+    );
+  }
+
+  const [deleted] = await db
+    .delete(prescriptions)
+    .where(
+      and(
+        eq(prescriptions.id, prescIdNum),
+        eq(prescriptions.patientId, id)
+      )
+    )
+    .returning();
+
+  if (!deleted) {
+    return NextResponse.json(
+      { error: "Prescription not found" },
+      { status: 404 }
+    );
+  }
+
+  return NextResponse.json({ data: { success: true } });
+}

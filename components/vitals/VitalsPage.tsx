@@ -6,8 +6,10 @@ import { usePatients } from "@/hooks/queries/usePatients";
 import { useDeleteVitals } from "@/hooks/mutations/useDeleteVitals";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { formatTime, formatDateOnly } from "@/lib/constants";
+import { isDateMatch } from "@/lib/dateUtils";
 import { TableSkeleton } from "@/components/common/Skeleton";
 import EmptyState from "@/components/common/EmptyState/EmptyState";
+import DateFilterBar from "@/components/common/DateFilter/DateFilterBar";
 import LogVitalsModal from "./LogVitalsModal";
 import { cn } from "@/lib/utils";
 
@@ -18,18 +20,18 @@ export default function VitalsPage() {
   const { showToast } = useToast();
 
   const [search, setSearch] = useState("");
+  const [filterDate, setFilterDate] = useState("today");
   const [logOpen, setLogOpen] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<string>("");
 
-  const isLoading = vitalsLoading || patientsLoading;
-
-  if (isLoading) {
+  if (vitalsLoading || patientsLoading) {
     return <TableSkeleton rows={7} cols={8} />;
   }
 
   const patientMap = new Map(patients.map((p) => [p.id, p]));
+  const dateFilteredVitals = vitals.filter((v) => isDateMatch(v.time, filterDate));
 
-  const filtered = vitals.filter((v) => {
+  const filtered = dateFilteredVitals.filter((v) => {
     const p = patientMap.get(v.patientId);
     const pName = p ? p.name.toLowerCase() : (v.ptName ? v.ptName.toLowerCase() : "");
     const s = search.toLowerCase();
@@ -39,12 +41,12 @@ export default function VitalsPage() {
   });
 
   return (
-    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
+    <div className="animate-fade-in p-6 sm:p-8 pb-20 max-w-7xl mx-auto space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h1 className="font-serif text-3xl font-medium tracking-tight text-ink">Triage & Vitals</h1>
           <p className="text-sm font-medium text-ink-3">
-            {vitals.length} recorded vital session{vitals.length !== 1 ? "s" : ""} across all patients
+            {dateFilteredVitals.length} recorded session{dateFilteredVitals.length !== 1 ? "s" : ""} on selected date
           </p>
         </div>
         <button
@@ -55,12 +57,18 @@ export default function VitalsPage() {
         </button>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <DateFilterBar
+        selectedDate={filterDate}
+        onDateChange={setFilterDate}
+        badgeText={`${dateFilteredVitals.length} sessions`}
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Filter vitals by patient name or date…"
+          placeholder="Filter vitals by patient name or notes…"
           className={cn(
             "flex-1 min-w-[200px] rounded-xl border border-border bg-card px-4 py-2.5",
             "text-sm font-medium text-ink outline-none transition-colors",
@@ -84,7 +92,7 @@ export default function VitalsPage() {
           <EmptyState
             icon="activity"
             title="No vitals recorded"
-            subtitle={search || selectedPatientId ? "No matching logs found" : 'Click "+ Record Vitals" to log the first session'}
+            subtitle={search || selectedPatientId ? "No matching logs found" : "No vitals recorded for this date. Change date filter or click '+ Record Vitals'"}
           />
         ) : (
           <table className="w-full text-left text-sm">
@@ -112,27 +120,13 @@ export default function VitalsPage() {
                       <div>{formatDateOnly(v.time)}</div>
                       <div className="text-[0.7rem] text-ink-4 font-bold">{formatTime(v.time)}</div>
                     </td>
-                    <td className="px-5 py-4 font-bold text-ink">
-                      {ptName}
-                    </td>
-                    <td className="px-5 py-4 font-bold text-ink">
-                      {v.sys && v.dia ? `${v.sys}/${v.dia}` : "—"}
-                    </td>
-                    <td className="px-5 py-4 font-bold text-ink">
-                      {v.pulse ? `${v.pulse} bpm` : "—"}
-                    </td>
-                    <td className="px-5 py-4 font-bold text-ink">
-                      {v.temperature ? `${v.temperature} °C` : "—"}
-                    </td>
-                    <td className="px-5 py-4 font-bold text-ink">
-                      {v.weight || "—"} kg / {v.height || "—"} cm
-                    </td>
-                    <td className="px-5 py-4 font-bold text-ink">
-                      {bmi}
-                    </td>
-                    <td className="px-5 py-4 font-bold text-ink">
-                      {v.respiratoryRate ? `${v.respiratoryRate} cpm` : "—"}
-                    </td>
+                    <td className="px-5 py-4 font-bold text-ink">{ptName}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.sys && v.dia ? `${v.sys}/${v.dia}` : "—"}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.pulse ? `${v.pulse} bpm` : "—"}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.temperature ? `${v.temperature} °C` : "—"}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.weight || "—"} kg / {v.height || "—"} cm</td>
+                    <td className="px-5 py-4 font-bold text-ink">{bmi}</td>
+                    <td className="px-5 py-4 font-bold text-ink">{v.respiratoryRate ? `${v.respiratoryRate} cpm` : "—"}</td>
                     <td className="px-5 py-4 text-right">
                       <button
                         onClick={async () => {
