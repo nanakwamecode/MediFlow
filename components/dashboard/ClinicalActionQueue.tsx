@@ -9,7 +9,7 @@ import { useDeletePrescription } from "@/hooks/mutations/useDeletePrescription";
 import { useToast } from "@/components/common/Toast/ToastProvider";
 import { useUiStore } from "@/store/uiStore";
 import { formatFullDate, getInitials } from "@/lib/constants";
-import { isDateMatch, formatFilterDateLabel } from "@/lib/dateUtils";
+import { isDateMatch, formatFilterDateLabel, DATE_FILTER_OPTIONS } from "@/lib/dateUtils";
 import { cn } from "@/lib/utils";
 import EnterLabResultModal from "@/components/laboratory/EnterLabResultModal";
 
@@ -23,7 +23,7 @@ export default function ClinicalActionQueue() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<"labs" | "pharmacy">("labs");
-  const [filterDate, setFilterDate] = useState<"today" | "all">("today");
+  const [filterDate, setFilterDate] = useState("today");
   const [resultFor, setResultFor] = useState<{ patientId: string; labId: number; testName: string } | null>(null);
 
   const goToChart = (patientId: string) => {
@@ -69,23 +69,23 @@ export default function ClinicalActionQueue() {
             <h2 className="text-base font-bold text-ink">Clinical Action Queue</h2>
             <span className="text-xs font-semibold text-ink-3">({formatFilterDateLabel(filterDate)})</span>
           </div>
-          <p className="text-xs font-medium text-ink-3">Tasks requiring clinical attention & review for {filterDate === "today" ? "today" : "all time"}</p>
+          <p className="text-xs font-medium text-ink-3">Tasks requiring clinical attention &amp; review — {formatFilterDateLabel(filterDate)}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-xl border border-border bg-card p-0.5 text-xs font-bold">
-            <button
-              onClick={() => setFilterDate("today")}
-              className={cn("rounded-lg px-2.5 py-1 transition-all", filterDate === "today" ? "bg-accent text-white" : "text-ink-3 hover:text-ink")}
-            >
-              Today
-            </button>
-            <button
-              onClick={() => setFilterDate("all")}
-              className={cn("rounded-lg px-2.5 py-1 transition-all", filterDate === "all" ? "bg-accent text-white" : "text-ink-3 hover:text-ink")}
-            >
-              All Time
-            </button>
+          <div className="flex overflow-x-auto rounded-xl border border-border bg-card p-0.5 text-xs font-bold max-w-full scrollbar-hide">
+            {DATE_FILTER_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                onClick={() => setFilterDate(opt.key)}
+                className={cn(
+                  "cursor-pointer whitespace-nowrap shrink-0 rounded-lg px-2.5 py-1 transition-all",
+                  filterDate === opt.key ? "bg-accent text-white" : "text-ink-3 hover:text-ink"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
 
           <div className="flex rounded-xl border border-border bg-card p-1">
@@ -128,7 +128,7 @@ export default function ClinicalActionQueue() {
               <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-status-normal-bg text-status-normal">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
               </div>
-              <p className="text-sm font-bold text-ink">Lab queue is clear for {filterDate === "today" ? "today" : "all time"}</p>
+              <p className="text-sm font-bold text-ink">Lab queue is clear — {formatFilterDateLabel(filterDate)}</p>
               <p className="mt-0.5 text-xs font-medium text-ink-3">No pending lab orders awaiting results</p>
             </div>
           ) : (
@@ -165,7 +165,7 @@ export default function ClinicalActionQueue() {
             <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-status-normal-bg text-status-normal">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
             </div>
-            <p className="text-sm font-bold text-ink">Dispensary queue is clear for {filterDate === "today" ? "today" : "all time"}</p>
+            <p className="text-sm font-bold text-ink">Dispensary queue is clear — {formatFilterDateLabel(filterDate)}</p>
             <p className="mt-0.5 text-xs font-medium text-ink-3">All prescribed medications have been dispensed</p>
           </div>
         ) : (

@@ -1,10 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { todayDateString, formatFilterDateLabel } from "@/lib/dateUtils";
+import {
+  todayDateString,
+  formatFilterDateLabel,
+  DATE_FILTER_OPTIONS,
+} from "@/lib/dateUtils";
 
 interface Props {
-  selectedDate: string; // "today" | "all" | "YYYY-MM-DD"
+  selectedDate: string;
   onDateChange: (date: string) => void;
   className?: string;
   badgeText?: string;
@@ -16,12 +20,20 @@ export default function DateFilterBar({
   className,
   badgeText,
 }: Props) {
-  const isToday = selectedDate === "today" || selectedDate === todayDateString();
-  const isAll = selectedDate === "all";
-  const activeDateValue = selectedDate === "today" || selectedDate === "all" ? todayDateString() : selectedDate;
+  const isSpecificDate =
+    selectedDate !== "today" &&
+    selectedDate !== "all" &&
+    !DATE_FILTER_OPTIONS.some((o) => o.key === selectedDate);
+
+  const activeDateValue =
+    selectedDate === "today" || selectedDate === "all"
+      ? todayDateString()
+      : isSpecificDate
+        ? selectedDate
+        : todayDateString();
 
   const handlePrevDay = () => {
-    const current = selectedDate === "all" || selectedDate === "today" ? todayDateString() : selectedDate;
+    const current = isSpecificDate ? selectedDate : todayDateString();
     const [y, m, d] = current.split("-").map(Number);
     const dateObj = new Date(y, m - 1, d - 1);
     const year = dateObj.getFullYear();
@@ -31,7 +43,7 @@ export default function DateFilterBar({
   };
 
   const handleNextDay = () => {
-    const current = selectedDate === "all" || selectedDate === "today" ? todayDateString() : selectedDate;
+    const current = isSpecificDate ? selectedDate : todayDateString();
     const [y, m, d] = current.split("-").map(Number);
     const dateObj = new Date(y, m - 1, d + 1);
     const year = dateObj.getFullYear();
@@ -48,31 +60,26 @@ export default function DateFilterBar({
       )}
     >
       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <div className="flex items-center gap-1 rounded-xl border border-border bg-bg/60 p-1">
-          <button
-            type="button"
-            onClick={() => onDateChange("today")}
-            className={cn(
-              "cursor-pointer rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
-              isToday
-                ? "bg-accent text-white shadow-sm"
-                : "text-ink-3 hover:text-ink hover:bg-card"
-            )}
-          >
-            Today
-          </button>
-          <button
-            type="button"
-            onClick={() => onDateChange("all")}
-            className={cn(
-              "cursor-pointer rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
-              isAll
-                ? "bg-accent text-white shadow-sm"
-                : "text-ink-3 hover:text-ink hover:bg-card"
-            )}
-          >
-            All Dates
-          </button>
+        {/* Scrollable filter pills */}
+        <div className="flex items-center gap-1 overflow-x-auto rounded-xl border border-border bg-bg/60 p-1 max-w-full scrollbar-hide">
+          {DATE_FILTER_OPTIONS.map((opt) => {
+            const isActive = selectedDate === opt.key;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => onDateChange(opt.key)}
+                className={cn(
+                  "cursor-pointer whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all shrink-0",
+                  isActive
+                    ? "bg-accent text-white shadow-sm"
+                    : "text-ink-3 hover:text-ink hover:bg-card"
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Date picker with prev/next */}
