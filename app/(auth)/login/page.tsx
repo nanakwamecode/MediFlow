@@ -37,8 +37,15 @@ export default function LoginPage() {
         <div className="relative z-10 p-8 xl:p-12">
           <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/15 backdrop-blur-sm ring-1 ring-accent/20">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 3v4" />
+                <path d="M18 3v4" />
+                <circle cx="6" cy="8" r="1" fill="currentColor" stroke="none" />
+                <circle cx="18" cy="8" r="1" fill="currentColor" stroke="none" />
+                <path d="M6 8c0 4-4 5-4 9a5 5 0 0 0 10 0" />
+                <path d="M18 8c0 4 4 5 4 9a5 5 0 0 1-10 0" />
+                <circle cx="12" cy="17" r="2.5" />
+                <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
               </svg>
             </div>
             <div>
@@ -77,8 +84,15 @@ export default function LoginPage() {
           {/* Mobile branding (only shown on mobile) */}
           <div className="mb-10 lg:hidden text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-ink shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 3v4" />
+                <path d="M18 3v4" />
+                <circle cx="6" cy="8" r="1" fill="currentColor" stroke="none" />
+                <circle cx="18" cy="8" r="1" fill="currentColor" stroke="none" />
+                <path d="M6 8c0 4-4 5-4 9a5 5 0 0 0 10 0" />
+                <path d="M18 8c0 4 4 5 4 9a5 5 0 0 1-10 0" />
+                <circle cx="12" cy="17" r="2.5" />
+                <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
               </svg>
             </div>
             <h1 className="font-serif text-4xl text-ink italic">MediFlow</h1>

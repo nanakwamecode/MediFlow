@@ -355,11 +355,23 @@ function BrandIcon() {
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2.5"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        {/* Stethoscope earpieces */}
+        <path d="M6 3v4" />
+        <path d="M18 3v4" />
+        {/* Earpiece tips */}
+        <circle cx="6" cy="8" r="1" fill="currentColor" stroke="none" />
+        <circle cx="18" cy="8" r="1" fill="currentColor" stroke="none" />
+        {/* Tubing flowing down and merging */}
+        <path d="M6 8c0 4-4 5-4 9a5 5 0 0 0 10 0" />
+        <path d="M18 8c0 4 4 5 4 9a5 5 0 0 1-10 0" />
+        {/* Chest piece */}
+        <circle cx="12" cy="17" r="2.5" />
+        {/* Diaphragm detail */}
+        <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
       </svg>
     </div>
   );

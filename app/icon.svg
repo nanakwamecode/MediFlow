@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
   <defs>
-    <linearGradient id="bgHover" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#e84c3d" />
       <stop offset="100%" stop-color="#b82d20" />
     </linearGradient>
@@ -9,10 +9,22 @@
     </filter>
   </defs>
   
-  <rect width="256" height="256" rx="64" fill="url(#bgHover)" filter="url(#shadow)" />
+  <rect width="256" height="256" rx="64" fill="url(#bgGrad)" filter="url(#shadow)" />
   
-  <g fill="#ffffff" transform="translate(128, 128)">
-    <rect x="-24" y="-80" width="48" height="160" rx="12" />
-    <rect x="-80" y="-24" width="160" height="48" rx="12" />
+  <!-- Stethoscope icon -->
+  <g transform="translate(128, 118) scale(5.5)" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Earpiece stems -->
+    <path d="M-6 -12v4" />
+    <path d="M6 -12v4" />
+    <!-- Earpiece tips -->
+    <circle cx="-6" cy="-7" r="1.2" fill="#ffffff" stroke="none" />
+    <circle cx="6" cy="-7" r="1.2" fill="#ffffff" stroke="none" />
+    <!-- Tubing flowing down and merging -->
+    <path d="M-6 -7c0 5-5 6-5 11a6 6 0 0 0 11 0" />
+    <path d="M6 -7c0 5 5 6 5 11a6 6 0 0 1-11 0" />
+    <!-- Chest piece circle -->
+    <circle cx="0" cy="4" r="3" />
+    <!-- Diaphragm center dot -->
+    <circle cx="0" cy="4" r="1.2" fill="#ffffff" stroke="none" />
   </g>
 </svg>
