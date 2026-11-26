@@ -73,20 +73,15 @@ export default function ClinicalActionQueue() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex overflow-x-auto rounded-xl border border-border bg-card p-0.5 text-xs font-bold max-w-full scrollbar-hide">
+          <select
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            className="cursor-pointer rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-bold text-ink outline-none transition-colors focus:border-accent"
+          >
             {DATE_FILTER_OPTIONS.map((opt) => (
-              <button
-                key={opt.key}
-                onClick={() => setFilterDate(opt.key)}
-                className={cn(
-                  "cursor-pointer whitespace-nowrap shrink-0 rounded-lg px-2.5 py-1 transition-all",
-                  filterDate === opt.key ? "bg-accent text-white" : "text-ink-3 hover:text-ink"
-                )}
-              >
-                {opt.label}
-              </button>
+              <option key={opt.key} value={opt.key}>{opt.label}</option>
             ))}
-          </div>
+          </select>
 
           <div className="flex rounded-xl border border-border bg-card p-1">
             <button

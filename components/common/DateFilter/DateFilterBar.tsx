@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   todayDateString,
@@ -20,6 +21,9 @@ export default function DateFilterBar({
   className,
   badgeText,
 }: Props) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
   const isSpecificDate =
     selectedDate !== "today" &&
     selectedDate !== "all" &&
@@ -31,6 +35,16 @@ export default function DateFilterBar({
       : isSpecificDate
         ? selectedDate
         : todayDateString();
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const handlePrevDay = () => {
     const current = isSpecificDate ? selectedDate : todayDateString();
@@ -52,6 +66,8 @@ export default function DateFilterBar({
     onDateChange(`${year}-${month}-${day}`);
   };
 
+  const activeLabel = formatFilterDateLabel(selectedDate);
+
   return (
     <div
       className={cn(
@@ -60,26 +76,61 @@ export default function DateFilterBar({
       )}
     >
       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        {/* Scrollable filter pills */}
-        <div className="flex items-center gap-1 overflow-x-auto rounded-xl border border-border bg-bg/60 p-1 max-w-full scrollbar-hide">
-          {DATE_FILTER_OPTIONS.map((opt) => {
-            const isActive = selectedDate === opt.key;
-            return (
-              <button
-                key={opt.key}
-                type="button"
-                onClick={() => onDateChange(opt.key)}
-                className={cn(
-                  "cursor-pointer whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all shrink-0",
-                  isActive
-                    ? "bg-accent text-white shadow-sm"
-                    : "text-ink-3 hover:text-ink hover:bg-card"
-                )}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
+        {/* Compact dropdown trigger */}
+        <div ref={ref} className="relative">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className={cn(
+              "flex cursor-pointer items-center gap-1.5 rounded-xl border border-border",
+              "bg-bg/60 px-3 py-1.5 text-xs font-bold transition-all",
+              "hover:bg-card hover:border-accent/30",
+              open && "border-accent/40 bg-card shadow-sm"
+            )}
+          >
+            <span className="text-accent">{activeLabel}</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={cn(
+                "h-3 w-3 text-ink-3 transition-transform",
+                open && "rotate-180"
+              )}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          {open && (
+            <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[160px] rounded-xl border border-border bg-card p-1 shadow-lg animate-fade-in">
+              {DATE_FILTER_OPTIONS.map((opt) => {
+                const isActive = selectedDate === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => {
+                      onDateChange(opt.key);
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      "flex w-full cursor-pointer items-center rounded-lg px-3 py-2 text-xs font-bold transition-all",
+                      isActive
+                        ? "bg-accent text-white"
+                        : "text-ink-2 hover:bg-bg-2 hover:text-ink"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Date picker with prev/next */}
@@ -114,9 +165,6 @@ export default function DateFilterBar({
       </div>
 
       <div className="flex items-center gap-2 px-1">
-        <span className="text-xs font-semibold text-ink-3">
-          Filter: <strong className="text-ink">{formatFilterDateLabel(selectedDate)}</strong>
-        </span>
         {badgeText && (
           <span className="rounded-full bg-accent/10 border border-accent/20 px-2.5 py-0.5 text-xs font-bold text-accent font-mono">
             {badgeText}
