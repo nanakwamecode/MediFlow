@@ -1,30 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#e84c3d" />
-      <stop offset="100%" stop-color="#b82d20" />
+    <linearGradient id="mfFavBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f25c4b" />
+      <stop offset="55%" stop-color="#c8392b" />
+      <stop offset="100%" stop-color="#8f1d14" />
     </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#c8392b" flood-opacity="0.3" />
-    </filter>
+    <linearGradient id="mfFavGloss" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
   </defs>
-  
-  <rect width="256" height="256" rx="64" fill="url(#bgGrad)" filter="url(#shadow)" />
-  
-  <!-- Stethoscope icon -->
-  <g transform="translate(128, 118) scale(5.5)" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Earpiece stems -->
-    <path d="M-6 -12v4" />
-    <path d="M6 -12v4" />
-    <!-- Earpiece tips -->
-    <circle cx="-6" cy="-7" r="1.2" fill="#ffffff" stroke="none" />
-    <circle cx="6" cy="-7" r="1.2" fill="#ffffff" stroke="none" />
-    <!-- Tubing flowing down and merging -->
-    <path d="M-6 -7c0 5-5 6-5 11a6 6 0 0 0 11 0" />
-    <path d="M6 -7c0 5 5 6 5 11a6 6 0 0 1-11 0" />
-    <!-- Chest piece circle -->
-    <circle cx="0" cy="4" r="3" />
-    <!-- Diaphragm center dot -->
-    <circle cx="0" cy="4" r="1.2" fill="#ffffff" stroke="none" />
+
+  <rect width="256" height="256" rx="64" fill="url(#mfFavBg)" />
+  <path d="M0 64 Q0 0 64 0 H192 Q256 0 256 64 V120 Q128 152 0 120 Z" fill="url(#mfFavGloss)" />
+
+  <g transform="scale(6.4)">
+    <circle cx="20" cy="20" r="15" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="1" />
+    <rect x="18.7" y="9.4" width="2.6" height="6.8" rx="1.2" fill="#ffffff" />
+    <rect x="16.6" y="11.5" width="6.8" height="2.6" rx="1.2" fill="#ffffff" />
+    <path
+      d="M9.5 28.7 V21.2 C9.5 17.7, 14.8 17.7, 16.8 21.7 L20 27.7 L23.2 21.7 C25.2 17.7, 30.5 17.7, 30.5 21.2 V28.7"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="3.2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
   </g>
 </svg>

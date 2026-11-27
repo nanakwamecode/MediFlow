@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LoginForm from "@/components/auth/LoginForm";
+import BrandLogo from "@/components/common/BrandLogo";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -36,18 +37,7 @@ export default function LoginPage() {
         {/* Top branding */}
         <div className="relative z-10 p-8 xl:p-12">
           <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/15 backdrop-blur-sm ring-1 ring-accent/20">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 3v4" />
-                <path d="M18 3v4" />
-                <circle cx="6" cy="8" r="1" fill="currentColor" stroke="none" />
-                <circle cx="18" cy="8" r="1" fill="currentColor" stroke="none" />
-                <path d="M6 8c0 4-4 5-4 9a5 5 0 0 0 10 0" />
-                <path d="M18 8c0 4 4 5 4 9a5 5 0 0 1-10 0" />
-                <circle cx="12" cy="17" r="2.5" />
-                <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
-              </svg>
-            </div>
+            <BrandLogo size="lg" />
             <div>
               <h2 className="font-serif text-4xl text-white/90 tracking-wide">MediFlow</h2>
               <p className="font-mono text-[0.65rem] tracking-[0.3em] text-accent/80 uppercase">Clinic System</p>
@@ -83,18 +73,7 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-12 animate-slide-left" style={{ animationDelay: '0.2s', opacity: 0 }}>
           {/* Mobile branding (only shown on mobile) */}
           <div className="mb-10 lg:hidden text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-ink shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 3v4" />
-                <path d="M18 3v4" />
-                <circle cx="6" cy="8" r="1" fill="currentColor" stroke="none" />
-                <circle cx="18" cy="8" r="1" fill="currentColor" stroke="none" />
-                <path d="M6 8c0 4-4 5-4 9a5 5 0 0 0 10 0" />
-                <path d="M18 8c0 4 4 5 4 9a5 5 0 0 1-10 0" />
-                <circle cx="12" cy="17" r="2.5" />
-                <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
-              </svg>
-            </div>
+            <BrandLogo size="lg" className="mx-auto mb-4" />
             <h1 className="font-serif text-4xl text-ink italic">MediFlow</h1>
             <p className="mt-1 font-mono text-[0.65rem] tracking-[0.22em] text-ink-3 uppercase">
               Clinic Management System

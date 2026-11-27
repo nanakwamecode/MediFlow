@@ -8,6 +8,7 @@ import { useUiStore } from "@/store/uiStore";
 import { useAuthStore } from "@/store/authStore";
 import { useDashboardStats } from "@/hooks/queries/useDashboardStats";
 import ProfileModal from "@/components/auth/ProfileModal";
+import BrandLogo from "@/components/common/BrandLogo";
 import NavItem from "./NavItem";
 
 function CollapseIcon({ collapsed }: { collapsed: boolean }) {
@@ -197,7 +198,7 @@ function SidebarContent({
         {/* Full brand */}
         {!collapsed && (
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <BrandIcon />
+            <BrandLogo size="sm" />
             <div className="flex flex-col">
               <h1 className="font-serif text-xl font-bold text-ink tracking-wide leading-none">
                 MediFlow
@@ -210,7 +211,7 @@ function SidebarContent({
         )}
 
         {/* Collapsed brand — icon only */}
-        {collapsed && <BrandIcon />}
+        {collapsed && <BrandLogo size="sm" />}
 
         {/* Desktop collapse toggle */}
         {!isMobile && (
@@ -343,36 +344,5 @@ function SidebarContent({
         )}
       </div>
     </>
-  );
-}
-
-function BrandIcon() {
-  return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/15 ring-1 ring-accent/20">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5 text-accent"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        {/* Stethoscope earpieces */}
-        <path d="M6 3v4" />
-        <path d="M18 3v4" />
-        {/* Earpiece tips */}
-        <circle cx="6" cy="8" r="1" fill="currentColor" stroke="none" />
-        <circle cx="18" cy="8" r="1" fill="currentColor" stroke="none" />
-        {/* Tubing flowing down and merging */}
-        <path d="M6 8c0 4-4 5-4 9a5 5 0 0 0 10 0" />
-        <path d="M18 8c0 4 4 5 4 9a5 5 0 0 1-10 0" />
-        {/* Chest piece */}
-        <circle cx="12" cy="17" r="2.5" />
-        {/* Diaphragm detail */}
-        <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
-      </svg>
-    </div>
   );
 }

@@ -22,16 +22,11 @@ export interface LabReportPatientInfo {
   signedBy?: string;
 }
 
-const STETHOSCOPE_SEAL_SVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9b1c1c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M6 3v4" />
-    <path d="M18 3v4" />
-    <circle cx="6" cy="8" r="1" fill="#9b1c1c" stroke="none" />
-    <circle cx="18" cy="8" r="1" fill="#9b1c1c" stroke="none" />
-    <path d="M6 8c0 4-4 5-4 9a5 5 0 0 0 10 0" />
-    <path d="M18 8c0 4 4 5 4 9a5 5 0 0 1-10 0" />
-    <circle cx="12" cy="17" r="2.5" />
-    <circle cx="12" cy="17" r="1" fill="#9b1c1c" stroke="none" />
+const MEDIFLOW_SEAL_SVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 40 40" fill="none">
+    <rect x="18.7" y="9.4" width="2.6" height="6.8" rx="1.2" fill="#9b1c1c" />
+    <rect x="16.6" y="11.5" width="6.8" height="2.6" rx="1.2" fill="#9b1c1c" />
+    <path d="M9.5 28.7 V21.2 C9.5 17.7, 14.8 17.7, 16.8 21.7 L20 27.7 L23.2 21.7 C25.2 17.7, 30.5 17.7, 30.5 21.2 V28.7" stroke="#9b1c1c" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
   </svg>
 `;
 
@@ -118,7 +113,7 @@ export function renderCombinedReport(
       <header>
         <div class="letterhead">
           <div class="facility-name" data-cfg="facilityName">${escapeHtml(cfg.facilityName)}</div>
-          <div class="facility-seal">${STETHOSCOPE_SEAL_SVG}</div>
+          <div class="facility-seal">${MEDIFLOW_SEAL_SVG}</div>
         </div>
         <div class="contact-grid">
           <div class="contact-item"><span class="contact-label">Address:</span><span class="contact-val" data-cfg="address">${escapeHtml(cfg.address)}</span></div>
