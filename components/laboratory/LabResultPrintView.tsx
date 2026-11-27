@@ -8,7 +8,7 @@ import {
 } from "./labReportConfig";
 import {
   getActiveSignatoryFallback,
-  renderReportPage,
+  renderCombinedReport,
   type LabReportPatientInfo,
   type LabResultForPrint,
 } from "./labReportRenderer";
@@ -36,16 +36,11 @@ export function exportLabResultsPdf({
   }
 
   const cfg = loadLabReportConfig(getActiveSignatoryFallback(signedBy));
-  const pagesHtml = completedLabs
-    .map((lab, idx) =>
-      renderReportPage(
-        lab,
-        { patientName, patientAge, patientGender, patientOpdNumber, signedBy },
-        cfg,
-        idx === completedLabs.length - 1
-      )
-    )
-    .join("");
+  const reportHtml = renderCombinedReport(
+    completedLabs,
+    { patientName, patientAge, patientGender, patientOpdNumber, signedBy },
+    cfg
+  );
 
   const html = `
     <!DOCTYPE html>
@@ -57,7 +52,7 @@ export function exportLabResultsPdf({
     </head>
     <body>
       ${renderHeaderCustomizeControls(cfg)}
-      ${pagesHtml}
+      ${reportHtml}
       ${renderHeaderConfigScript()}
     </body>
     </html>

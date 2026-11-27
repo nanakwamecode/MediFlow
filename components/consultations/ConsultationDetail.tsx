@@ -11,6 +11,7 @@ import { CardListSkeleton } from "@/components/common/Skeleton";
 import AddPrescriptionModal from "@/components/pharmacy/AddPrescriptionModal";
 import RequestLabModal from "@/components/laboratory/RequestLabModal";
 import ViewLabResultModal from "@/components/laboratory/ViewLabResultModal";
+import ConsultationRelatedSection from "./ConsultationRelatedSection";
 import { cn } from "@/lib/utils";
 import type { LabInvestigation } from "@/types";
 
@@ -154,45 +155,12 @@ export default function ConsultationDetail({ patientId, consultId, onBack, initi
         )}
       </div>
 
-      {/* Prescriptions */}
-      {meds.length > 0 && (
-        <div className="mb-6">
-          <div className="mb-3 text-xs font-bold uppercase tracking-wider text-ink-2">Related Prescriptions ({meds.length})</div>
-          <div className="space-y-2.5">
-            {meds.map((m) => (
-              <div key={m.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-sm">
-                <div>
-                  <div className="text-base font-bold text-ink">{m.medication} <span className="ml-1 text-xs font-semibold text-ink-3">({m.dosage})</span></div>
-                  <div className="text-xs font-medium text-ink-2 mt-0.5">&quot;{m.instructions}&quot;</div>
-                </div>
-                <span className={cn("rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider", m.status === "dispensed" ? "bg-status-normal-bg text-status-normal border border-status-normal-border" : "bg-status-crisis/10 text-status-crisis border border-status-crisis/20")}>{m.status}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Labs */}
-      {labs.length > 0 && (
-        <div className="mb-6">
-          <div className="mb-3 text-xs font-bold uppercase tracking-wider text-ink-2">Related Lab Investigations ({labs.length})</div>
-          <div className="space-y-2.5">
-            {labs.map((l) => (
-              <div key={l.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-sm">
-                <div>
-                  <div className="text-base font-bold text-ink">{l.testName}</div>
-                  {l.result && (
-                    <button onClick={() => setViewingResult(l)} className="mt-1.5 flex cursor-pointer items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-bg/80 px-3 py-1 text-left transition-colors hover:bg-blue-bg">
-                      <span className="text-xs font-bold uppercase tracking-wider text-blue">Click to View Full Report</span>
-                    </button>
-                  )}
-                </div>
-                <span className={cn("rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider", l.status === "completed" ? "bg-status-normal-bg text-status-normal border border-status-normal-border" : "bg-status-elevated-bg text-status-elevated border border-amber-200")}>{l.status}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <ConsultationRelatedSection
+        patient={patient}
+        meds={meds}
+        labs={labs}
+        onViewLabResult={setViewingResult}
+      />
 
       <AddPrescriptionModal open={rxOpen} onClose={() => setRxOpen(false)} patientId={patientId} patientName={patient.name} />
       <RequestLabModal open={labOpen} onClose={() => setLabOpen(false)} patientId={patientId} patientName={patient.name} />

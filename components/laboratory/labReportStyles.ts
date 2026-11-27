@@ -16,8 +16,7 @@ export const LAB_REPORT_CSS = `
   .config-field label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #57534e; margin-bottom: 3px; }
   .config-field input { width: 100%; padding: 6px 8px; border: 1px solid #d6d3d1; border-radius: 6px; font-size: 12px; color: #111; background: #fff; }
   .config-footer { max-width: 210mm; margin: 10px auto 0; display: flex; justify-content: flex-end; gap: 8px; }
-  .report-page { width: 210mm; min-height: 297mm; margin: 20px auto; padding: 13mm 16mm 11mm; background: #fff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12); display: flex; flex-direction: column; page-break-after: always; }
-  .report-page:last-child { page-break-after: auto; }
+  .report-page { width: 210mm; min-height: 297mm; margin: 20px auto; padding: 13mm 16mm 11mm; background: #fff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12); display: flex; flex-direction: column; }
   .letterhead { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; border-bottom: 1.5px solid #111; padding-bottom: 4px; margin-bottom: 6px; }
   .facility-name { font-family: Georgia, 'Times New Roman', serif; font-size: 15.5pt; font-weight: 700; letter-spacing: 0.02em; color: #111; text-transform: uppercase; }
   .facility-seal { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #9b1c1c; background: #fdf6f5; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -31,9 +30,14 @@ export const LAB_REPORT_CSS = `
   .meta-row { display: flex; gap: 6px; align-items: baseline; }
   .meta-lbl { font-weight: 700; color: #111; white-space: nowrap; }
   .meta-val { font-weight: 600; color: #111; }
-  .investigation-bar { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .investigation-section { margin-bottom: 16px; }
+  .investigation-section:last-child { margin-bottom: 4px; }
+  .investigation-bar { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; break-after: avoid; page-break-after: avoid; }
   .investigation-title { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9pt; font-weight: 700; text-transform: uppercase; text-decoration: underline; text-underline-offset: 2px; color: #111; }
+  .investigation-meta { font-family: 'Segoe UI', Arial, sans-serif; font-size: 7.5pt; font-weight: 600; color: #555; white-space: nowrap; }
   table.results-table { width: 100%; border-collapse: collapse; font-family: 'Times New Roman', Georgia, serif; font-size: 9pt; margin-bottom: 10px; }
+  table.results-table thead { display: table-header-group; }
+  table.results-table tr { break-inside: avoid; page-break-inside: avoid; }
   table.results-table thead th { text-align: left; font-family: 'Segoe UI', Arial, sans-serif; font-size: 8pt; font-weight: 700; text-transform: uppercase; padding: 4px 6px; border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; color: #111; }
   table.results-table tbody td { padding: 3.5px 6px; vertical-align: top; color: #111; }
   table.results-table tbody tr.group-row td { padding-top: 8px; padding-bottom: 3px; font-family: 'Segoe UI', Arial, sans-serif; font-size: 8.2pt; font-weight: 700; text-transform: uppercase; text-decoration: underline; border-top: 1px solid #888; }
@@ -43,17 +47,17 @@ export const LAB_REPORT_CSS = `
   .flag-high, .flag-critical { color: #9b1c1c; font-weight: 700; }
   .flag-low { color: #1e40af; font-weight: 700; }
   .flag-normal { color: #111; }
-  table.ckd-table { width: 100%; border-collapse: collapse; margin: 10px 0 12px; font-size: 8pt; }
+  table.ckd-table { width: 100%; border-collapse: collapse; margin: 10px 0 12px; font-size: 8pt; break-inside: avoid; page-break-inside: avoid; }
   table.ckd-table th, table.ckd-table td { border: 1px solid #222; padding: 3.5px 6px; text-align: left; vertical-align: top; }
   table.ckd-table th { font-family: 'Segoe UI', Arial, sans-serif; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; background: #fafafa; }
   .double-rule { border-top: 1px solid #222; border-bottom: 1px solid #222; height: 3px; margin: 8px 0 10px; }
-  .remarks-box { margin: 8px 0 10px; padding: 6px 10px; border-left: 3px solid #9b1c1c; background: #faf8f6; font-family: 'Segoe UI', Arial, sans-serif; font-size: 8.5pt; }
+  .remarks-box { margin: 8px 0 10px; padding: 6px 10px; border-left: 3px solid #9b1c1c; background: #faf8f6; font-family: 'Segoe UI', Arial, sans-serif; font-size: 8.5pt; break-inside: avoid; page-break-inside: avoid; }
   .remarks-label { font-weight: 700; text-transform: uppercase; font-size: 7.8pt; color: #9b1c1c; margin-bottom: 2px; }
   .text-report { border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; padding: 8px 4px; margin-bottom: 10px; font-size: 9pt; line-height: 1.5; }
   .text-subheading { font-family: 'Segoe UI', Arial, sans-serif; font-weight: 700; font-size: 8.2pt; text-transform: uppercase; margin-top: 6px; text-decoration: underline; }
-  .end-of-report { display: flex; align-items: center; gap: 10px; margin: 14px 0 10px; font-family: 'Times New Roman', Georgia, serif; font-size: 8.5pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .end-of-report { display: flex; align-items: center; gap: 10px; margin: 14px 0 10px; font-family: 'Times New Roman', Georgia, serif; font-size: 8.5pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; break-inside: avoid; page-break-inside: avoid; }
   .end-of-report::before, .end-of-report::after { content: ""; flex: 1; border-top: 1px dashed #333; }
-  .bottom-section { margin-top: auto; padding-top: 10px; }
+  .bottom-section { margin-top: auto; padding-top: 10px; break-inside: avoid; page-break-inside: avoid; }
   .limitation-title { font-family: 'Segoe UI', Arial, sans-serif; font-size: 8.2pt; font-weight: 700; text-transform: uppercase; text-decoration: underline; margin-bottom: 3px; }
   .limitation-text { font-size: 8.2pt; font-weight: 700; line-height: 1.38; margin-bottom: 12px; color: #111; }
   .signature-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 16px; }

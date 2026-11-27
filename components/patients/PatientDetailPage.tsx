@@ -129,6 +129,7 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
       {activeTab === "labs" && (
         <PatientLabsTab
           patientId={patientId}
+          patient={patient}
           filterDate={filterDate}
           onEnterResult={(l) => setResultLabParam(String(l.labId))}
           onViewResult={(l) => setViewLabParam(String(l.id))}

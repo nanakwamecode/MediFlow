@@ -45,6 +45,18 @@ function formatReportDate(iso?: string): string {
   });
 }
 
+function formatDateSpan(isos: (string | undefined)[]): string {
+  const valid = isos
+    .filter((v): v is string => Boolean(v))
+    .map((v) => ({ ms: new Date(v).getTime(), label: formatReportDate(v) }))
+    .filter((x) => !isNaN(x.ms))
+    .sort((a, b) => a.ms - b.ms);
+  if (valid.length === 0) return formatReportDate();
+  const first = valid[0].label;
+  const last = valid[valid.length - 1].label;
+  return first === last ? first : `${first} – ${last}`;
+}
+
 function formatAgeLabel(age?: string): string {
   if (!age?.trim()) return "—";
   const clean = age.trim();
@@ -60,19 +72,46 @@ export function getActiveSignatoryFallback(explicit?: string): string {
   }
 }
 
-export function renderReportPage(
-  lab: LabResultForPrint,
+export function renderCombinedReport(
+  labs: LabResultForPrint[],
   patient: LabReportPatientInfo,
-  cfg: LabReportHeaderConfig,
-  isLastPage: boolean
+  cfg: LabReportHeaderConfig
 ): string {
-  const parsed = parseLabResult(lab.result, lab.testName);
-  const labNo = lab.id ? String(lab.id).padStart(3, "0") : "—";
-  const regDate = formatReportDate(lab.timeRequested);
-  const repDate = formatReportDate(lab.timeCompleted || lab.timeRequested);
-  const doctorRef = lab.requestedBy?.trim()
-    ? lab.requestedBy.trim().toUpperCase()
-    : "NOT AVAILABLE";
+  const labIds = Array.from(
+    new Set(labs.map((l) => (l.id ? String(l.id).padStart(3, "0") : "")).filter(Boolean))
+  );
+  const labNo = labIds.length > 0 ? labIds.join(", ") : "—";
+
+  const doctors = Array.from(
+    new Set(labs.map((l) => l.requestedBy?.trim().toUpperCase()).filter(Boolean))
+  );
+  const doctorRef = doctors.length > 0 ? doctors.join(", ") : "NOT AVAILABLE";
+
+  const regDate = formatDateSpan(labs.map((l) => l.timeRequested));
+  const repDate = formatDateSpan(labs.map((l) => l.timeCompleted || l.timeRequested));
+  const isMulti = labs.length > 1;
+
+  const sectionsHtml = labs
+    .map((lab) => {
+      const parsed = parseLabResult(lab.result, lab.testName);
+      const itemLabNo = lab.id ? String(lab.id).padStart(3, "0") : "";
+      const itemDate = formatReportDate(lab.timeCompleted || lab.timeRequested);
+      const metaParts = [itemLabNo ? `Lab No: ${itemLabNo}` : "", itemDate].filter(Boolean);
+      const metaHtml = isMulti && metaParts.length > 0
+        ? `<div class="investigation-meta">${escapeHtml(metaParts.join(" · "))}</div>`
+        : "";
+
+      return `
+        <section class="investigation-section">
+          <div class="investigation-bar">
+            <div class="investigation-title">INVESTIGATION: ${escapeHtml(lab.testName.toUpperCase())}</div>
+            ${metaHtml}
+          </div>
+          ${renderParsedBody(parsed, lab.testName)}
+        </section>
+      `;
+    })
+    .join("");
 
   return `
     <section class="report-page">
@@ -110,13 +149,9 @@ export function renderReportPage(
         </div>
       </div>
 
-      <div class="investigation-bar">
-        <div class="investigation-title">INVESTIGATION: ${escapeHtml(lab.testName.toUpperCase())}</div>
-      </div>
+      <main>${sectionsHtml}</main>
 
-      <main>${renderParsedBody(parsed, lab.testName)}</main>
-
-      ${isLastPage ? `<div class="end-of-report">END OF REPORT</div>` : ""}
+      <div class="end-of-report">END OF REPORT</div>
 
       <div class="bottom-section">
         <div class="limitation-title">LIMITATION:</div>

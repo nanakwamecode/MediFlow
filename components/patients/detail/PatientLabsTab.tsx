@@ -7,10 +7,12 @@ import { formatDateOnly } from "@/lib/constants";
 import { isDateMatch } from "@/lib/dateUtils";
 import { cn } from "@/lib/utils";
 import Skeleton from "@/components/common/Skeleton/Skeleton";
-import type { LabInvestigation } from "@/types";
+import { exportLabResultsPdf } from "@/components/laboratory/LabResultPrintView";
+import type { LabInvestigation, Patient } from "@/types";
 
 interface Props {
   patientId: string;
+  patient?: Patient;
   filterDate?: string;
   onEnterResult: (lab: { labId: number; testName: string }) => void;
   onViewResult: (lab: LabInvestigation) => void;
@@ -18,6 +20,7 @@ interface Props {
 
 export default function PatientLabsTab({
   patientId,
+  patient,
   filterDate = "today",
   onEnterResult,
   onViewResult,
@@ -64,8 +67,41 @@ export default function PatientLabsTab({
     }
   };
 
+  const completedLabs = filteredLabs.filter((l) => l.status === "completed" && l.result);
+
+  const handleExportCombined = () => {
+    exportLabResultsPdf({
+      patientName: patient?.name || "Unknown Patient",
+      patientAge: patient?.age,
+      patientGender: patient?.gender,
+      patientOpdNumber: patient?.opdNumber,
+      labs: completedLabs.map((l) => ({
+        id: l.id,
+        testName: l.testName,
+        result: l.result || "",
+        timeRequested: l.timeRequested,
+        timeCompleted: l.timeCompleted,
+        requestedBy: l.requestedBy,
+        status: l.status,
+      })),
+    });
+  };
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-4">
+      {completedLabs.length > 0 && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleExportCombined}
+            className="cursor-pointer rounded-xl border border-border bg-card px-4 py-2 text-xs font-bold text-ink transition-all hover:bg-bg-2 hover:text-accent flex items-center gap-1.5 shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            {completedLabs.length > 1 ? `Export Combined PDF (${completedLabs.length})` : "Export PDF"}
+          </button>
+        </div>
+      )}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {filteredLabs.map((l) => (
         <div
           key={l.id}
@@ -129,6 +165,7 @@ export default function PatientLabsTab({
           )}
         </div>
       ))}
+      </div>
     </div>
   );
 }
