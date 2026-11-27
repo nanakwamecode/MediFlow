@@ -196,7 +196,7 @@ export default function ConsultationDetail({ patientId, consultId, onBack, initi
 
       <AddPrescriptionModal open={rxOpen} onClose={() => setRxOpen(false)} patientId={patientId} patientName={patient.name} />
       <RequestLabModal open={labOpen} onClose={() => setLabOpen(false)} patientId={patientId} patientName={patient.name} />
-      {viewingResult && <ViewLabResultModal open={!!viewingResult} onClose={() => setViewingResult(null)} testName={viewingResult.testName} result={viewingResult.result || ""} timeCompleted={viewingResult.timeCompleted} requestedBy={viewingResult.requestedBy} />}
+      {viewingResult && <ViewLabResultModal open={!!viewingResult} onClose={() => setViewingResult(null)} labId={viewingResult.id} testName={viewingResult.testName} result={viewingResult.result || ""} timeCompleted={viewingResult.timeCompleted} timeRequested={viewingResult.timeRequested} requestedBy={viewingResult.requestedBy} patientName={patient.name} patientAge={patient.age} patientGender={patient.gender} patientOpdNumber={patient.opdNumber} />}
     </div>
   );
 }

@@ -142,7 +142,22 @@ export default function PatientDetailPage({ patientId, onBack }: Props) {
       <AddPrescriptionModal open={rxOpen} onClose={clearModalParam} patientId={patientId} patientName={patient.name} />
       {editPatientOpen && <PatientModal open={editPatientOpen} onClose={clearModalParam} editPatient={patient} />}
       {resultFor && <EnterLabResultModal open={!!resultFor} onClose={clearResultLabParam} patientId={patientId} labId={resultFor.labId} testName={resultFor.testName} />}
-      {viewingResult && <ViewLabResultModal open={!!viewingResult} onClose={clearViewLabParam} testName={viewingResult.testName} result={viewingResult.result || ""} timeCompleted={viewingResult.timeCompleted} requestedBy={viewingResult.requestedBy} />}
+      {viewingResult && (
+        <ViewLabResultModal
+          open={!!viewingResult}
+          onClose={clearViewLabParam}
+          labId={viewingResult.id}
+          testName={viewingResult.testName}
+          result={viewingResult.result || ""}
+          timeCompleted={viewingResult.timeCompleted}
+          timeRequested={viewingResult.timeRequested}
+          requestedBy={viewingResult.requestedBy}
+          patientName={patient.name}
+          patientAge={patient.age}
+          patientGender={patient.gender}
+          patientOpdNumber={patient.opdNumber}
+        />
+      )}
     </div>
   );
 }

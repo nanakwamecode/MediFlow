@@ -1,21 +1,22 @@
 "use client";
 
-import { formatFullDate } from "@/lib/constants";
+import {
+  escapeHtml,
+  loadLabReportConfig,
+  renderHeaderConfigScript,
+  renderHeaderCustomizeControls,
+} from "./labReportConfig";
+import {
+  getActiveSignatoryFallback,
+  renderReportPage,
+  type LabReportPatientInfo,
+  type LabResultForPrint,
+} from "./labReportRenderer";
+import { LAB_REPORT_CSS } from "./labReportStyles";
 
-interface LabResultForPrint {
-  testName: string;
-  result: string;
-  timeRequested: string;
-  timeCompleted?: string;
-  requestedBy: string;
-  status: string;
-}
+export type { LabResultForPrint };
 
-interface Props {
-  patientName: string;
-  patientAge?: string;
-  patientGender?: string;
-  patientOpdNumber?: string;
+interface Props extends LabReportPatientInfo {
   labs: LabResultForPrint[];
 }
 
@@ -24,6 +25,7 @@ export function exportLabResultsPdf({
   patientAge,
   patientGender,
   patientOpdNumber,
+  signedBy,
   labs,
 }: Props) {
   const completedLabs = labs.filter((l) => l.status === "completed" && l.result);
@@ -33,68 +35,30 @@ export function exportLabResultsPdf({
     return;
   }
 
-  const labRows = completedLabs
-    .map(
-      (lab) => `
-      <div class="lab-result">
-        <div class="lab-header">
-          <h3>${lab.testName}</h3>
-          <div class="lab-meta">
-            <span>Requested: ${formatFullDate(lab.timeRequested)}</span>
-            ${lab.timeCompleted ? `<span>Completed: ${formatFullDate(lab.timeCompleted)}</span>` : ""}
-            <span>Doctor: ${lab.requestedBy}</span>
-          </div>
-        </div>
-        <div class="lab-body"><pre>${lab.result}</pre></div>
-      </div>
-    `
+  const cfg = loadLabReportConfig(getActiveSignatoryFallback(signedBy));
+  const pagesHtml = completedLabs
+    .map((lab, idx) =>
+      renderReportPage(
+        lab,
+        { patientName, patientAge, patientGender, patientOpdNumber, signedBy },
+        cfg,
+        idx === completedLabs.length - 1
+      )
     )
     .join("");
 
   const html = `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
-      <title>Lab Results — ${patientName}</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        @page { size: A4; margin: 15mm 20mm; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.5; background: #fff; }
-        .header { text-align: center; border-bottom: 2px solid #c8392b; padding-bottom: 12px; margin-bottom: 20px; }
-        .header h1 { font-size: 22pt; color: #c8392b; font-family: Georgia, serif; }
-        .header .subtitle { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.2em; color: #666; margin-top: 3px; font-family: monospace; }
-        .patient-info { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; background: #f8f8f8; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; font-size: 10pt; }
-        .patient-info .label { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.15em; color: #777; font-weight: bold; }
-        .patient-info .value { font-weight: 700; color: #1a1a1a; }
-        .report-title { font-size: 13pt; font-weight: 700; margin-bottom: 16px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
-        .lab-result { margin-bottom: 18px; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; page-break-inside: avoid; }
-        .lab-header { background: #f5f5f5; padding: 10px 14px; border-bottom: 1px solid #e0e0e0; }
-        .lab-header h3 { font-size: 11pt; font-weight: 700; color: #c8392b; margin-bottom: 4px; }
-        .lab-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 8pt; font-family: monospace; color: #666; }
-        .lab-body { padding: 12px 14px; }
-        .lab-body pre { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Instrument Sans', Helvetica, Arial, sans-serif; font-size: 9.5pt; font-weight: 500; white-space: pre-wrap; word-break: break-word; line-height: 1.6; color: #222; }
-        .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 8pt; color: #999; text-align: center; }
-        @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .no-print { display: none !important; } }
-        .print-btn { position: fixed; top: 16px; right: 16px; background: #c8392b; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-size: 13px; font-weight: 600; cursor: pointer; z-index: 1000; }
-      </style>
+      <meta charset="utf-8" />
+      <title>Medical Laboratory Report — ${escapeHtml(patientName)}</title>
+      <style>${LAB_REPORT_CSS}</style>
     </head>
     <body>
-      <button class="print-btn no-print" onclick="window.print()">Save as PDF / Print</button>
-      <div class="header">
-        <h1>MediFlow</h1>
-        <div class="subtitle">Clinic Management System — Laboratory Report</div>
-      </div>
-      <div class="patient-info">
-        <div><div class="label">Patient Name</div><div class="value">${patientName}</div></div>
-        ${patientOpdNumber ? `<div><div class="label">OPD Number</div><div class="value">${patientOpdNumber}</div></div>` : ""}
-        ${patientAge ? `<div><div class="label">Age</div><div class="value">${patientAge}</div></div>` : ""}
-        ${patientGender ? `<div><div class="label">Gender</div><div class="value">${patientGender}</div></div>` : ""}
-        <div><div class="label">Report Date</div><div class="value">${new Date().toLocaleDateString("en-GB")}</div></div>
-        <div><div class="label">Total Results</div><div class="value">${completedLabs.length}</div></div>
-      </div>
-      <div class="report-title">Laboratory Investigation Results</div>
-      ${labRows}
-      <div class="footer">Generated by MediFlow · ${new Date().toLocaleDateString("en-GB")}</div>
+      ${renderHeaderCustomizeControls(cfg)}
+      ${pagesHtml}
+      ${renderHeaderConfigScript()}
     </body>
     </html>
   `;
@@ -113,7 +77,15 @@ export function exportSingleLabResultPdf({
   patientAge,
   patientGender,
   patientOpdNumber,
+  signedBy,
   lab,
 }: Omit<Props, "labs"> & { lab: LabResultForPrint }) {
-  exportLabResultsPdf({ patientName, patientAge, patientGender, patientOpdNumber, labs: [lab] });
+  exportLabResultsPdf({
+    patientName,
+    patientAge,
+    patientGender,
+    patientOpdNumber,
+    signedBy,
+    labs: [lab],
+  });
 }

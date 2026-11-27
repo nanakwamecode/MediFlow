@@ -8,6 +8,7 @@ import LabResultFormattedView from "./LabResultFormattedView";
 interface Props {
   open: boolean;
   onClose: () => void;
+  labId?: number;
   testName: string;
   result: string;
   timeCompleted?: string;
@@ -22,6 +23,7 @@ interface Props {
 export default function ViewLabResultModal({
   open,
   onClose,
+  labId,
   testName,
   result,
   timeCompleted,
@@ -39,6 +41,7 @@ export default function ViewLabResultModal({
       patientGender,
       patientOpdNumber,
       lab: {
+        id: labId,
         testName,
         result,
         timeRequested: timeRequested || "",

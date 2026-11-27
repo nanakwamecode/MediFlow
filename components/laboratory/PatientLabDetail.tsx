@@ -59,6 +59,7 @@ export default function PatientLabDetail({ patientId, onBack, initialDate = "tod
       patientGender: patient.gender,
       patientOpdNumber: patient.opdNumber,
       labs: filteredLabs.map((l) => ({
+        id: l.id,
         testName: l.testName,
         result: l.result || "",
         timeRequested: l.timeRequested,
@@ -163,6 +164,7 @@ export default function PatientLabDetail({ patientId, onBack, initialDate = "tod
         <ViewLabResultModal
           open={!!viewingResult}
           onClose={() => setViewingResult(null)}
+          labId={viewingResult.id}
           testName={viewingResult.testName}
           result={viewingResult.result || ""}
           timeCompleted={viewingResult.timeCompleted}
