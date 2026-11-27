@@ -72,7 +72,7 @@ export const LAB_CATEGORIES: readonly LabCategory[] = [
   {
     name: "Diagnostic Imaging / Other",
     tests: [
-      "Chest X-Ray", "ECG", "Urinalysis"
+      "Chest X-Ray", "ECG", "Urinalysis/Urine R/E"
     ]
   }
 ] as const;
